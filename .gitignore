@@ -3,4 +3,4 @@
 *.o
 *.exe
 *.dll
-bin/a*
+bin/*
