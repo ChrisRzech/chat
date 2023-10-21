@@ -1,2 +1,2 @@
 # Chat
-A client-server chatting application using SFML
+An application for users to communicate among each other.
