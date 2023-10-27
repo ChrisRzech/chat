@@ -4,6 +4,7 @@ set(HEADER_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 list(APPEND SOURCES
+    ${SOURCE_PATH}/Logging.cpp
     ${SOURCE_PATH}/ThreadPool.cpp
 )
 
