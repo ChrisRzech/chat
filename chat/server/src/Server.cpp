@@ -1,10 +1,10 @@
 #include "chat/server/Server.hpp"
 
+#include "chat/common/Logging.hpp"
 #include "chat/common/ThreadPool.hpp"
 
 #include <atomic>
 #include <cstdint>
-#include <iostream> //TODO Should use a logger instead of plain stdout
 #include <list>
 #include <memory>
 #include <stdexcept>
@@ -43,7 +43,8 @@ public:
         //There needs to be at least 2 threads, one for the main server thread and one for handling the client requests
         if(maxThreadCount < 2)
         {
-            throw std::invalid_argument{"maxThreadCount cannot be less than 2"};
+            LOG_FATAL << "Max thread count cannot be less than 2";
+            throw std::invalid_argument{"Max thread count cannot be less than 2"};
         }
     }
 
@@ -54,17 +55,17 @@ public:
 
     void start()
     {
-        std::cout << "Server starting..." << std::endl;
+        LOG_INFO << "Server starting...";
         m_serverThread = std::thread{run, this};
-        std::cout << "Server started" << std::endl;
+        LOG_INFO << "Server started";
     }
 
     void stop()
     {
-        std::cout << "Server stopping..." << std::endl;
+        LOG_INFO << "Server stopping...";
         m_stopping = true;
         m_serverThread.join();
-        std::cout << "Server stopped" << std::endl;
+        LOG_INFO << "Server stopped";
     }
 
 private:
@@ -136,14 +137,14 @@ private:
 
     void listen(sf::TcpListener& listener, std::list<std::shared_ptr<sf::TcpSocket>>& sockets, sf::SocketSelector& socketSelector)
     {
-        std::cout << "Listening for connection..." << std::endl;
+        LOG_DEBUG << "Listening for connection...";
 
         auto socket = std::make_shared<sf::TcpSocket>();
         switch(listener.accept(*socket))
         {
         case sf::Socket::Status::Done:
         {
-            std::cout << "Socket connected" << std::endl;
+            LOG_DEBUG << "Socket accepted";
 
             socket->setBlocking(false); //TODO Is this necessary if a socket selector is being used? Feels like it doesn't need to be.
             socketSelector.add(*socket);
@@ -152,65 +153,67 @@ private:
         }
 
         case sf::Socket::Status::NotReady:
-            std::cout << __FILE__ << ":" << __LINE__ << "Unexpected `sf::Socket::Status::NotReady`" << std::endl;
+            LOG_WARN << "Could not accept socket, unexpected `sf::Socket::Status::NotReady`";
             break;
 
         case sf::Socket::Status::Partial:
-            std::cout << __FILE__ << ":" << __LINE__ << "Unexpected `sf::Socket::Status::Partial`" << std::endl;
+            LOG_WARN << "Could not accept socket, unexpected `sf::Socket::Status::Partial`";
             break;
 
         case sf::Socket::Status::Disconnected:
-            std::cout << __FILE__ << ":" << __LINE__ << "Unexpected `sf::Socket::Status::Disconnected`" << std::endl;
+            LOG_WARN << "Could not accept socket, unexpected `sf::Socket::Status::Disconnected`";
             break;
 
         case sf::Socket::Status::Error:
-            std::cout << "Listener returned `sf::Socket::Status::Error`" << std::endl;
+            LOG_WARN << "An error occurred while trying to accept socket";
             break;
         }
 
-        std::cout << "Finished listening for connection" << std::endl;
+        LOG_DEBUG << "Finished listening for connection";
     }
 
     void socketHandler(std::shared_ptr<sf::TcpSocket>& socket)
     {
-        std::cout << "Handling socket..." << std::endl;
+        LOG_DEBUG << "Handling socket...";
 
         sf::Packet packet;
         switch(socket->receive(packet))
         {
         case sf::Socket::Status::Done:
-            std::cout << "Packet received" << std::endl;
+            LOG_DEBUG << "Packet received";
             m_threadPool.queue([this, packet = std::move(packet)]{packetHandler(packet);});
             break;
 
         case sf::Socket::Status::NotReady:
-            std::cout << __FILE__ << ":" << __LINE__ << "Unexpected `sf::Socket::Status::NotReady`" << std::endl;
+            LOG_WARN << "Could not read packet from socket, unexpected `sf::Socket::Status::NotReady`";
             break;
 
         case sf::Socket::Status::Partial:
-            std::cout << __FILE__ << ":" << __LINE__ << "Unexpected `sf::Socket::Status::Partial`" << std::endl;
+            LOG_WARN << "Could not read packet from socket, unexpected `sf::Socket::Status::Partial`";
             break;
 
         case sf::Socket::Status::Disconnected:
-            std::cout << __FILE__ << ":" << __LINE__ << "Unexpected `sf::Socket::Status::Disconnected`" << std::endl;
+            LOG_WARN << "Could not read packet from socket since the socket is disconnected";
+            //TODO Handle disconnected socket
             break;
 
         case sf::Socket::Status::Error:
-            std::cout << "Reading packet from socket returned `sf::Socket::Status::Error`" << std::endl;
+            LOG_WARN << "An error occurred while trying to read packet from socket";
+            //TODO Treat this as a disconnect? Maybe we can retry a certain times by keeping track of how many times this happens.
             break;
         }
 
-        std::cout << "Finished handling socket" << std::endl;
+        LOG_DEBUG << "Finished handling socket";
     }
 
     void packetHandler(const sf::Packet& packet)
     {
         //TODO Maybe a class called `PacketHandler` which would break down the packet into a request and pass it to a `RequestHandler`?
-        std::cout << "Handling packet..." << std::endl;
+        LOG_DEBUG << "Handling packet...";
 
         std::ignore = packet;
 
-        std::cout << "Finished handling packet" << std::endl;
+        LOG_DEBUG << "Finished handling packet";
     }
 
     uint16_t m_port;

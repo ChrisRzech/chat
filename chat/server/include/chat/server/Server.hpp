@@ -15,6 +15,10 @@ public:
 
     Server& operator=(const Server& other) = delete;
 
+    Server(Server&& other) = delete;
+
+    Server& operator=(Server&& other) = delete;
+
     ~Server();
 
     void start();
