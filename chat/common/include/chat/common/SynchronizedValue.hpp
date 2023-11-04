@@ -1,20 +1,17 @@
 #pragma once
 
-#include <memory>
 #include <mutex>
 
 namespace chat::common
 {
 
-//TODO Should be replaced with boost::synchronized_value if Boost is used
 template<typename T>
 class SynchronizedValue
 {
 public:
-    SynchronizedValue() = default;
-
-    explicit SynchronizedValue(T&& value)
-      : m_value{std::forward<T>(value)}
+    template<typename... Args>
+    SynchronizedValue(Args&&... args)
+      : m_value{std::forward<Args>(args)...}
     {}
 
     SynchronizedValue(const SynchronizedValue& other) = delete;
@@ -27,24 +24,44 @@ public:
 
     ~SynchronizedValue() = default;
 
-    void lock()
+    class Locked
     {
-        m_mutex.lock();
-    }
+    public:
+        Locked(const Locked& other) = delete;
 
-    T& get()
-    {
-        return m_value;
-    }
+        Locked& operator=(const Locked& other) = delete;
 
-    const T& get() const
-    {
-        return m_value;
-    }
+        Locked(Locked&& other) = delete;
 
-    void unlock()
+        Locked& operator=(Locked&& other) = delete;
+
+        ~Locked() = default;
+
+        const T& get() const
+        {
+            return m_value;
+        }
+
+        T& get()
+        {
+            return m_value;
+        }
+
+    private:
+        friend class SynchronizedValue;
+
+        Locked(SynchronizedValue& synchronizedValue)
+          : m_lock{synchronizedValue.m_mutex},
+            m_value{synchronizedValue.m_value}
+        {}
+
+        std::unique_lock<decltype(SynchronizedValue::m_mutex)> m_lock;
+        T& m_value;
+    };
+
+    Locked lock()
     {
-        m_mutex.unlock();
+        return Locked{*this};
     }
 
 private:
