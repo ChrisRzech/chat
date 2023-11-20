@@ -67,7 +67,7 @@ private:
     private:
         const bool m_debugEnabled;
         std::mutex m_mutex;
-        std::fstream m_out;
+        std::fstream m_out; //TODO Use SynchronizedValue
     };
 
     class LogEntry
@@ -101,6 +101,7 @@ private:
     inline static std::unique_ptr<Logger> s_logger;
 };
 
+//TODO Make the check done at compile-time
 #define LOG(severity) if(!chat::common::Logging::canLog(severity)) {} else \
     chat::common::Logging::getLogger() += chat::common::Logging::buildLogEntry(severity, __FILE__, __LINE__)
 #define LOG_FATAL LOG(chat::common::Logging::Severity::Fatal)

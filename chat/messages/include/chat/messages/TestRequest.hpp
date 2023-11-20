@@ -2,33 +2,40 @@
 
 #include "chat/messages/Request.hpp"
 
+#include <string>
+
 namespace chat::messages
 {
 
+//TODO This is only a test, remove when done
 class TestRequest : public Request
 {
 public:
-    TestRequest() = default;
-
-    explicit TestRequest(std::string message)
-      : m_message{std::move(message)}
+    TestRequest()
+      : Request{Type::Test},
+        m_message{}
     {}
 
-    const std::string& getMessage() const
+    explicit TestRequest(std::string message)
+      : Request{Type::Test},
+        m_message{std::move(message)}
+    {}
+
+    std::string& getMessage()
     {
         return m_message;
     }
 
     sf::Packet toPacket() const override
     {
-        sf::Packet packet;
+        auto packet = Request::toPacket();
         packet << m_message;
         return packet;
     }
 
-    void fromPacket(sf::Packet& packet) override
+    bool fromPacket(sf::Packet& packet) override
     {
-        packet >> m_message;
+        return packet >> m_message;
     }
 
 private:

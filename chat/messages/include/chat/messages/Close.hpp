@@ -2,13 +2,27 @@
 
 #include "chat/messages/Message.hpp"
 
+#include <SFML/Network/Packet.hpp>
+
 namespace chat::messages
 {
 
 class Close : public Message
 {
-protected:
+public:
     Close();
+
+    Close(const Close& other) = delete;
+
+    Close& operator=(const Close& other) = delete;
+
+    Close(Close&& other) = default;
+
+    Close& operator=(Close&& other) = default;
+
+    ~Close() override = default;
+
+    [[nodiscard]] bool fromPacket(sf::Packet& packet) override;
 };
 
 }

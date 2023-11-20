@@ -24,6 +24,36 @@ public:
 
     ~SynchronizedValue() = default;
 
+    class ConstLocked
+    {
+    public:
+        ConstLocked(const ConstLocked& other) = delete;
+
+        ConstLocked& operator=(const ConstLocked& other) = delete;
+
+        ConstLocked(ConstLocked&& other) = delete;
+
+        ConstLocked& operator=(ConstLocked&& other) = delete;
+
+        ~ConstLocked() = default;
+
+        const T& get() const
+        {
+            return m_value;
+        }
+
+    private:
+        friend class SynchronizedValue;
+
+        ConstLocked(const SynchronizedValue& synchronizedValue)
+          : m_lock{synchronizedValue.m_mutex},
+            m_value{synchronizedValue.m_value}
+        {}
+
+        std::unique_lock<decltype(SynchronizedValue::m_mutex)> m_lock;
+        const T& m_value;
+    };
+
     class Locked
     {
     public:
@@ -36,11 +66,6 @@ public:
         Locked& operator=(Locked&& other) = delete;
 
         ~Locked() = default;
-
-        const T& get() const
-        {
-            return m_value;
-        }
 
         T& get()
         {
@@ -59,13 +84,18 @@ public:
         T& m_value;
     };
 
+    ConstLocked lock() const
+    {
+        return ConstLocked(*this);
+    }
+
     Locked lock()
     {
         return Locked{*this};
     }
 
 private:
-    std::mutex m_mutex;
+    mutable std::mutex m_mutex;
     T m_value;
 };
 

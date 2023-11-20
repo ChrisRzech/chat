@@ -1,5 +1,7 @@
 #include "chat/server/Server.hpp"
 
+#include "Connection.hpp"
+
 #include "chat/common/Logging.hpp"
 #include "chat/common/ThreadPool.hpp"
 
@@ -16,7 +18,8 @@
 #include <SFML/Network/TcpSocket.hpp>
 
 /*
-(OUTDATED) The server should be doing the following concurrently:
+(OUTDATED)
+The server should be doing the following concurrently:
 1. Accept incoming connections (if possible, may have an arbitrary limit of current connections)
     * Before accepting the incoming connection, the client and server must exchange information about each other and set up
         the environment (e.g. TLS handshake for secure communications)
@@ -36,9 +39,9 @@ class Server::Impl
 public:
     Impl(uint16_t port, uint16_t maxThreadCount)
       : m_port{port},
+        m_maxThreadCount{maxThreadCount},
         m_stopping{false},
-        m_serverThread{},
-        m_threadPool{static_cast<uint16_t>(maxThreadCount - 1)} //Count the server thread towards the number of threads
+        m_serverThread{}
     {
         //There needs to be at least 2 threads, one for the main server thread and one for handling the client requests
         if(maxThreadCount < 2)
@@ -71,14 +74,16 @@ public:
 private:
     void run()
     {
-        sf::TcpListener listener;
-        std::list<std::shared_ptr<sf::TcpSocket>> sockets;
-        sf::SocketSelector socketSelector;
+        std::list<Connection> connections;
 
+        sf::TcpListener listener;
         listener.listen(m_port);
+
+        sf::SocketSelector socketSelector;
         socketSelector.add(listener);
 
-        m_threadPool.start();
+        chat::common:: ThreadPool threadPool{static_cast<uint16_t>(m_maxThreadCount - 1)}; //Count this thread towards the number of threads
+        threadPool.start();
 
         while(!m_stopping)
         {
@@ -90,67 +95,54 @@ private:
                 even matter that much.
                 */
 
-                /*
-                TODO Disconnected sockets needs to be cleaned up (remove from the selector and list) at some point.
-
-                One way would be to clean up when a `sf::Socket::Status::Disconnect` value is returned when performing a `receive()` from
-                the socket. However, it is unsure if this value would be returned since the selector's `wait()`.
-
-                Another way could be to periodically clean up after some time. This might be a problem cause it is not easy to test whether
-                a socket is disconnected without trying to send or receive data.
-
-                Another way is to have a timeout for each socket. This way there is no need to check if the socket is disconnected or not
-                since the socket will be cleaned up once it hasn't been used for a while.
-
-                A combination of these would be that when a `sf::Socket::Status::Disconnect` is seen, mark the socket as disconnected. Then
-                when going through the sockets when checking if they're ready from the socket selector, clean up the socket if it is marked.
-                At the same time, idle sockets after an arbitrary time will be cleaned up.
-                */
-
                 if(socketSelector.isReady(listener))
                 {
-                    listen(listener, sockets, socketSelector);
+                    listen(listener, connections, socketSelector);
                 }
 
-                for(auto& socket : sockets)
+                for(auto& connection : connections)
                 {
-                    if(socketSelector.isReady(*socket))
+                    if(!connection.isBeingHandled() && !connection.isZombie() && socketSelector.isReady(connection.getSocket()))
                     {
                         /*
-                        TODO Is it possible that the client is disconnected and still pass `isReady()`? This is important to know because
-                        if it can, then the socket handler would end up cleaning up the socket from any containers.
-                        */
+                        TODO Is it possible that the client is disconnected and still pass `isReady()`? It might not be necessary anymore
+                        since the sockets have a timeout time anyway, but it would be nice to remove the sockets as soon as possible.
 
-                        /*
-                        TODO Maybe the whole thing should be on a thread pool job. The only thing is that information should be kept about
-                        the socket during its whole lifetime such as an idle time, connection status, etc. as well as additional logic for
-                        handling disconnected sockets and synchronization of sockets.
+                        After researching, a Unix poll() call will say that a socket is ready when its disconnected, meaning that a
+                        receive() call will return 0 even though the poll() said it was ready. In addition, the SFML code seems to indicate
+                        a disconnect when a similar case happens. Therefore, it is safe to say that the disconnect will be seen before the
+                        timeout (depending on the timeout time).
                         */
-                        socketHandler(socket);
+                        /*
+                        This thread must set the connection as being handled. If done within the thread pool job, this thread might create
+                        multiple thread pool jobs to handle the same message. Imagine if the job never ran and only this thread was running,
+                        the connection would never be marked as handled and this thread would keep creating jobs.
+                        */
+                        connection.setBeingHandled();
+                        threadPool.queue([&connection]{connection.handle();});
                     }
                 }
             }
+
+            cleanupConnections(connections, socketSelector);
         }
 
-        m_threadPool.stop();
+        threadPool.stop();
     }
 
-    void listen(sf::TcpListener& listener, std::list<std::shared_ptr<sf::TcpSocket>>& sockets, sf::SocketSelector& socketSelector)
+    void listen(sf::TcpListener& listener, std::list<Connection>& connections, sf::SocketSelector& socketSelector)
     {
         LOG_DEBUG << "Listening for connection...";
 
-        auto socket = std::make_shared<sf::TcpSocket>();
+        auto socket = std::make_unique<sf::TcpSocket>();
         switch(listener.accept(*socket))
         {
         case sf::Socket::Status::Done:
-        {
             LOG_DEBUG << "Socket accepted";
 
-            socket->setBlocking(false); //TODO Is this necessary if a socket selector is being used? Feels like it doesn't need to be.
             socketSelector.add(*socket);
-            sockets.emplace_back(std::move(socket));
+            connections.emplace_back(std::move(socket));
             break;
-        }
 
         case sf::Socket::Status::NotReady:
             LOG_WARN << "Could not accept socket, unexpected `sf::Socket::Status::NotReady`";
@@ -172,54 +164,31 @@ private:
         LOG_DEBUG << "Finished listening for connection";
     }
 
-    void socketHandler(std::shared_ptr<sf::TcpSocket>& socket)
+    void cleanupConnections(std::list<Connection>& connections, sf::SocketSelector& socketSelector)
     {
-        LOG_DEBUG << "Handling socket...";
-
-        sf::Packet packet;
-        switch(socket->receive(packet))
+        for(auto it = connections.begin(); it != connections.end(); /* update in body */)
         {
-        case sf::Socket::Status::Done:
-            LOG_DEBUG << "Packet received";
-            m_threadPool.queue([this, packet = std::move(packet)]{packetHandler(packet);});
-            break;
+            if(!it->isBeingHandled() && it->isZombie())
+            {
+                LOG_DEBUG << "Cleaning up connection...";
 
-        case sf::Socket::Status::NotReady:
-            LOG_WARN << "Could not read packet from socket, unexpected `sf::Socket::Status::NotReady`";
-            break;
+                auto zombieIt = it++;
+                socketSelector.remove(zombieIt->getSocket());
+                connections.erase(zombieIt);
 
-        case sf::Socket::Status::Partial:
-            LOG_WARN << "Could not read packet from socket, unexpected `sf::Socket::Status::Partial`";
-            break;
-
-        case sf::Socket::Status::Disconnected:
-            LOG_WARN << "Could not read packet from socket since the socket is disconnected";
-            //TODO Handle disconnected socket
-            break;
-
-        case sf::Socket::Status::Error:
-            LOG_WARN << "An error occurred while trying to read packet from socket";
-            //TODO Treat this as a disconnect? Maybe we can retry a certain times by keeping track of how many times this happens.
-            break;
+                LOG_DEBUG << "Finished cleaning up connection";
+            }
+            else
+            {
+                it++;
+            }
         }
-
-        LOG_DEBUG << "Finished handling socket";
-    }
-
-    void packetHandler(const sf::Packet& packet)
-    {
-        //TODO Maybe a class called `PacketHandler` which would break down the packet into a request and pass it to a `RequestHandler`?
-        LOG_DEBUG << "Handling packet...";
-
-        std::ignore = packet;
-
-        LOG_DEBUG << "Finished handling packet";
     }
 
     uint16_t m_port;
+    uint16_t m_maxThreadCount;
     std::atomic_bool m_stopping;
     std::thread m_serverThread;
-    chat::common::ThreadPool m_threadPool;
 };
 
 Server::Server(uint16_t port, uint16_t maxThreadCount)

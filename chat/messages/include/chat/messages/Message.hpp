@@ -2,29 +2,43 @@
 
 #include <SFML/Network/Packet.hpp>
 
+#include <cstdint>
+#include <memory>
+
 namespace chat::messages
 {
 
-enum Type : uint8_t
-{
-    Close,
-    Request,
-    Response
-};
-
 class Message
 {
+public:
+    enum class Type : uint8_t
+    {
+        Close,
+        Request,
+        Response
+    };
+
 protected:
-    Message(Type Type);
+    explicit Message(Type Type);
+
+public:
+    Message(const Message& other) = delete;
+
+    Message& operator=(const Message& other) = delete;
+
+    Message(Message&& other) = default;
+
+    Message& operator=(Message&& other) = default;
 
     virtual ~Message() = default;
 
-public:
     [[nodiscard]] Type getType() const;
 
-    [[nodiscard]] virtual sf::Packet toPacket() const = 0;
+    [[nodiscard]] virtual sf::Packet toPacket() const;
 
-    virtual void fromPacket(sf::Packet& packet) = 0;
+    [[nodiscard]] virtual bool fromPacket(sf::Packet& packet) = 0;
+
+    [[nodiscard]] static std::unique_ptr<Message> createFromPacket(sf::Packet& packet);
 
 private:
     Type m_type;
@@ -33,6 +47,7 @@ private:
 }
 
 /*
+(OUTDATED)
 A message is transfered between machines to allow data communication. The sending machine forms messages that the receiving machine knows
 how to interpret. Therefore, the machines must have a contract in order to properly communicate with each other.
 
