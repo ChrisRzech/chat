@@ -2,51 +2,21 @@
 
 #include "chat/common/Logging.hpp"
 
-#include "chat/messages/Message.hpp"
+#include "chat/messages/Ping.hpp"
+#include "chat/messages/Pong.hpp"
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
-#include "chat/messages/TestRequest.hpp"
-#include "chat/messages/TestResponse.hpp"
 
 namespace chat::server
 {
-
-namespace
-{
-
-std::optional<std::unique_ptr<chat::messages::Request>> constructRequest(sf::Packet& packet)
-{
-    /*
-    The message is placed inside an `std::unique_ptr` when constructed from the packet. A message contains a polymorphic type, one of which
-    is a request. Since the server is expecting a request, this message must be downcasted appropriately. However, since `std::unique_ptr`
-    is used, there is no equivalent for `std::dynamic_pointer_cast`. Therefore, the downcast must be done differently. This is done by
-    taking the raw pointer to the message and downcasting it into a request. After error checking, the ownership of the object is transfered
-    into a new `std::unique_ptr` for requests.
-
-    https://stackoverflow.com/questions/17417848/stdunique-ptr-with-derived-class
-    */
-    auto message = chat::messages::Message::createFromPacket(packet);
-    auto temp = dynamic_cast<chat::messages::Request*>(message.get());
-    if(temp != nullptr)
-    {
-        message.release();
-        //std::make_unique() is not used here because requests are an abstract type
-        return std::make_optional(std::unique_ptr<chat::messages::Request>{temp});
-    }
-    else
-    {
-        return std::nullopt;
-    }
-}
-
-}
 
 Connection::Connection(std::unique_ptr<sf::TcpSocket> socket)
   : m_socket{std::move(socket)},
     m_beingHandled{false},
     m_connected{true},
     m_failCount{0},
-    m_lastUsageTime{std::chrono::steady_clock::now()}
+    m_lastUsageTime{std::chrono::steady_clock::now()},
+    m_serializer{}
 {
     /*
     TODO Determine if the socket should be blocking or non-blocking. If the socket is blocking, there should be less send/receive syscalls
@@ -83,36 +53,27 @@ void Connection::handle()
 {
     LOG_DEBUG << "Handling connection...";
 
+    {
+        auto lockedLastUsageTime = m_lastUsageTime.lock();
+        lockedLastUsageTime.get() = std::chrono::steady_clock::now();
+    }
+
     std::optional<std::unique_ptr<chat::messages::Response>> response;
     try
     {
-        if(auto packet = receivePacket(); packet.has_value())
+        if(auto request = receiveRequest(); request.has_value())
         {
-            LOG_DEBUG << "Received packet";
-            if(auto request = constructRequest(packet.value()); request.has_value())
+            switch(request.value()->getType()) //TODO A handler for all derived requests types
             {
-                LOG_DEBUG << "Received valid request";
-                //TODO Need a request handler class that implements handlers for all request types.
-                switch(request.value()->getType())
-                {
-                case chat::messages::Request::Type::Test:
-                {
-                    LOG_DEBUG << "Received test request";
-                    auto& testRequest = static_cast<chat::messages::TestRequest&>(*request.value().get());
-                    LOG_DEBUG << "Message: '" << testRequest.getMessage() << "'";
-                    response = std::make_optional(std::make_unique<chat::messages::TestResponse>("test response"));
-                    break;
-                }
-                }
-            }
-            else
+            case chat::messages::Request::Type::Ping:
             {
-                LOG_DEBUG << "Received invalid request";
+                LOG_DEBUG << "Received test request";
+                auto& ping = static_cast<chat::messages::Ping&>(*request.value().get());
+                LOG_DEBUG << "Message: '" << ping.getMessage() << "'";
+                response = std::make_optional(std::make_unique<chat::messages::Pong>("pong"));
+                break;
             }
-        }
-        else
-        {
-            LOG_DEBUG << "Received invalid packet";
+            }
         }
     }
     catch(const std::exception& exception)
@@ -126,13 +87,23 @@ void Connection::handle()
         response.reset();
     }
 
-    if(!response.has_value())
+    if(m_connected) //Socket can be disconnected when receiving a request
     {
-        //TODO Create error response
-        //response = std::make_optional(std::make_unique<chat::messages::Error>());
-    }
+        if(!response.has_value())
+        {
+            /*
+            TODO Creating an error response. This should probably be done as part of the request handlers since errors might be
+            request-specific. Although, if none of the reuqest handlers returned a response, even an error response, this ensures that some
+            response is at least sent back.
 
-    sendPacket(response.value()->toPacket());
+            There needs to be an overall thought of how errors should be communicated back to the client. Should there be a error code
+            provided for a response? Should each derived response type define its own error codes (this might sound good)? The idea of
+            using a single error code for all types is not a good idea since many of the values will not be relevant to the response.
+            */
+            // response = std::make_optional(std::make_unique<chat::messages::Error>());
+        }
+        sendResponse(*response.value());
+    }
 
     LOG_DEBUG << "Finished handling connection";
     m_beingHandled = false;
@@ -141,11 +112,6 @@ void Connection::handle()
 std::optional<sf::Packet> Connection::receivePacket()
 {
     LOG_DEBUG << "Receiving packet...";
-
-    {
-        auto lockedLastUsageTime = m_lastUsageTime.lock();
-        lockedLastUsageTime.get() = std::chrono::steady_clock::now();
-    }
 
     bool success = false;
     sf::Packet packet;
@@ -167,7 +133,7 @@ std::optional<sf::Packet> Connection::receivePacket()
         break;
 
     case sf::Socket::Status::Disconnected:
-        LOG_WARN << "Could not receive packet since the socket is disconnected";
+        LOG_DEBUG << "Could not receive packet since the socket is disconnected";
         m_connected = false;
         break;
 
@@ -177,16 +143,15 @@ std::optional<sf::Packet> Connection::receivePacket()
         break;
     }
 
-    LOG_DEBUG << "This connection is " << (m_connected ? "still connected" : "disconnected");
-    LOG_DEBUG << "This connection has failed '" << m_failCount << "' times";
+    LOG_DEBUG << (m_connected ? "Still connected" : "Disconnected") << ". Failed '" << m_failCount << "' times";
     LOG_DEBUG << "Finished receiving packet";
 
     return success ? std::make_optional(packet) : std::nullopt;
 }
 
-void Connection::sendPacket(sf::Packet packet)
+void Connection::sendPacket(sf::Packet& packet)
 {
-    LOG_DEBUG << "Sending packet..";
+    LOG_DEBUG << "Sending packet...";
 
     switch(m_socket->send(packet))
     {
@@ -205,7 +170,7 @@ void Connection::sendPacket(sf::Packet packet)
         break;
 
     case sf::Socket::Status::Disconnected:
-        LOG_WARN << "Could not send packet since the socket is disconnected";
+        LOG_DEBUG << "Could not send packet since the socket is disconnected";
         m_connected = false;
         break;
 
@@ -215,9 +180,44 @@ void Connection::sendPacket(sf::Packet packet)
         break;
     }
 
-    LOG_DEBUG << "This connection is " << (m_connected ? "still connected" : "disconnected");
-    LOG_DEBUG << "This connection has failed '" << m_failCount << "' times";
+    LOG_DEBUG << (m_connected ? "Still connected" : "Disconnected") << ". Failed '" << m_failCount << "' times";
     LOG_DEBUG << "Finished sending packet";
+}
+
+std::optional<std::unique_ptr<chat::messages::Request>> Connection::receiveRequest()
+{
+    LOG_DEBUG << "Receiving request...";
+
+    std::optional<std::unique_ptr<chat::messages::Request>> request;
+    if(auto packet = receivePacket(); packet.has_value())
+    {
+        if(auto message = m_serializer.deserialize(packet.value()); message.has_value())
+        {
+            /*
+            The message is placed inside an `std::unique_ptr`. There is no standard library functionality to transfer ownership from a
+            `std::unique_ptr` base type to a `std::unique_ptr` derived type. This must be done manually.
+            */
+            if(auto temp = dynamic_cast<chat::messages::Request*>(message.value().get()); temp != nullptr)
+            {
+                message.value().release();
+                request = std::make_optional(std::unique_ptr<chat::messages::Request>{temp});
+            }
+        }
+    }
+
+    LOG_DEBUG << "Finished receiving request";
+    return request;
+}
+
+void Connection::sendResponse(const chat::messages::Response& response)
+{
+    LOG_DEBUG << "Sending response...";
+
+    sf::Packet packet;
+    m_serializer.serialize(response, packet);
+    sendPacket(packet);
+
+    LOG_DEBUG << "Finished sending response";
 }
 
 }

@@ -3,7 +3,6 @@
 #include <SFML/Network/Packet.hpp>
 
 #include <cstdint>
-#include <memory>
 
 namespace chat::messages
 {
@@ -11,17 +10,13 @@ namespace chat::messages
 class Message
 {
 public:
-    enum class Type : uint8_t
+    enum class Type : uint32_t
     {
-        Close,
+        Close, //TODO Should there even be a close message? Is this helpful at all?
         Request,
         Response
     };
 
-protected:
-    explicit Message(Type Type);
-
-public:
     Message(const Message& other) = delete;
 
     Message& operator=(const Message& other) = delete;
@@ -34,11 +29,12 @@ public:
 
     [[nodiscard]] Type getType() const;
 
-    [[nodiscard]] virtual sf::Packet toPacket() const;
+    virtual void toPacket(sf::Packet& packet) const;
 
     [[nodiscard]] virtual bool fromPacket(sf::Packet& packet) = 0;
 
-    [[nodiscard]] static std::unique_ptr<Message> createFromPacket(sf::Packet& packet);
+protected:
+    explicit Message(Type type);
 
 private:
     Type m_type;

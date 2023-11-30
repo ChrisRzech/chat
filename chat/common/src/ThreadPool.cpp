@@ -59,7 +59,7 @@ void ThreadPool::threadLoop()
         std::function<void()> job;
         {
             std::unique_lock lock(m_mutex);
-            m_conditionVariable.wait(lock, [this]() -> bool {return !m_jobs.empty() || m_stopping;});
+            m_conditionVariable.wait(lock, [this]{return !m_jobs.empty() || m_stopping;});
 
             if(m_stopping)
             {

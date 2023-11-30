@@ -38,11 +38,11 @@ public:
 
     static void initialize(bool allowDebug, const std::filesystem::path& logFile);
 
-    static bool canLog(Severity severity);
+    [[nodiscard]] static bool canLog(Severity severity);
 
-    static Logger& getLogger();
+    [[nodiscard]] static Logger& getLogger();
 
-    static LogEntry buildLogEntry(Severity severity, const std::filesystem::path& sourceFile, uint32_t line);
+    [[nodiscard]] static LogEntry buildLogEntry(Severity severity, const std::filesystem::path& sourceFile, uint32_t line);
 
 private:
     class Logger
@@ -60,7 +60,7 @@ private:
 
         ~Logger() = default;
 
-        bool isDebugAllowed();
+        [[nodiscard]] bool isDebugAllowed();
 
         void operator+=(const LogEntry& logEntry);
 

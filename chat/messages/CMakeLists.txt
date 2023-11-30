@@ -8,6 +8,7 @@ list(APPEND SOURCES
     ${SOURCE_PATH}/Message.cpp
     ${SOURCE_PATH}/Request.cpp
     ${SOURCE_PATH}/Response.cpp
+    ${SOURCE_PATH}/Serializer.cpp
 )
 
 find_package(SFML 2.5 REQUIRED COMPONENTS network)

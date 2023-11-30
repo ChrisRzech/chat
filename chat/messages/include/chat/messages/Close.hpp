@@ -22,6 +22,8 @@ public:
 
     ~Close() override = default;
 
+    void toPacket(sf::Packet& packet) const override;
+
     [[nodiscard]] bool fromPacket(sf::Packet& packet) override;
 };
 

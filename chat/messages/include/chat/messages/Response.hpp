@@ -1,19 +1,22 @@
 #pragma once
 
 #include "chat/messages/Message.hpp"
-#include "chat/messages/Request.hpp"
 
-#include <memory>
+#include <SFML/Network/Packet.hpp>
+
+#include <cstdint>
 
 namespace chat::messages
 {
 
 class Response : public Message
 {
-protected:
-    Response(Request::Type type);
-
 public:
+    enum class Type : uint32_t
+    {
+        Pong
+    };
+
     Response(const Response& other) = delete;
 
     Response& operator=(const Response& other) = delete;
@@ -24,14 +27,15 @@ public:
 
     ~Response() override = default;
 
-    [[nodiscard]] Request::Type getType() const;
+    [[nodiscard]] Type getType() const;
 
-    [[nodiscard]] sf::Packet toPacket() const override;
+    void toPacket(sf::Packet& packet) const override;
 
-    [[nodiscard]] static std::unique_ptr<Response> createFromPacket(sf::Packet& packet);
+protected:
+    explicit Response(Type type);
 
 private:
-    Request::Type m_type;
+    Type m_type;
 };
 
 }

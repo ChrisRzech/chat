@@ -5,7 +5,6 @@
 #include <SFML/Network/Packet.hpp>
 
 #include <cstdint>
-#include <memory>
 
 namespace chat::messages
 {
@@ -13,15 +12,11 @@ namespace chat::messages
 class Request : public Message
 {
 public:
-    enum class Type : uint8_t
+    enum class Type : uint32_t
     {
-        Test
+        Ping
     };
 
-protected:
-    explicit Request(Type type);
-
-public:
     Request(const Request& other) = delete;
 
     Request& operator=(const Request& other) = delete;
@@ -34,9 +29,10 @@ public:
 
     [[nodiscard]] Type getType() const;
 
-    [[nodiscard]] sf::Packet toPacket() const override;
+    void toPacket(sf::Packet& packet) const override;
 
-    [[nodiscard]] static std::unique_ptr<Request> createFromPacket(sf::Packet& packet);
+protected:
+    explicit Request(Type type);
 
 private:
     Type m_type;

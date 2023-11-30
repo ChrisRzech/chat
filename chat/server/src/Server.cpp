@@ -5,31 +5,17 @@
 #include "chat/common/Logging.hpp"
 #include "chat/common/ThreadPool.hpp"
 
+#include <SFML/Network/Packet.hpp>
+#include <SFML/Network/SocketSelector.hpp>
+#include <SFML/Network/TcpListener.hpp>
+#include <SFML/Network/TcpSocket.hpp>
+
 #include <atomic>
 #include <cstdint>
 #include <list>
 #include <memory>
 #include <stdexcept>
 #include <thread>
-
-#include <SFML/Network/Packet.hpp>
-#include <SFML/Network/SocketSelector.hpp>
-#include <SFML/Network/TcpListener.hpp>
-#include <SFML/Network/TcpSocket.hpp>
-
-/*
-(OUTDATED)
-The server should be doing the following concurrently:
-1. Accept incoming connections (if possible, may have an arbitrary limit of current connections)
-    * Before accepting the incoming connection, the client and server must exchange information about each other and set up
-        the environment (e.g. TLS handshake for secure communications)
-2. Receive request messages from any connected socket and putting them into the request queue
-3. Send reply messages to any connected socket
-4. Service any pending request message and place reply messages into the reply queue
-    * As a result of servicing a request message, a notification may need to be sent out. If this is the case, the notification
-        message is put into a notification queue.
-5. Service any pending notification message to be sent out to clients who need to be notified.
-*/
 
 namespace chat::server
 {
@@ -82,7 +68,7 @@ private:
         sf::SocketSelector socketSelector;
         socketSelector.add(listener);
 
-        chat::common:: ThreadPool threadPool{static_cast<uint16_t>(m_maxThreadCount - 1)}; //Count this thread towards the number of threads
+        chat::common::ThreadPool threadPool{static_cast<uint16_t>(m_maxThreadCount - 1)}; //Count this thread towards the number of threads
         threadPool.start();
 
         while(!m_stopping)
@@ -138,7 +124,7 @@ private:
         switch(listener.accept(*socket))
         {
         case sf::Socket::Status::Done:
-            LOG_DEBUG << "Socket accepted";
+            LOG_INFO << "Connection accepted";
 
             socketSelector.add(*socket);
             connections.emplace_back(std::move(socket));
@@ -192,19 +178,19 @@ private:
 };
 
 Server::Server(uint16_t port, uint16_t maxThreadCount)
-  : impl{std::make_unique<Impl>(port, maxThreadCount)}
+  : m_impl{std::make_unique<Impl>(port, maxThreadCount)}
 {}
 
 Server::~Server() = default;
 
 void Server::start()
 {
-    impl->start();
+    m_impl->start();
 }
 
 void Server::stop()
 {
-    impl->stop();
+    m_impl->stop();
 }
 
 }

@@ -7,9 +7,14 @@ Close::Close()
   : Message{Type::Close}
 {}
 
-bool Close::fromPacket(sf::Packet& packet)
+void Close::toPacket([[maybe_unused]] sf::Packet& packet) const
 {
-    std::ignore = packet; //Nothing to extract from packet
+    //No data to insert
+}
+
+bool Close::fromPacket([[maybe_unused]] sf::Packet& packet)
+{
+    //No data to extract
     return true;
 }
 

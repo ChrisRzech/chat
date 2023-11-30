@@ -2,13 +2,21 @@
 
 #include "chat/common/SynchronizedValue.hpp"
 
+#include "chat/messages/Response.hpp"
+#include "chat/messages/Serializer.hpp"
+
+#include <SFML/Network/Packet.hpp>
+#include <SFML/Network/TcpSocket.hpp>
+
 #include <atomic>
 #include <chrono>
 #include <memory>
 #include <optional>
 
-#include <SFML/Network/Packet.hpp>
-#include <SFML/Network/TcpSocket.hpp>
+namespace chat::messages
+{
+    class Request;
+}
 
 namespace chat::server
 {
@@ -28,25 +36,29 @@ public:
 
     ~Connection() = default;
 
-    sf::TcpSocket& getSocket();
+    [[nodiscard]] sf::TcpSocket& getSocket();
 
-    bool isBeingHandled() const;
+    [[nodiscard]] bool isBeingHandled() const;
 
     void setBeingHandled();
 
-    bool isZombie() const;
+    [[nodiscard]] bool isZombie() const;
 
     void handle();
 
 private:
-    std::optional<sf::Packet> receivePacket();
-    void sendPacket(sf::Packet packet);
+    [[nodiscard]] std::optional<sf::Packet> receivePacket();
+    void sendPacket(sf::Packet& packet);
+
+    [[nodiscard]] std::optional<std::unique_ptr<chat::messages::Request>> receiveRequest();
+    void sendResponse(const chat::messages::Response& response);
 
     std::unique_ptr<sf::TcpSocket> m_socket;
     std::atomic_bool m_beingHandled;
     std::atomic_bool m_connected;
     std::atomic_uint32_t m_failCount;
     chat::common::SynchronizedValue<std::chrono::steady_clock::time_point> m_lastUsageTime;
+    chat::messages::Serializer m_serializer;
 };
 
 }

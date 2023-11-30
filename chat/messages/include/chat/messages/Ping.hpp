@@ -8,32 +8,31 @@ namespace chat::messages
 {
 
 //TODO This is only a test, remove when done
-class TestRequest : public Request
+class Ping : public Request
 {
 public:
-    TestRequest()
-      : Request{Type::Test},
+    Ping()
+      : Request{Type::Ping},
         m_message{}
     {}
 
-    explicit TestRequest(std::string message)
-      : Request{Type::Test},
+    explicit Ping(std::string message)
+      : Request{Type::Ping},
         m_message{std::move(message)}
     {}
 
-    std::string& getMessage()
+    [[nodiscard]] std::string& getMessage()
     {
         return m_message;
     }
 
-    sf::Packet toPacket() const override
+    void toPacket(sf::Packet& packet) const override
     {
-        auto packet = Request::toPacket();
+        Request::toPacket(packet);
         packet << m_message;
-        return packet;
     }
 
-    bool fromPacket(sf::Packet& packet) override
+    [[nodiscard]] bool fromPacket(sf::Packet& packet) override
     {
         return packet >> m_message;
     }

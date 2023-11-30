@@ -7,7 +7,7 @@ int main()
     try
     {
         constexpr bool DEBUG_LOGGING_ALLOWED = true; //TODO Change value based off of project build mode (debug vs release)
-        constexpr auto logFilepath = "server.log";
+        const auto logFilepath = "server.log";
         chat::common::Logging::initialize(DEBUG_LOGGING_ALLOWED, logFilepath);
 
         constexpr uint16_t PORT = 25565;
@@ -24,10 +24,12 @@ int main()
     catch(const std::exception& exception)
     {
         LOG_ERROR << exception.what();
+        return 1;
     }
     catch(...)
     {
         LOG_ERROR << "Unknown exception!";
+        return 1;
     }
 
     return 0;

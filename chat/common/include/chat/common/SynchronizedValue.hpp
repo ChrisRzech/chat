@@ -37,7 +37,7 @@ public:
 
         ~ConstLocked() = default;
 
-        const T& get() const
+        [[nodiscard]] const T& get() const
         {
             return m_value;
         }
@@ -67,7 +67,7 @@ public:
 
         ~Locked() = default;
 
-        T& get()
+        [[nodiscard]] T& get()
         {
             return m_value;
         }
@@ -84,12 +84,12 @@ public:
         T& m_value;
     };
 
-    ConstLocked lock() const
+    [[nodiscard]] ConstLocked lock() const
     {
         return ConstLocked(*this);
     }
 
-    Locked lock()
+    [[nodiscard]] Locked lock()
     {
         return Locked{*this};
     }
