@@ -67,10 +67,8 @@ void Connection::handle()
             {
             case chat::messages::Request::Type::Ping:
             {
-                LOG_DEBUG << "Received test request";
-                auto& ping = static_cast<chat::messages::Ping&>(*request.value().get());
-                LOG_DEBUG << "Message: '" << ping.getMessage() << "'";
-                response = std::make_optional(std::make_unique<chat::messages::Pong>("pong"));
+                LOG_DEBUG << "Received ping";
+                response = std::make_optional(std::make_unique<chat::messages::Pong>());
                 break;
             }
             }

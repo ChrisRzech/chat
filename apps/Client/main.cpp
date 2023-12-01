@@ -11,14 +11,14 @@ int main()
         chat::common::Logging::initialize(DEBUG_LOGGING_ALLOWED, logFilepath);
 
         chat::client::Client client{"localhost", 25565};
-        auto testResponse = client.ping("ping");
-        if(testResponse.has_value())
+        auto ping = client.ping();
+        if(ping.has_value())
         {
-            LOG_DEBUG << "Response: " << testResponse.value();
+            LOG_DEBUG << "Ping: " << ping.value().count() << "ms";
         }
         else
         {
-            LOG_DEBUG << "Bad response";
+            LOG_DEBUG << "Ping failed";
         }
     }
     catch(const std::exception& exception)

@@ -7,38 +7,24 @@
 namespace chat::messages
 {
 
-//TODO This is only a test, remove when done
 class Pong : public Response
 {
 public:
-    Pong()
-      : Response{Type::Pong},
-        m_message{}
-    {}
+    Pong();
 
-    explicit Pong(std::string message)
-      : Response{Type::Pong},
-        m_message{std::move(message)}
-    {}
+    Pong(const Pong& other) = delete;
 
-    [[nodiscard]] std::string& getMessage()
-    {
-        return m_message;
-    }
+    Pong& operator=(const Pong& other) = delete;
 
-    void toPacket(sf::Packet& packet) const override
-    {
-        Response::toPacket(packet);
-        packet << m_message;
-    }
+    Pong(Pong&& other) = default;
 
-    [[nodiscard]] bool fromPacket(sf::Packet& packet) override
-    {
-        return packet >> m_message;
-    }
+    Pong& operator=(Pong&& other) = default;
 
-private:
-    std::string m_message;
+    ~Pong() override = default;
+
+    void toPacket(sf::Packet& packet) const override;
+
+    [[nodiscard]] bool fromPacket(sf::Packet& packet) override;
 };
 
 }

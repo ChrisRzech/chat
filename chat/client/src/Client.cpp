@@ -9,8 +9,6 @@
 #include <SFML/Network/IpAddress.hpp>
 #include <SFML/Network/TcpSocket.hpp>
 
-#include <cstdint>
-
 namespace chat::client
 {
 
@@ -27,34 +25,39 @@ public:
         m_socket.setBlocking(true);
     }
 
-    [[nodiscard]] std::optional<std::string> ping(std::string message)
+    [[nodiscard]] std::optional<std::chrono::milliseconds> ping()
     {
-        LOG_DEBUG << "Sending test request...";
+        LOG_DEBUG << "Sending ping...";
 
-        std::optional<std::string> result;
-        if(connect())
+        //`sendAndReceive()` is not used here so that establishing a connection is not included in the elapsed time measurement
+
+        if(!m_connected && !connect())
         {
-            if(auto response = sendAndReceive<chat::messages::Pong>(chat::messages::Ping{std::move(message)}); response.has_value())
+            return std::nullopt;
+        }
+
+        std::optional<std::chrono::milliseconds> result;
+        auto start = std::chrono::system_clock::now();
+        if(sendRequest(chat::messages::Ping{}))
+        {
+            if(receiveResponse<chat::messages::Pong>().has_value())
             {
-                result = std::make_optional(std::move(response.value()->getMessage()));
+                auto end = std::chrono::system_clock::now();
+                result = std::make_optional(std::chrono::duration_cast<std::chrono::milliseconds>(end - start));
             }
         }
 
-        LOG_DEBUG << "Finished sending test request";
+        LOG_DEBUG << "Finished ping";
         return result;
     }
 
 private:
     [[nodiscard]] bool connect()
     {
-        if(m_connected)
-        {
-            return true;
-        }
-
         LOG_DEBUG << "Connecting to host...";
 
         bool success = false;
+        m_connected = false; //The `connect()` call will disconnect the socket before reconnecting, assume it is disconnected
         switch(m_socket.connect(m_host, m_port))
         {
         case sf::Socket::Status::Done:
@@ -84,7 +87,6 @@ private:
         return success;
     }
 
-
     [[nodiscard]] bool sendPacket(sf::Packet& packet)
     {
         LOG_DEBUG << "Sending packet...";
@@ -106,7 +108,9 @@ private:
             break;
 
         case sf::Socket::Status::Disconnected:
-            LOG_WARN << "Could not send request, unexpected `sf::Socket::Status::Disconnected`";
+            //This should not happen: https://stackoverflow.com/a/14782354/21445636
+            LOG_WARN << "Could not send request, unexpected `sf::Socket::Status::Disconnect`";
+            m_connected = false;
             break;
 
         case sf::Socket::Status::Error:
@@ -140,7 +144,8 @@ private:
             break;
 
         case sf::Socket::Status::Disconnected:
-            LOG_WARN << "Could not receive request, unexpected `sf::Socket::Status::Disconnected`";
+            LOG_WARN << "Could not receive request since the socket is disconnected";
+            m_connected = false;
             break;
 
         case sf::Socket::Status::Error:
@@ -185,6 +190,10 @@ private:
                     message.value().release();
                     response = std::make_optional(std::unique_ptr<ResponseType>{temp});
                 }
+                else
+                {
+                    LOG_ERROR << "Received unexpected response type";
+                }
             }
         }
 
@@ -192,15 +201,20 @@ private:
         return response;
     }
 
-    template<typename ResponseType>
-    [[nodiscard]] std::optional<std::unique_ptr<ResponseType>> sendAndReceive(const chat::messages::Request& request)
+    template<typename RequestType, typename ResponseType, typename... RequestArgs>
+    [[nodiscard]] std::optional<std::unique_ptr<ResponseType>> sendAndReceive(RequestArgs&&... args)
     {
-        if(sendRequest(request))
+        if(!m_connected && !connect())
         {
-            return receiveResponse<ResponseType>();
+            return std::nullopt;
         }
 
-        return std::nullopt;
+        if(!sendRequest(RequestType{std::forward<RequestArgs>(args)...}))
+        {
+            return std::nullopt;
+        }
+
+        return receiveResponse<ResponseType>();
     }
 
     sf::IpAddress m_host;
@@ -216,9 +230,9 @@ Client::Client(sf::IpAddress host, uint16_t port)
 
 Client::~Client() = default;
 
-std::optional<std::string> Client::ping(std::string message)
+std::optional<std::chrono::milliseconds> Client::ping()
 {
-    return m_impl->ping(std::move(message));
+    return m_impl->ping();
 }
 
 }

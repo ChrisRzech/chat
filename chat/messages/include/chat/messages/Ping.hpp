@@ -7,38 +7,24 @@
 namespace chat::messages
 {
 
-//TODO This is only a test, remove when done
 class Ping : public Request
 {
 public:
-    Ping()
-      : Request{Type::Ping},
-        m_message{}
-    {}
+    Ping();
 
-    explicit Ping(std::string message)
-      : Request{Type::Ping},
-        m_message{std::move(message)}
-    {}
+    Ping(const Ping& other) = delete;
 
-    [[nodiscard]] std::string& getMessage()
-    {
-        return m_message;
-    }
+    Ping& operator=(const Ping& other) = delete;
 
-    void toPacket(sf::Packet& packet) const override
-    {
-        Request::toPacket(packet);
-        packet << m_message;
-    }
+    Ping(Ping&& other) = default;
 
-    [[nodiscard]] bool fromPacket(sf::Packet& packet) override
-    {
-        return packet >> m_message;
-    }
+    Ping& operator=(Ping&& other) = default;
 
-private:
-    std::string m_message;
+    ~Ping() override = default;
+
+    void toPacket(sf::Packet& packet) const override;
+
+    [[nodiscard]] bool fromPacket(sf::Packet& packet) override;
 };
 
 }
