@@ -4,12 +4,12 @@
 
 int main()
 {
+    //Initializing logging is not done inside of the try-catch since the catch blocks attempt to log
+    const auto logFilepath = "server.log";
+    chat::common::Logging::initialize(logFilepath, true);
+
     try
     {
-        constexpr bool DEBUG_LOGGING_ALLOWED = true; //TODO Change value based off of project build mode (debug vs release)
-        const auto logFilepath = "server.log";
-        chat::common::Logging::initialize(DEBUG_LOGGING_ALLOWED, logFilepath);
-
         constexpr uint16_t PORT = 25565;
         constexpr uint16_t MAX_THREAD_COUNT = 4;
         chat::server::Server server(PORT, MAX_THREAD_COUNT);

@@ -4,12 +4,12 @@
 
 int main()
 {
+    //Initializing logging is not done inside of the try-catch since the catch blocks attempt to log
+    const auto logFilepath = "client.log";
+    chat::common::Logging::initialize(logFilepath, true);
+
     try
     {
-        constexpr bool DEBUG_LOGGING_ALLOWED = true; //TODO Change value based off of project build mode (debug vs release)
-        const auto logFilepath = "client.log";
-        chat::common::Logging::initialize(DEBUG_LOGGING_ALLOWED, logFilepath);
-
         chat::client::Client client{"localhost", 25565};
         auto ping = client.ping();
         if(ping.has_value())
