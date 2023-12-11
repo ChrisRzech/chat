@@ -208,7 +208,7 @@ private:
          * @details This is the function to use when needing to log objects. Operator chaining is supported to allow easily insert multiple
          * objects.
          *
-         * @tparam T Type of the object. This type must have an operator overload for `operator<<` with an `std::ostream`.
+         * @tparam T The type of the object. This type must have an operator overload for `operator<<` with an `std::ostream`.
          *
          * @param object The object to insert.
          *

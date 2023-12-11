@@ -1,6 +1,6 @@
 #pragma once
 
-#include "chat/common/SynchronizedValue.hpp"
+#include "chat/common/SynchronizedObject.hpp"
 
 #include "chat/messages/Response.hpp"
 #include "chat/messages/Serializer.hpp"
@@ -57,7 +57,7 @@ private:
     std::atomic_bool m_beingHandled;
     std::atomic_bool m_connected;
     std::atomic_uint32_t m_failCount;
-    chat::common::SynchronizedValue<std::chrono::steady_clock::time_point> m_lastUsageTime;
+    chat::common::SynchronizedObject<std::chrono::steady_clock::time_point> m_lastUsageTime;
     chat::messages::Serializer m_serializer;
 };
 
