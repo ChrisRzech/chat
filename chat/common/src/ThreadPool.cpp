@@ -1,5 +1,9 @@
 #include "chat/common/ThreadPool.hpp"
 
+#include "chat/common/Logging.hpp"
+
+#include <exception>
+
 namespace chat::common
 {
 
@@ -7,49 +11,63 @@ ThreadPool::ThreadPool(uint16_t threadCount)
   : m_threadCount{threadCount},
     m_mutex{},
     m_stopping{false},
-    m_conditionVariable{},
+    m_pause{false},
+    m_idleCount{0},
+    m_workCondvar{},
+    m_idleCondvar{},
     m_threads{},
     m_jobs{}
-{}
-
-ThreadPool::~ThreadPool()
-{
-    stop();
-}
-
-void ThreadPool::start()
 {
     m_threads.reserve(m_threadCount);
     for(uint16_t i = 0; i < m_threadCount; i++)
     {
-        m_threads.emplace_back(threadLoop, this);
+        m_threads.emplace_back(&ThreadPool::threadLoop, this);
+    }
+}
+
+ThreadPool::~ThreadPool()
+{
+    {
+        std::unique_lock lock{m_mutex};
+        m_stopping = true;
+    }
+    m_workCondvar.notify_all();
+    m_idleCondvar.notify_all();
+
+    for(auto& thread : m_threads)
+    {
+        thread.join();
     }
 }
 
 void ThreadPool::queue(std::function<void()> job)
 {
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock{m_mutex};
         m_jobs.emplace(std::move(job));
     }
-    m_conditionVariable.notify_one();
+    m_workCondvar.notify_one();
 }
 
-void ThreadPool::stop()
+void ThreadPool::pause()
+{
+    std::unique_lock lock{m_mutex};
+    m_pause = true;
+}
+
+void ThreadPool::resume()
 {
     {
         std::unique_lock lock{m_mutex};
-        m_stopping = true;
+        m_pause = false;
     }
+    m_workCondvar.notify_all();
+}
 
-    m_conditionVariable.notify_all();
-
-    for(auto& thread : m_threads)
-    {
-        thread.join();
-    }
-
-    m_threads.clear();
+void ThreadPool::waitForCompletion()
+{
+    std::unique_lock lock{m_mutex};
+    m_idleCondvar.wait(lock, [this]{return (m_idleCount == m_threadCount && m_jobs.empty()) || m_stopping;});
 }
 
 void ThreadPool::threadLoop()
@@ -58,8 +76,13 @@ void ThreadPool::threadLoop()
     {
         std::function<void()> job;
         {
-            std::unique_lock lock(m_mutex);
-            m_conditionVariable.wait(lock, [this]{return !m_jobs.empty() || m_stopping;});
+            std::unique_lock lock{m_mutex};
+            m_idleCount++;
+            if(m_idleCount == m_threadCount && m_jobs.empty())
+            {
+                m_idleCondvar.notify_all();
+            }
+            m_workCondvar.wait(lock, [this]{return (!m_jobs.empty() && !m_pause) || m_stopping;});
 
             if(m_stopping)
             {
@@ -68,8 +91,21 @@ void ThreadPool::threadLoop()
 
             job = m_jobs.front();
             m_jobs.pop();
+            m_idleCount--;
         }
-        job();
+
+        try
+        {
+            job();
+        }
+        catch(const std::exception& exception)
+        {
+            LOG_ERROR << exception.what();
+        }
+        catch(...)
+        {
+            LOG_ERROR << "Unknown exception!";
+        }
     }
 }
 

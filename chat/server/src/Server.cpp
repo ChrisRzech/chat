@@ -69,7 +69,6 @@ private:
         socketSelector.add(listener);
 
         chat::common::ThreadPool threadPool{static_cast<uint16_t>(m_maxThreadCount - 1)}; //Count this thread towards the number of threads
-        threadPool.start();
 
         while(!m_stopping)
         {
@@ -113,7 +112,7 @@ private:
             cleanupConnections(connections, socketSelector);
         }
 
-        threadPool.stop();
+        threadPool.waitForCompletion();
     }
 
     void listen(sf::TcpListener& listener, std::list<Connection>& connections, sf::SocketSelector& socketSelector)
