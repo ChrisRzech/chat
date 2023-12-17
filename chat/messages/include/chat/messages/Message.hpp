@@ -12,7 +12,7 @@ class Message
 public:
     enum class Type : uint32_t
     {
-        Close, //TODO Should there even be a close message? Is this helpful at all?
+        Close,
         Request,
         Response
     };

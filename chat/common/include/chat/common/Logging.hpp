@@ -226,7 +226,7 @@ private:
          *
          * @return A string conversion of the log entry.
          */
-        std::string toString() const;
+        [[nodiscard]] std::string toString() const;
 
     private:
         std::stringstream m_builder;
