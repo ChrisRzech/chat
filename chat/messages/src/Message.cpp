@@ -12,7 +12,7 @@ Message::Type Message::getType() const
     return m_type;
 }
 
-void Message::toPacket(sf::Packet& packet) const
+void Message::serialize(sf::Packet& packet) const
 {
     packet << std::underlying_type_t<Type>(m_type);
 }

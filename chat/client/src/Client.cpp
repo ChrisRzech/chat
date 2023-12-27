@@ -2,9 +2,11 @@
 
 #include "chat/common/Logging.hpp"
 
-#include "chat/messages/Ping.hpp"
-#include "chat/messages/Pong.hpp"
 #include "chat/messages/Serializer.hpp"
+
+#include "chat/messages/request/Ping.hpp"
+
+#include "chat/messages/response/Pong.hpp"
 
 #include <SFML/Network/IpAddress.hpp>
 #include <SFML/Network/TcpSocket.hpp>
@@ -161,8 +163,7 @@ private:
     {
         LOG_DEBUG << "Sending request...";
 
-        sf::Packet packet;
-        m_serializer.serialize(request, packet);
+        auto packet = m_serializer.serialize(request);
         bool success = sendPacket(packet);
 
         LOG_DEBUG << "Finished sending request";;

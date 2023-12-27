@@ -13,9 +13,9 @@ Response::Type Response::getType() const
     return m_type;
 }
 
-void Response::toPacket(sf::Packet& packet) const
+void Response::serialize(sf::Packet& packet) const
 {
-    Message::toPacket(packet);
+    Message::serialize(packet);
     packet << static_cast<std::underlying_type_t<Type>>(m_type);
 }
 

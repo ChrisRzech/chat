@@ -2,30 +2,30 @@
 
 #include "chat/messages/Close.hpp"
 #include "chat/messages/Message.hpp"
-#include "chat/messages/Ping.hpp"
-#include "chat/messages/Pong.hpp"
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
 
+#include "chat/messages/request/Ping.hpp"
+
+#include "chat/messages/response/Pong.hpp"
+
 #include <stdexcept>
+#include <mutex>
 
 namespace chat::messages
 {
 
 Serializer::Serializer()
-  : m_requestFactory{},
-    m_responseFactory{}
 {
-    //Requests
-    m_requestFactory.registerType<Ping>(Request::Type::Ping);
-
-    //Responses
-    m_responseFactory.registerType<Pong>(Response::Type::Pong);
+    static std::once_flag flag;
+    std::call_once(flag, &Serializer::registerMessages);
 }
 
-void Serializer::serialize(const Message& message, sf::Packet& packet) const
+sf::Packet Serializer::serialize(const Message& message) const
 {
-    message.toPacket(packet);
+    sf::Packet packet;
+    message.serialize(packet);
+    return packet;
 }
 
 std::optional<std::unique_ptr<Message>> Serializer::deserialize(sf::Packet& packet) const
@@ -44,17 +44,16 @@ std::optional<std::unique_ptr<Message>> Serializer::deserialize(sf::Packet& pack
         break;
 
     case Message::Type::Request:
-        message = createMessage(m_requestFactory, packet);
+        message = createMessage(s_requestFactory, packet);
         break;
 
     case Message::Type::Response:
-        message = createMessage(m_responseFactory, packet);
+        message = createMessage(s_responseFactory, packet);
         break;
     }
 
-    if(!message.has_value() || !message.value()->fromPacket(packet))
+    if(!message.has_value() || !message.value()->deserialize(packet))
     {
-        message.value()->fromPacket(packet);
         return std::nullopt;
     }
 
@@ -81,7 +80,7 @@ bool Serializer::Factory<BaseType, KeyType>::isTypeRegistered(KeyType key) const
 }
 
 template<typename BaseType, typename KeyType>
-std::unique_ptr<BaseType> Serializer::Factory<BaseType, KeyType>::createType(KeyType key) const
+std::unique_ptr<BaseType> Serializer::Factory<BaseType, KeyType>::createObject(KeyType key) const
 {
     auto iter = m_registry.find(key);
     if(iter == m_registry.end())
@@ -89,28 +88,33 @@ std::unique_ptr<BaseType> Serializer::Factory<BaseType, KeyType>::createType(Key
         throw std::invalid_argument{"Key is not registered"};
     }
 
-    /*
-    The constructed object is of type `Serializable`. However, a type derived from `Serializable` needs to be returned. Therefore,
-    the ownership of the object must be transfered to a new smart pointer which holds the derived type.
-    */
     return iter->second();
 }
 
-template<typename BaseType, typename MessageType>
-std::optional<std::unique_ptr<Message>> Serializer::createMessage(const Factory<BaseType, MessageType>& factory, sf::Packet& packet) const
+void Serializer::registerMessages()
 {
-    std::underlying_type_t<MessageType> typeValue;
+    //Requests
+    s_requestFactory.registerType<Ping>(Request::Type::Ping);
+
+    //Responses
+    s_responseFactory.registerType<Pong>(Response::Type::Pong);
+}
+
+template<typename BaseType, typename KeyType>
+std::optional<std::unique_ptr<Message>> Serializer::createMessage(const Factory<BaseType, KeyType>& factory, sf::Packet& packet) const
+{
+    std::underlying_type_t<KeyType> typeValue;
     if(!(packet >> typeValue))
     {
         return std::nullopt;
     }
-    auto type = static_cast<MessageType>(typeValue);
+    auto type = static_cast<KeyType>(typeValue);
 
     if(!factory.isTypeRegistered(type))
     {
         return std::nullopt;
     }
-    return factory.createType(type);
+    return factory.createObject(type);
 }
 
 }

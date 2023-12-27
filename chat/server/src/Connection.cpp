@@ -2,10 +2,12 @@
 
 #include "chat/common/Logging.hpp"
 
-#include "chat/messages/Ping.hpp"
-#include "chat/messages/Pong.hpp"
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
+
+#include "chat/messages/request/Ping.hpp"
+
+#include "chat/messages/response/Pong.hpp"
 
 namespace chat::server
 {
@@ -211,8 +213,7 @@ void Connection::sendResponse(const chat::messages::Response& response)
 {
     LOG_DEBUG << "Sending response...";
 
-    sf::Packet packet;
-    m_serializer.serialize(response, packet);
+    auto packet = m_serializer.serialize(response);
     sendPacket(packet);
 
     LOG_DEBUG << "Finished sending response";

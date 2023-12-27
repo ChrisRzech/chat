@@ -6,11 +6,13 @@ set(SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src)
 list(APPEND SOURCES
     ${SOURCE_PATH}/Close.cpp
     ${SOURCE_PATH}/Message.cpp
-    ${SOURCE_PATH}/Ping.cpp
-    ${SOURCE_PATH}/Pong.cpp
     ${SOURCE_PATH}/Request.cpp
     ${SOURCE_PATH}/Response.cpp
     ${SOURCE_PATH}/Serializer.cpp
+
+    ${SOURCE_PATH}/request/Ping.cpp
+
+    ${SOURCE_PATH}/response/Pong.cpp
 )
 
 find_package(SFML 2.5 REQUIRED COMPONENTS network)
