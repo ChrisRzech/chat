@@ -89,7 +89,7 @@ public:
          *
          * @return The object being synchronized.
          */
-        [[nodiscard]] const T& get() const &
+        [[nodiscard]] const T& get() &
         {
             return m_value;
         }

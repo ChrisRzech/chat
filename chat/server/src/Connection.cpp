@@ -48,7 +48,8 @@ bool Connection::isZombie() const
     constexpr uint32_t MAX_FAIL_COUNT = 5;
     constexpr std::chrono::seconds MAX_IDLE_TIME{60}; //TODO A parameter to the server
     const auto now = std::chrono::steady_clock::now();
-    return !m_connected || m_failCount > MAX_FAIL_COUNT || now - m_lastUsageTime.lock().get() > MAX_IDLE_TIME;
+    auto lockedLastUsageTime = m_lastUsageTime.lock();
+    return !m_connected || m_failCount > MAX_FAIL_COUNT || now - lockedLastUsageTime.get() > MAX_IDLE_TIME;
 }
 
 void Connection::handle()
