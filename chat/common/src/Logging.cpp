@@ -1,5 +1,6 @@
 #include "chat/common/Logging.hpp"
 
+#include <iostream>
 #include <stdexcept>
 #include <string_view>
 #include <thread>
@@ -7,14 +8,19 @@
 namespace chat::common
 {
 
-void Logging::initialize(std::filesystem::path logFile, bool truncate)
+void Logging::enableLoggingToFile(std::filesystem::path logFile, bool truncate)
 {
-    s_logger = std::make_unique<Logger>(std::move(logFile), truncate);
+    s_logger.enableLoggingToFile(std::move(logFile), truncate);
+}
+
+void Logging::disableLoggingToFile()
+{
+    s_logger.disableLoggingToFile();
 }
 
 Logging::Logger& Logging::getLogger()
 {
-    return *s_logger;
+    return s_logger;
 }
 
 Logging::LogEntry Logging::createLogEntry(Severity severity, const std::filesystem::path& sourceFile, uint32_t line)
@@ -65,23 +71,43 @@ Logging::LogEntry Logging::createLogEntry(Severity severity, const std::filesyst
     return entry;
 }
 
-Logging::Logger::Logger(std::filesystem::path logFile, bool truncate)
-  : m_logFile{std::move(logFile)},
-    m_mutex{},
-    m_out{m_logFile, (truncate ? std::fstream::out : std::fstream::out | std::fstream::app)}
+Logging::Logger::Logger()
+  : m_out{&std::cout},
+    m_logFile{},
+    m_fout{}
+{}
+
+void Logging::Logger::enableLoggingToFile(std::filesystem::path logFile, bool truncate)
 {
-    if(!m_out.is_open())
+    m_logFile = std::move(logFile);
+    m_fout = std::make_unique<std::fstream>(m_logFile.value(), truncate ? std::fstream::out : std::fstream::out | std::fstream::app);
+
+    if(!m_fout->is_open())
     {
+        m_logFile.reset();
+        m_fout.reset();
         throw std::invalid_argument{"Could not open log file"};
     }
+
+    auto lockedOut = m_out.lock();
+    lockedOut.get() = m_fout.get();
+}
+
+void Logging::Logger::disableLoggingToFile()
+{
+    m_logFile.reset();
+    m_fout.reset();
+
+    auto lockedOut = m_out.lock();
+    lockedOut.get() = &std::cout;
 }
 
 void Logging::Logger::operator+=(const LogEntry& logEntry)
 {
     auto logEntryString = logEntry.toString(); //No need to hold the lock while converting to a string
 
-    std::unique_lock lock{m_mutex};
-    m_out << logEntryString << std::endl; //Make sure to flush
+    auto lockedOut = m_out.lock();
+    *lockedOut.get() << logEntryString << std::endl; //Make sure to flush
 }
 
 std::string Logging::LogEntry::toString() const

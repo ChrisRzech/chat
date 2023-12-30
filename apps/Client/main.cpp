@@ -4,12 +4,11 @@
 
 int main()
 {
-    //Initializing logging is not done inside of the try-catch since the catch blocks attempt to log
-    const auto logFilepath = "client.log";
-    chat::common::Logging::initialize(logFilepath, true);
-
     try
     {
+        const auto logFilepath = "client.log";
+        chat::common::Logging::enableLoggingToFile(logFilepath, true);
+
         chat::client::Client client{"localhost", 25565};
         auto ping = client.ping();
         if(ping.has_value())

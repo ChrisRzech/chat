@@ -1,9 +1,11 @@
 #pragma once
 
+#include "chat/common/SynchronizedObject.hpp"
+
 #include <filesystem>
 #include <fstream>
-#include <memory>
-#include <mutex>
+#include <optional>
+#include <ostream>
 #include <sstream>
 
 namespace chat::common
@@ -13,6 +15,9 @@ namespace chat::common
  * @brief Contains all logging functionality.
  *
  * @details Log entries are outputted to a file with a specific format in a thread-safe manner.
+ *
+ * By default, logging is outputted to @c std::cout. This behavior can be changed to using files instead by using @c enableLoggingToFile().
+ * Using @c disableLoggingToFile() reverts the behavior to the default behavior.
  *
  * A severity is needed when creating a log entry. The severity only determines the string value for the severity column in the log entry.
  * However, log entries with a debug severity will only log if debug logging is enabled; otherwise, the log entry is elided at compile-time.
@@ -65,15 +70,18 @@ public:
     ~Logging() = default;
 
     /**
-     * @brief Initialize logging.
-     *
-     * @details Initialization must be done at least once before using any logging functionality.
+     * @brief Enable logging to a file.
      *
      * @param logFile The path to a file to log all log entries.
      *
      * @param truncate True if the log file should be truncated when opened; otherwise, the file will not be truncated when opened.
      */
-    static void initialize(std::filesystem::path logFile, bool truncate);
+    static void enableLoggingToFile(std::filesystem::path logFile, bool truncate);
+
+    /**
+     * @brief Disable logging to a file.
+     */
+    static void disableLoggingToFile();
 
     /**
      * @brief Determine if a log entry should be logged.
@@ -84,7 +92,7 @@ public:
      */
     [[nodiscard]] static constexpr bool shouldLog(Severity severity)
     {
-        return severity == Severity::Debug ? LOG_DEBUG_SEVERITY : true;
+        return severity == Severity::Debug ? ENABLE_LOGGING_DEBUG_SEVERITY : true;
     }
 
     /**
@@ -113,24 +121,22 @@ public:
     /**
      * @brief Determines if debug severity will log a log entry. Usually, the value is determined by the project build mode.
      */
-    static constexpr bool LOG_DEBUG_SEVERITY = true; //TODO Change value based off of project build mode (debug vs release)
+    static constexpr bool ENABLE_LOGGING_DEBUG_SEVERITY = true; //TODO Change value based off of project build mode (debug vs release)
 
 private:
     //TODO Support file rotation. Once the current file passes some threshold (e.g. certain file size), create a new file to log to.
     /**
      * @brief Handles all logic for logging such as logging a @c LogEntry and file rotation.
+     *
+     * @details By default, the logger outputs to @c std::cout. Using @c enableLoggingToFile() will make the logger output to files instead.
      */
     class Logger
     {
     public:
         /**
          * @brief Construct a logger.
-         *
-         * @param logFile The path to a file to log all log entries.
-         *
-         * @param truncate True if the log file should be truncated when opened; otherwise, the file will not be truncated when opened.
          */
-        explicit Logger(std::filesystem::path logFile, bool truncate);
+        Logger();
 
         /**
          * @brief Copy operations are disabled.
@@ -154,6 +160,20 @@ private:
         ~Logger() = default;
 
         /**
+         * @brief Enable logging to a file.
+         *
+         * @param logFile The path to a file to log all log entries.
+         *
+         * @param truncate True if the log file should be truncated when opened; otherwise, the file will not be truncated when opened.
+         */
+        void enableLoggingToFile(std::filesystem::path logFile, bool truncate);
+
+        /**
+         * @brief Disable logging to a file.
+         */
+        void disableLoggingToFile();
+
+        /**
          * @brief Log a log entry.
          *
          * @details This function is thread-safe. The reasoning behind using `operator+=` is to allow this function to be called after the
@@ -165,9 +185,9 @@ private:
         void operator+=(const LogEntry& logEntry);
 
     private:
-        std::filesystem::path m_logFile;
-        std::mutex m_mutex;
-        std::fstream m_out;
+        SynchronizedObject<std::ostream*> m_out;
+        std::optional<std::filesystem::path> m_logFile;
+        std::unique_ptr<std::fstream> m_fout;
     };
 
     /**
@@ -232,7 +252,7 @@ private:
         std::stringstream m_builder;
     };
 
-    inline static std::unique_ptr<Logger> s_logger;
+    inline static Logger s_logger;
 };
 
 #define LOG(severity) \

@@ -84,9 +84,12 @@ public:
         /**
          * @brief Get the object being synchronized.
          *
+         * @details This can only be called when the proxy is an lvalue to prevent obtaining a reference to the object while the mutex is
+         * unlocked.
+         *
          * @return The object being synchronized.
          */
-        [[nodiscard]] const T& get() const
+        [[nodiscard]] const T& get() const &
         {
             return m_value;
         }
@@ -140,9 +143,12 @@ public:
         /**
          * @brief Get the object being synchronized.
          *
+         * @details This can only be called when the proxy is an lvalue to prevent obtaining a reference to the object while the mutex is
+         * unlocked.
+         *
          * @return The object being synchronized.
          */
-        [[nodiscard]] T& get()
+        [[nodiscard]] T& get() &
         {
             return m_value;
         }
