@@ -74,12 +74,6 @@ private:
         {
             if(socketSelector.wait(sf::milliseconds(250)))
             {
-                /*
-                TODO Determine if working on a single or multiple sockets per `wait()` call is better performance. It might depend on the
-                server traffic. If so, should the server switch between the two when it can predict if traffic will be heavy. It might not
-                even matter that much.
-                */
-
                 if(socketSelector.isReady(listener))
                 {
                     listen(listener, connections, socketSelector);
@@ -90,15 +84,9 @@ private:
                     if(!connection.isBeingHandled() && !connection.isZombie() && socketSelector.isReady(connection.getSocket()))
                     {
                         /*
-                        TODO Is it possible that the client is disconnected and still pass `isReady()`? It might not be necessary anymore
-                        since the sockets have a timeout time anyway, but it would be nice to remove the sockets as soon as possible.
+                        The selector considers a socket "ready" if a socket is disconnected (i.e. receiving data would indicate socket is
+                        disconnected).
 
-                        After researching, a Unix poll() call will say that a socket is ready when its disconnected, meaning that a
-                        receive() call will return 0 even though the poll() said it was ready. In addition, the SFML code seems to indicate
-                        a disconnect when a similar case happens. Therefore, it is safe to say that the disconnect will be seen before the
-                        timeout (depending on the timeout time).
-                        */
-                        /*
                         This thread must set the connection as being handled. If done within the thread pool job, this thread might create
                         multiple thread pool jobs to handle the same message. Imagine if the job never ran and only this thread was running,
                         the connection would never be marked as handled and this thread would keep creating jobs.

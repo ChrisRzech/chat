@@ -21,9 +21,11 @@ Connection::Connection(std::unique_ptr<sf::TcpSocket> socket)
     m_serializer{}
 {
     /*
-    TODO Determine if the socket should be blocking or non-blocking. If the socket is blocking, there should be less send/receive syscalls
-    due to not having to deal with partial sends/receives. If the socket is non-blocking, there is no chance of hanging which is crucial to
-    the health of the server.
+    TODO A custom socket class should be made to allow custom features to it such as blocking non-blocking send/receive and secure
+    communication. A blocking non-blocking send/receive means that the class' send and receive calls are blocking but don't internally use
+    blocking functionality. This allows the use of timeouts and prevents potential deadlocks regarding blocking calls. For secure
+    communication, using OpenSSL is recommended. This would require using third-party libraries which CMake would need to be configured to
+    do so.
     */
     m_socket->setBlocking(false);
 }
