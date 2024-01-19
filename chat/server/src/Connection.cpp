@@ -1,5 +1,7 @@
 #include "Connection.hpp"
 
+#include "RequestHandler.hpp"
+
 #include "chat/common/Logging.hpp"
 
 #include "chat/messages/Request.hpp"
@@ -26,6 +28,11 @@ Connection::Connection(std::unique_ptr<sf::TcpSocket> socket)
     blocking functionality. This allows the use of timeouts and prevents potential deadlocks regarding blocking calls. For secure
     communication, using OpenSSL is recommended. This would require using third-party libraries which CMake would need to be configured to
     do so.
+
+    However, SFML is being used for everything networking related. Splitting up the functionality among different libraries (i.e. this vs
+    SFML) might cause confusion down the line. It's usually better to have the whole functionality come from a central place. While the
+    solution above should be implemented, the implementation could also add wrappers for any networking classes (e.g. socket selector,
+    packet, listener).
     */
     m_socket->setBlocking(false);
 }
@@ -68,15 +75,8 @@ void Connection::handle()
     {
         if(auto request = receiveRequest(); request.has_value())
         {
-            switch(request.value()->getType()) //TODO A handler for all derived requests types
-            {
-            case chat::messages::Request::Type::Ping:
-            {
-                LOG_DEBUG << "Received ping";
-                response = std::make_optional(std::make_unique<chat::messages::Pong>());
-                break;
-            }
-            }
+            //TODO A single request handler instance should be made and used for each handling of request
+            response = std::make_optional(RequestHandler{}.handle(*request.value()));
         }
     }
     catch(const std::exception& exception)

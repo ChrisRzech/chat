@@ -5,7 +5,6 @@
 #include "chat/common/Logging.hpp"
 #include "chat/common/ThreadPool.hpp"
 
-#include <SFML/Network/Packet.hpp>
 #include <SFML/Network/SocketSelector.hpp>
 #include <SFML/Network/TcpListener.hpp>
 #include <SFML/Network/TcpSocket.hpp>

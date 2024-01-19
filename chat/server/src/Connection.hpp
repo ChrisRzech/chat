@@ -2,7 +2,6 @@
 
 #include "chat/common/SynchronizedObject.hpp"
 
-#include "chat/messages/Response.hpp"
 #include "chat/messages/Serializer.hpp"
 
 #include <SFML/Network/Packet.hpp>
@@ -16,11 +15,18 @@
 namespace chat::messages
 {
     class Request;
+    class Response;
 }
 
 namespace chat::server
 {
 
+/*
+TODO Should a connection really handle itself? It seems like the object holding connections should be the one handling the connections.
+One of the nice things about having the connection handle itself is that a lot of the functions are hidden inside the class. Although, a
+custom socket class could handle some of these functions (e.g. receiving/sending packets and messages). A connection could be an object that
+holds a socket along with metadata about the connection (e.g. is connected, last usage time).
+*/
 /**
  * @brief A connection to a client.
  */

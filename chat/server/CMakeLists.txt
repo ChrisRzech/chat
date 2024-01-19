@@ -5,6 +5,7 @@ set(SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 list(APPEND SOURCES
     ${SOURCE_PATH}/Connection.cpp
+    ${SOURCE_PATH}/RequestHandler.cpp
     ${SOURCE_PATH}/Server.cpp
 )
 
