@@ -1,6 +1,6 @@
-.vscode
+#Ignore hidden files/directories, except .gitignore
+.*/
+!/.gitignore
 
-*.o
-*.exe
-*.dll
-bin/*
+#Support environments that put the build directory inside the source directory
+build
