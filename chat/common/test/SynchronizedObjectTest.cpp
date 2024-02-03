@@ -10,7 +10,7 @@
 #include <mutex>
 #include <thread>
 
-SCENARIO("Synchronized objects can be modified")
+SCENARIO("Synchronized objects can be modified", "[SynchronizedObject]")
 {
     GIVEN("A synchronized object with an initial value")
     {
@@ -39,7 +39,7 @@ SCENARIO("Synchronized objects can be modified")
     }
 }
 
-SCENARIO("Synchronized objects provide mutual exclusive access")
+SCENARIO("Synchronized objects provide mutual exclusive access", "[SynchronizedObject]")
 {
     GIVEN("A synchronized object with an initial value")
     {
