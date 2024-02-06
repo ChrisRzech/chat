@@ -53,7 +53,7 @@ SCENARIO("Synchronized objects provide mutual exclusive access", "[SynchronizedO
 
         WHEN("A thread locks the object")
         {
-            constexpr std::chrono::milliseconds MIN_LOCK_TIME{2000};
+            constexpr std::chrono::milliseconds MIN_LOCK_TIME{100};
             std::atomic_bool startThread1 = false;
             std::atomic_bool startThread2 = false;
             std::condition_variable condvar;
