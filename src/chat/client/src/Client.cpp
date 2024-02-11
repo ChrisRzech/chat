@@ -17,7 +17,7 @@ namespace chat::client
 class Client::Impl
 {
 public:
-    Impl(sf::IpAddress host, uint16_t port)
+    Impl(std::string host, uint16_t port)
       : m_host{std::move(host)},
         m_port{port},
         m_socket{},
@@ -225,7 +225,7 @@ private:
     chat::messages::Serializer m_serializer;
 };
 
-Client::Client(sf::IpAddress host, uint16_t port)
+Client::Client(std::string host, uint16_t port)
   : m_impl{std::make_unique<Impl>(std::move(host), port)}
 {}
 

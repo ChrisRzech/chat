@@ -1,11 +1,10 @@
 #pragma once
 
-#include <SFML/Network/IpAddress.hpp>
-
 #include <chrono>
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <string>
 
 namespace chat::client
 {
@@ -27,7 +26,7 @@ public:
      *
      * @param port The port that the chat server is bound to.
      */
-    Client(sf::IpAddress host, uint16_t port);
+    Client(std::string host, uint16_t port);
 
     /**
      * @brief Copy operations are disabled.

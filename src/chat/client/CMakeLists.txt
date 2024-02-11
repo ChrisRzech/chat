@@ -13,7 +13,7 @@ add_library(${PROJECT_NAME} STATIC ${SOURCES})
 add_library(chat::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC ${HEADER_PATH})
 target_link_libraries(${PROJECT_NAME}
-    PUBLIC sfml-network
+    PRIVATE sfml-network
     PRIVATE chat::common
     PRIVATE chat::messages
 )
