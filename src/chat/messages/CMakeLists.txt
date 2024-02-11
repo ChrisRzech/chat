@@ -24,3 +24,5 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC sfml-network
     PRIVATE chat::common
 )
+
+add_subdirectory(test)
