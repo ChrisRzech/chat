@@ -9,8 +9,8 @@
 
 #include "chat/messages/response/Pong.hpp"
 
-#include <stdexcept>
 #include <mutex>
+#include <stdexcept>
 
 namespace chat::messages
 {
