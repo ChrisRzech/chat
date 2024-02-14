@@ -16,13 +16,11 @@ std::unique_ptr<chat::messages::Response> RequestHandler::handle(const chat::mes
 {
     LOG_DEBUG << "Handling request...";
 
-    //If the request is not the expected type for the handler function, an `std::bad_cast` is thrown from `dynamic_cast()`
-
     std::unique_ptr<chat::messages::Response> response;
     switch(request.getType())
     {
     case chat::messages::Request::Type::Ping:
-        response = handlePing(dynamic_cast<const chat::messages::Ping&>(request));
+        response = handlePing(static_cast<const chat::messages::Ping&>(request));
         break;
     }
 
