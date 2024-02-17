@@ -19,3 +19,5 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE chat::common
     PRIVATE chat::messages
 )
+
+add_subdirectory(test)

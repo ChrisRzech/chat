@@ -53,8 +53,8 @@ SCENARIO("Using the serializer to serializing and deserializing messages", "[Ser
                         REQUIRE(deserialized.value() != nullptr);
                         CHECK(deserialized.value()->getType() == chat::messages::Message::Type::Request);
 
-                        decltype(message)* casted = nullptr;
-                        REQUIRE_NOTHROW(casted = dynamic_cast<decltype(message)*>(deserialized.value().get()));
+                        auto casted = dynamic_cast<decltype(message)*>(deserialized.value().get());
+                        REQUIRE(casted != nullptr);
                         CHECK(casted->getType() == chat::messages::Request::Type::Ping);
                     }
                 }
@@ -79,8 +79,8 @@ SCENARIO("Using the serializer to serializing and deserializing messages", "[Ser
                         REQUIRE(deserialized.value() != nullptr);
                         CHECK(deserialized.value()->getType() == chat::messages::Message::Type::Response);
 
-                        decltype(message)* casted = nullptr;
-                        REQUIRE_NOTHROW(casted = dynamic_cast<decltype(message)*>(deserialized.value().get()));
+                        auto casted = dynamic_cast<decltype(message)*>(deserialized.value().get());
+                        REQUIRE(casted != nullptr);
                         CHECK(casted->getType() == chat::messages::Response::Type::Pong);
                     }
                 }
