@@ -23,3 +23,5 @@ target_link_libraries(${LIBRARY_NAME}
         chat::messages
         sfml-network
 )
+
+add_subdirectory(test)
