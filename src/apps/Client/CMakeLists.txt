@@ -1,10 +1,13 @@
-project(Client)
+set(APP_NAME client-app)
+set(SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
-target_link_libraries(${PROJECT_NAME}
+chat_add_app(${APP_NAME})
+
+target_sources(${APP_NAME}
+    PRIVATE ${SOURCE_PATH}/main.cpp
+)
+
+target_link_libraries(${APP_NAME}
     PRIVATE chat::client
     PRIVATE chat::common
 )
-
-#TODO See apps/Server/CmakeLists.txt for similar issue
-set(CMAKE_EXE_LINKER_FLAGS "-static")

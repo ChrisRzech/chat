@@ -1,28 +1,33 @@
-project(messages)
-
+set(LIBRARY_NAME messages)
 set(HEADER_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-list(APPEND SOURCES
-    ${SOURCE_PATH}/Close.cpp
-    ${SOURCE_PATH}/Message.cpp
-    ${SOURCE_PATH}/Request.cpp
-    ${SOURCE_PATH}/Response.cpp
-    ${SOURCE_PATH}/Serializer.cpp
-
-    ${SOURCE_PATH}/request/Ping.cpp
-
-    ${SOURCE_PATH}/response/Pong.cpp
-)
-
 find_package(SFML 2.5 REQUIRED COMPONENTS network)
 
-add_library(${PROJECT_NAME} STATIC ${SOURCES})
-add_library(chat::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-target_include_directories(${PROJECT_NAME} PUBLIC ${HEADER_PATH})
-target_link_libraries(${PROJECT_NAME}
-    PUBLIC sfml-network
-    PRIVATE chat::common
+chat_add_library(${LIBRARY_NAME})
+
+target_sources(${LIBRARY_NAME}
+    PRIVATE
+        ${SOURCE_PATH}/Close.cpp
+        ${SOURCE_PATH}/Message.cpp
+        ${SOURCE_PATH}/Request.cpp
+        ${SOURCE_PATH}/Response.cpp
+        ${SOURCE_PATH}/Serializer.cpp
+        ${SOURCE_PATH}/request/Ping.cpp
+        ${SOURCE_PATH}/response/Pong.cpp
+)
+
+target_include_directories(${LIBRARY_NAME}
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${HEADER_PATH}>
+)
+
+target_link_libraries(${LIBRARY_NAME}
+    PUBLIC
+        sfml-network
+    PRIVATE
+        chat::common
 )
 
 add_subdirectory(test)
