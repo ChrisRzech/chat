@@ -2,6 +2,8 @@
 
 #include "chat/common/SynchronizedObject.hpp"
 
+#include "chat/messages/Request.hpp"
+#include "chat/messages/Response.hpp"
 #include "chat/messages/Serializer.hpp"
 
 #include <SFML/Network/Packet.hpp>
@@ -12,16 +14,7 @@
 #include <memory>
 #include <optional>
 
-namespace chat
-{
-
-namespace messages
-{
-    class Request;
-    class Response;
-}
-
-namespace server
+namespace chat::server
 {
 
 /*
@@ -133,7 +126,5 @@ private:
     chat::common::SynchronizedObject<std::chrono::steady_clock::time_point> m_lastUsageTime;
     messages::Serializer m_serializer;
 };
-
-}
 
 }

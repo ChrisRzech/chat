@@ -1,19 +1,14 @@
 #pragma once
 
+#include "chat/messages/Request.hpp"
+#include "chat/messages/Response.hpp"
+
+#include "chat/messages/request/Ping.hpp"
+
 #include <memory>
 
 
-namespace chat
-{
-
-namespace messages
-{
-    class Ping;
-    class Request;
-    class Response;
-}
-
-namespace server
+namespace chat::server
 {
 
 /**
@@ -67,7 +62,5 @@ private:
      */
     std::unique_ptr<messages::Response> handlePing(const messages::Ping& request);
 };
-
-}
 
 }

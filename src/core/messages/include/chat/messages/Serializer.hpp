@@ -1,5 +1,6 @@
 #pragma once
 
+#include "chat/messages/Message.hpp"
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
 
@@ -12,8 +13,6 @@
 
 namespace chat::messages
 {
-
-class Message;
 
 /**
  * @brief A tool that simplifies the process of serializing and deserializing messages.
