@@ -12,13 +12,16 @@
 #include <memory>
 #include <optional>
 
-namespace chat::messages
+namespace chat
+{
+
+namespace messages
 {
     class Request;
     class Response;
 }
 
-namespace chat::server
+namespace server
 {
 
 /*
@@ -114,21 +117,23 @@ private:
      *
      * @return A request message from the socket. No value if an error occurred.
      */
-    [[nodiscard]] std::optional<std::unique_ptr<chat::messages::Request>> receiveRequest();
+    [[nodiscard]] std::optional<std::unique_ptr<messages::Request>> receiveRequest();
 
     /**
      * @brief Send a response message through the socket.
      *
      * @param response The response message to send through the socket.
      */
-    void sendResponse(const chat::messages::Response& response);
+    void sendResponse(const messages::Response& response);
 
     std::unique_ptr<sf::TcpSocket> m_socket;
     std::atomic_bool m_beingHandled;
     std::atomic_bool m_connected;
     std::atomic_uint32_t m_failCount;
     chat::common::SynchronizedObject<std::chrono::steady_clock::time_point> m_lastUsageTime;
-    chat::messages::Serializer m_serializer;
+    messages::Serializer m_serializer;
 };
+
+}
 
 }

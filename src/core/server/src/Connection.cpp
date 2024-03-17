@@ -70,7 +70,7 @@ void Connection::handle()
         lockedLastUsageTime.get() = std::chrono::steady_clock::now();
     }
 
-    std::optional<std::unique_ptr<chat::messages::Response>> response;
+    std::optional<std::unique_ptr<messages::Response>> response;
     try
     {
         if(auto request = receiveRequest(); request.has_value())
@@ -103,7 +103,7 @@ void Connection::handle()
             provided for a response? Should each derived response type define its own error codes (this might sound good)? The idea of
             using a single error code for all types is not a good idea since many of the values will not be relevant to the response.
             */
-            // response = std::make_optional(std::make_unique<chat::messages::Error>());
+            // response = std::make_optional(std::make_unique<messages::Error>());
         }
         sendResponse(*response.value());
     }
@@ -187,11 +187,11 @@ void Connection::sendPacket(sf::Packet& packet)
     LOG_DEBUG << "Finished sending packet";
 }
 
-std::optional<std::unique_ptr<chat::messages::Request>> Connection::receiveRequest()
+std::optional<std::unique_ptr<messages::Request>> Connection::receiveRequest()
 {
     LOG_DEBUG << "Receiving request...";
 
-    std::optional<std::unique_ptr<chat::messages::Request>> request;
+    std::optional<std::unique_ptr<messages::Request>> request;
     if(auto packet = receivePacket(); packet.has_value())
     {
         if(auto message = m_serializer.deserialize(packet.value()); message.has_value())
@@ -200,10 +200,10 @@ std::optional<std::unique_ptr<chat::messages::Request>> Connection::receiveReque
             The message is placed inside an `std::unique_ptr`. There is no standard library functionality to transfer ownership from a
             `std::unique_ptr` base type to a `std::unique_ptr` derived type. This must be done manually.
             */
-            if(auto temp = dynamic_cast<chat::messages::Request*>(message.value().get()); temp != nullptr)
+            if(auto temp = dynamic_cast<messages::Request*>(message.value().get()); temp != nullptr)
             {
                 message.value().release();
-                request = std::make_optional(std::unique_ptr<chat::messages::Request>{temp});
+                request = std::make_optional(std::unique_ptr<messages::Request>{temp});
             }
         }
     }
@@ -212,7 +212,7 @@ std::optional<std::unique_ptr<chat::messages::Request>> Connection::receiveReque
     return request;
 }
 
-void Connection::sendResponse(const chat::messages::Response& response)
+void Connection::sendResponse(const messages::Response& response)
 {
     LOG_DEBUG << "Sending response...";
 

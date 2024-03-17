@@ -12,15 +12,15 @@
 namespace chat::server
 {
 
-std::unique_ptr<chat::messages::Response> RequestHandler::handle(const chat::messages::Request& request)
+std::unique_ptr<messages::Response> RequestHandler::handle(const messages::Request& request)
 {
     LOG_DEBUG << "Handling request...";
 
-    std::unique_ptr<chat::messages::Response> response;
+    std::unique_ptr<messages::Response> response;
     switch(request.getType())
     {
-    case chat::messages::Request::Type::Ping:
-        response = handlePing(static_cast<const chat::messages::Ping&>(request));
+    case messages::Request::Type::Ping:
+        response = handlePing(static_cast<const messages::Ping&>(request));
         break;
     }
 
@@ -28,9 +28,9 @@ std::unique_ptr<chat::messages::Response> RequestHandler::handle(const chat::mes
     return response;
 }
 
-std::unique_ptr<chat::messages::Response> RequestHandler::handlePing([[maybe_unused]] const chat::messages::Ping& request)
+std::unique_ptr<messages::Response> RequestHandler::handlePing([[maybe_unused]] const messages::Ping& request)
 {
-    return std::make_unique<chat::messages::Pong>();
+    return std::make_unique<messages::Pong>();
 }
 
 }

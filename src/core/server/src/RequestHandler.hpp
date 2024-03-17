@@ -2,14 +2,18 @@
 
 #include <memory>
 
-namespace chat::messages
+
+namespace chat
+{
+
+namespace messages
 {
     class Ping;
     class Request;
     class Response;
 }
 
-namespace chat::server
+namespace server
 {
 
 /**
@@ -51,7 +55,7 @@ public:
      *
      * @return A response to the request.
      */
-    std::unique_ptr<chat::messages::Response> handle(const chat::messages::Request& request);
+    std::unique_ptr<messages::Response> handle(const messages::Request& request);
 
 private:
     /**
@@ -61,7 +65,9 @@ private:
      *
      * @return A response to the request.
      */
-    std::unique_ptr<chat::messages::Response> handlePing(const chat::messages::Ping& request);
+    std::unique_ptr<messages::Response> handlePing(const messages::Ping& request);
 };
+
+}
 
 }

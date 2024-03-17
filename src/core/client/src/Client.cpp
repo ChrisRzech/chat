@@ -40,9 +40,9 @@ public:
 
         std::optional<std::chrono::milliseconds> result;
         auto start = std::chrono::system_clock::now();
-        if(sendRequest(chat::messages::Ping{}))
+        if(sendRequest(messages::Ping{}))
         {
-            if(receiveResponse<chat::messages::Pong>().has_value())
+            if(receiveResponse<messages::Pong>().has_value())
             {
                 auto end = std::chrono::system_clock::now();
                 result = std::make_optional(std::chrono::duration_cast<std::chrono::milliseconds>(end - start));
@@ -159,7 +159,7 @@ private:
         return success ? std::make_optional(packet) : std::nullopt;
     }
 
-    [[nodiscard]] bool sendRequest(const chat::messages::Request& request)
+    [[nodiscard]] bool sendRequest(const messages::Request& request)
     {
         LOG_DEBUG << "Sending request...";
 
@@ -173,7 +173,7 @@ private:
     template<typename ResponseType>
     [[nodiscard]] std::optional<std::unique_ptr<ResponseType>> receiveResponse()
     {
-        static_assert(std::is_base_of_v<chat::messages::Response, ResponseType>, "Response is not a base of ResponseType");
+        static_assert(std::is_base_of_v<messages::Response, ResponseType>, "Response is not a base of ResponseType");
 
         LOG_DEBUG << "Receiving response...";
 
@@ -222,7 +222,7 @@ private:
     uint16_t m_port;
     sf::TcpSocket m_socket;
     bool m_connected;
-    chat::messages::Serializer m_serializer;
+    messages::Serializer m_serializer;
 };
 
 Client::Client(std::string host, uint16_t port)
