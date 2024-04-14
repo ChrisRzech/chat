@@ -9,6 +9,7 @@ target_sources(${LIBRARY_NAME}
         ${SOURCE_PATH}/ByteSpan.cpp
         ${SOURCE_PATH}/Logging.cpp
         ${SOURCE_PATH}/ThreadPool.cpp
+        ${SOURCE_PATH}/utility.cpp
 )
 
 target_include_directories(${LIBRARY_NAME}

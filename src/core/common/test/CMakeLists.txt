@@ -9,6 +9,7 @@ target_sources(${TEST_NAME}
         ${SOURCE_PATH}/ResultTest.cpp
         ${SOURCE_PATH}/SynchronizedObjectTest.cpp
         ${SOURCE_PATH}/ThreadPoolTest.cpp
+        ${SOURCE_PATH}/UtilityTest.cpp
 )
 
 target_link_libraries(${TEST_NAME} PRIVATE chat::common)
