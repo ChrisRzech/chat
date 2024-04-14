@@ -5,6 +5,7 @@ chat_add_test(${TEST_NAME})
 
 target_sources(${TEST_NAME}
     PRIVATE
+        ${SOURCE_PATH}/ByteSpanTest.cpp
         ${SOURCE_PATH}/ResultTest.cpp
         ${SOURCE_PATH}/SynchronizedObjectTest.cpp
         ${SOURCE_PATH}/ThreadPoolTest.cpp

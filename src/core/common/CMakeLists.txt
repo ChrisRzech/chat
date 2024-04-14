@@ -6,6 +6,7 @@ chat_add_library(${LIBRARY_NAME})
 
 target_sources(${LIBRARY_NAME}
     PRIVATE
+        ${SOURCE_PATH}/ByteSpan.cpp
         ${SOURCE_PATH}/Logging.cpp
         ${SOURCE_PATH}/ThreadPool.cpp
 )
