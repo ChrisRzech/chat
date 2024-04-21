@@ -8,8 +8,6 @@
 #include <array>
 #include <cstddef>
 
-#include <iostream>
-
 SCENARIO("Writing data into an output byte stream", "[OutputByteStream]")
 {
     GIVEN("An output byte stream")
