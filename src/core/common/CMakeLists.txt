@@ -20,4 +20,12 @@ target_include_directories(${LIBRARY_NAME}
         $<BUILD_INTERFACE:${HEADER_PATH}>
 )
 
+set(THREADS_PREFER_PTHREAD_FLAG true)
+find_package(Threads REQUIRED)
+
+target_link_libraries(${LIBRARY_NAME}
+    PRIVATE
+        Threads::Threads
+)
+
 add_subdirectory(test)

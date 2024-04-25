@@ -44,7 +44,7 @@ public:
     void start()
     {
         LOG_INFO << "Server starting...";
-        m_serverThread = std::thread{run, this};
+        m_serverThread = std::thread{&Server::Impl::run, this};
         LOG_INFO << "Server started";
     }
 

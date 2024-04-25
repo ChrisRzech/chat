@@ -40,12 +40,6 @@ macro(chat_add_app app_name)
     target_compile_features(${app_name} PUBLIC cxx_std_17)
     chat_add_compiler_warnings(${app_name})
     chat_add_build_type_compiler_options(${app_name})
-
-    #TODO For some reason, running the executable in Git Bash doesn't seem to work correctly. The supposedly "static" server library doesn't
-    #seem to be statically linked into the executable. This might be a Windows thing (and it probably is), so the "-static" linking flag
-    #"forces" the chat::server library to be linked. For now, this flag will be used just for making development until there is a proper
-    #solution to handle this.
-    target_link_options(${app_name} PUBLIC -static)
 endmacro()
 
 #Add a target for a test
@@ -60,7 +54,4 @@ macro(chat_add_test test_name)
     #Use Catch2 library
     find_package(Catch2 3 REQUIRED)
     target_link_libraries(${test_name} PRIVATE Catch2::Catch2WithMain)
-
-    #See similar comment in `chat_add_app()` macro
-    target_link_options(${test_name} PUBLIC -static)
 endmacro()
