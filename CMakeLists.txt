@@ -12,6 +12,9 @@ endif()
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Project build type (Debug, RelWithDebInfo, or Release)" FORCE)
 message(STATUS "CMAKE_BUILD_TYPE: '${CMAKE_BUILD_TYPE}'")
 
+option(CHAT_WARNING_AS_ERROR "Treat compiler warnings as errors" off)
+message(STATUS "CHAT_WARNING_AS_ERROR: '${CHAT_WARNING_AS_ERROR}'")
+
 project(chat LANGUAGES CXX)
 
 add_subdirectory(src)

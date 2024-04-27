@@ -2,11 +2,14 @@
 #Usage: chat_add_compiler_warnings(<target>)
 macro(chat_add_compiler_warnings target)
     target_compile_options(${target} PUBLIC
-        -Werror
         -Wall
         -Wextra
         -Wpedantic
     )
+
+    if(${CHAT_WARNING_AS_ERROR})
+        target_compile_options(${target} PUBLIC -Werror)
+    endif()
 endmacro()
 
 #Add compiler options for the build type to target
