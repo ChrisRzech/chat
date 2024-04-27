@@ -7,8 +7,8 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
 endif()
 message(STATUS "CMAKE_BUILD_TYPE: '${CMAKE_BUILD_TYPE}'")
 
-option(CHAT_WARNING_AS_ERROR "Treat compiler warnings as errors" off)
-message(STATUS "CHAT_WARNING_AS_ERROR: '${CHAT_WARNING_AS_ERROR}'")
+option(CHAT_ENABLE_WARNING_AS_ERROR "Convert compiler warnings into errors" off)
+message(STATUS "CHAT_ENABLE_WARNING_AS_ERROR: '${CHAT_ENABLE_WARNING_AS_ERROR}'")
 
 project(chat LANGUAGES CXX)
 

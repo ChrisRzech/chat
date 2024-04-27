@@ -7,7 +7,7 @@ macro(chat_add_compiler_warnings target)
         -Wpedantic
     )
 
-    if(${CHAT_WARNING_AS_ERROR})
+    if(${CHAT_ENABLE_WARNING_AS_ERROR})
         target_compile_options(${target} PUBLIC -Werror)
     endif()
 endmacro()
