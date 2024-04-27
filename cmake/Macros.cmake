@@ -12,18 +12,6 @@ macro(chat_add_compiler_warnings target)
     endif()
 endmacro()
 
-#Add compiler options for the build type to target
-#Usage: chat_add_build_type_compiler_options(<target>)
-macro(chat_add_build_type_compiler_options target)
-    if(${CMAKE_BUILD_TYPE} EQUAL "Debug")
-        target_compile_options(${target} PUBLIC -O0 -g)
-    elseif(${CMAKE_BUILD_TYPE} EQUAL "RelWithDebInfo")
-        target_compile_options(${target} PUBLIC -O2 -g -DNDEBUG)
-    elseif(${CMAKE_BUILD_TYPE} EQUAL "Release")
-        target_compile_options(${target} PUBLIC -O3 -DNDEBUG)
-    endif()
-endmacro()
-
 #Add a target for a library
 #Usage: chat_add_library(<name>)
 macro(chat_add_library library_name)
@@ -32,7 +20,6 @@ macro(chat_add_library library_name)
 
     target_compile_features(${library_name} PUBLIC cxx_std_17)
     chat_add_compiler_warnings(${library_name})
-    chat_add_build_type_compiler_options(${library_name})
 endmacro()
 
 #Add a target for an application
@@ -42,7 +29,6 @@ macro(chat_add_app app_name)
 
     target_compile_features(${app_name} PUBLIC cxx_std_17)
     chat_add_compiler_warnings(${app_name})
-    chat_add_build_type_compiler_options(${app_name})
 endmacro()
 
 #Add a target for a test
