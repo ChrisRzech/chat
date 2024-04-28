@@ -52,8 +52,9 @@ SCENARIO("Synchronized objects provide mutual exclusive access", "[SynchronizedO
         WHEN("A thread locks the object")
         {
             constexpr std::chrono::milliseconds MIN_LOCK_TIME{100};
+            std::mutex mutex;
             std::atomic_bool startThread1 = false;
-            std::atomic_bool startThread2 = false;
+            bool startThread2 = false;
             std::condition_variable condvar;
 
             std::thread thread
@@ -61,9 +62,8 @@ SCENARIO("Synchronized objects provide mutual exclusive access", "[SynchronizedO
                 [&]
                 {
                     {
-                        std::mutex mutex;
                         std::unique_lock lock{mutex};
-                        condvar.wait(lock, [&]{return startThread2.load();});
+                        condvar.wait(lock, [&]{return startThread2;});
                     }
 
                     auto locked = object.lock();
@@ -73,14 +73,12 @@ SCENARIO("Synchronized objects provide mutual exclusive access", "[SynchronizedO
                 }
             };
 
-            startThread2 = true;
-            condvar.notify_one();
-
             THEN("Another thread cannot access the object")
             {
                 {
-                    std::mutex mutex;
                     std::unique_lock lock{mutex};
+                    startThread2 = true;
+                    condvar.notify_one();
                     condvar.wait(lock, [&]{return startThread1.load();});
                 }
 
