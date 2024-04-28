@@ -12,6 +12,30 @@ macro(chat_add_compiler_warnings target)
     endif()
 endmacro()
 
+#Instrument target with sanitizers
+#Usage: chat_add_sanitizers(<target>)
+macro(chat_add_sanitizers target)
+    if(${CHAT_ENABLE_ASAN})
+        target_compile_options(${target} PUBLIC -fsanitize=address)
+        target_link_options(${target} PUBLIC -fsanitize=address)
+    endif()
+
+    if(${CHAT_ENABLE_TSAN})
+        target_compile_options(${target} PUBLIC -fsanitize=thread)
+        target_link_options(${target} PUBLIC -fsanitize=thread)
+    endif()
+
+    if(${CHAT_ENABLE_UBSAN})
+        target_compile_options(${target} PUBLIC -fsanitize=undefined)
+        target_link_options(${target} PUBLIC -fsanitize=undefined)
+    endif()
+
+    if(${CHAT_ENABLE_LSAN})
+        target_compile_options(${target} PUBLIC -fsanitize=leak)
+        target_link_options(${target} PUBLIC -fsanitize=leak)
+    endif()
+endmacro()
+
 #Add a target for a library
 #Usage: chat_add_library(<name>)
 macro(chat_add_library library_name)
@@ -20,6 +44,7 @@ macro(chat_add_library library_name)
 
     target_compile_features(${library_name} PUBLIC cxx_std_17)
     chat_add_compiler_warnings(${library_name})
+    chat_add_sanitizers(${library_name})
 endmacro()
 
 #Add a target for an application
@@ -29,6 +54,7 @@ macro(chat_add_app app_name)
 
     target_compile_features(${app_name} PUBLIC cxx_std_17)
     chat_add_compiler_warnings(${app_name})
+    chat_add_sanitizers(${app_name})
 endmacro()
 
 #Add a target for a test
@@ -38,6 +64,7 @@ macro(chat_add_test test_name)
 
     target_compile_features(${test_name} PUBLIC cxx_std_17)
     chat_add_compiler_warnings(${test_name})
+    chat_add_sanitizers(${test_name})
     target_compile_options(${test_name} PUBLIC -g)
 
     #Use Catch2 library
