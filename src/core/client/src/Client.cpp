@@ -31,21 +31,21 @@ public:
     {
         LOG_DEBUG << "Sending ping...";
 
-        //`sendAndReceive()` is not used here so that establishing a connection is not included in the elapsed time measurement
+        //`sendAndReceive()` is not used here so that establishing a connection
+        // is not included in the elapsed time measurement
 
-        if(!m_connected && !connect())
-        {
+        if(!m_connected && !connect()) {
             return std::nullopt;
         }
 
         std::optional<std::chrono::milliseconds> result;
         auto start = std::chrono::system_clock::now();
-        if(sendRequest(messages::Ping{}))
-        {
-            if(receiveResponse<messages::Pong>().has_value())
-            {
+        if(sendRequest(messages::Ping{})) {
+            if(receiveResponse<messages::Pong>().has_value()) {
                 auto end = std::chrono::system_clock::now();
-                result = std::make_optional(std::chrono::duration_cast<std::chrono::milliseconds>(end - start));
+                result = std::make_optional(
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                        end - start));
             }
         }
 
@@ -59,9 +59,11 @@ private:
         LOG_DEBUG << "Connecting to host...";
 
         bool success = false;
-        m_connected = false; //The `connect()` call will disconnect the socket before reconnecting, assume it is disconnected
-        switch(m_socket.connect(m_host, m_port))
-        {
+
+        // The `connect()` call will disconnect the socket before reconnecting,
+        // assume it is disconnected
+        m_connected = false;
+        switch(m_socket.connect(m_host, m_port)) {
         case sf::Socket::Status::Done:
             LOG_DEBUG << "Connected to host";
             m_connected = true;
@@ -69,15 +71,18 @@ private:
             break;
 
         case sf::Socket::Status::NotReady:
-            LOG_WARN << "Could not connect to host, unexpected `sf::Socket::Status::NotReady`";
+            LOG_WARN << "Could not connect to host, unexpected "
+                        "`sf::Socket::Status::NotReady`";
             break;
 
         case sf::Socket::Status::Partial:
-            LOG_WARN << "Could not connect to host, unexpected `sf::Socket::Status::Partial`";
+            LOG_WARN << "Could not connect to host, unexpected "
+                        "`sf::Socket::Status::Partial`";
             break;
 
         case sf::Socket::Status::Disconnected:
-            LOG_WARN << "Could not connect to host, unexpected `sf::Socket::Status::Disconnected`";
+            LOG_WARN << "Could not connect to host, unexpected "
+                        "`sf::Socket::Status::Disconnected`";
             break;
 
         case sf::Socket::Status::Error:
@@ -94,24 +99,27 @@ private:
         LOG_DEBUG << "Sending packet...";
 
         bool success = false;
-        switch(m_socket.send(packet))
-        {
+        switch(m_socket.send(packet)) {
         case sf::Socket::Status::Done:
             LOG_DEBUG << "Packet sent";
             success = true;
             break;
 
         case sf::Socket::Status::NotReady:
-            LOG_WARN << "Could not send request, unexpected `sf::Socket::Status::NotReady`";
+            LOG_WARN << "Could not send request, unexpected "
+                        "`sf::Socket::Status::NotReady`";
             break;
 
         case sf::Socket::Status::Partial:
-            LOG_WARN << "Could not send request, unexpected `sf::Socket::Status::Partial`";
+            LOG_WARN << "Could not send request, unexpected "
+                        "`sf::Socket::Status::Partial`";
             break;
 
         case sf::Socket::Status::Disconnected:
-            //This should not happen: https://stackoverflow.com/a/14782354/21445636
-            LOG_WARN << "Could not send request, unexpected `sf::Socket::Status::Disconnect`";
+            // This should not happen:
+            // https://stackoverflow.com/a/14782354/21445636
+            LOG_WARN << "Could not send request, unexpected "
+                        "`sf::Socket::Status::Disconnect`";
             m_connected = false;
             break;
 
@@ -130,23 +138,25 @@ private:
 
         bool success = false;
         sf::Packet packet;
-        switch(m_socket.receive(packet))
-        {
+        switch(m_socket.receive(packet)) {
         case sf::Socket::Status::Done:
             LOG_DEBUG << "Packet received";
             success = true;
             break;
 
         case sf::Socket::Status::NotReady:
-            LOG_WARN << "Could not receive request, unexpected `sf::Socket::Status::NotReady`";
+            LOG_WARN << "Could not receive request, unexpected "
+                        "`sf::Socket::Status::NotReady`";
             break;
 
         case sf::Socket::Status::Partial:
-            LOG_WARN << "Could not receive request, unexpected `sf::Socket::Status::Partial`";
+            LOG_WARN << "Could not receive request, unexpected "
+                        "`sf::Socket::Status::Partial`";
             break;
 
         case sf::Socket::Status::Disconnected:
-            LOG_WARN << "Could not receive request since the socket is disconnected";
+            LOG_WARN << "Could not receive request since the socket is "
+                        "disconnected";
             m_connected = false;
             break;
 
@@ -166,33 +176,33 @@ private:
         auto packet = m_serializer.serialize(request);
         bool success = sendPacket(packet);
 
-        LOG_DEBUG << "Finished sending request";;
+        LOG_DEBUG << "Finished sending request";
         return success;
     }
 
     template<typename ResponseType>
     [[nodiscard]] std::optional<std::unique_ptr<ResponseType>> receiveResponse()
     {
-        static_assert(std::is_base_of_v<messages::Response, ResponseType>, "Response is not a base of ResponseType");
+        static_assert(std::is_base_of_v<messages::Response, ResponseType>,
+                      "Response is not a base of ResponseType");
 
         LOG_DEBUG << "Receiving response...";
 
         std::optional<std::unique_ptr<ResponseType>> response;
-        if(auto packet = receivePacket(); packet.has_value())
-        {
-            if(auto message = m_serializer.deserialize(packet.value()); message.has_value())
-            {
-                /*
-                The message is placed inside an `std::unique_ptr`. There is no standard library functionality to transfer ownership from a
-                `std::unique_ptr` base type to a `std::unique_ptr` derived type. This must be done manually.
-                */
-                if(auto temp = dynamic_cast<ResponseType*>(message.value().get()); temp != nullptr)
-                {
+        if(auto packet = receivePacket(); packet.has_value()) {
+            if(auto message = m_serializer.deserialize(packet.value());
+               message.has_value()) {
+                // The message is placed inside an `std::unique_ptr`. There is
+                // no standard library functionality to transfer ownership from
+                // a `std::unique_ptr` base type to a `std::unique_ptr` derived
+                // type. This must be done manually.
+                if(auto temp =
+                       dynamic_cast<ResponseType*>(message.value().get());
+                   temp != nullptr) {
                     message.value().release();
-                    response = std::make_optional(std::unique_ptr<ResponseType>{temp});
-                }
-                else
-                {
+                    response =
+                        std::make_optional(std::unique_ptr<ResponseType>{temp});
+                } else {
                     LOG_ERROR << "Received unexpected response type";
                 }
             }
@@ -202,16 +212,16 @@ private:
         return response;
     }
 
-    template<typename RequestType, typename ResponseType, typename... RequestArgs>
-    [[nodiscard]] std::optional<std::unique_ptr<ResponseType>> sendAndReceive(RequestArgs&&... args)
+    template<typename RequestType, typename ResponseType,
+             typename... RequestArgs>
+    [[nodiscard]] std::optional<std::unique_ptr<ResponseType>> sendAndReceive(
+        RequestArgs&&... args)
     {
-        if(!m_connected && !connect())
-        {
+        if(!m_connected && !connect()) {
             return std::nullopt;
         }
 
-        if(!sendRequest(RequestType{std::forward<RequestArgs>(args)...}))
-        {
+        if(!sendRequest(RequestType{std::forward<RequestArgs>(args)...})) {
             return std::nullopt;
         }
 

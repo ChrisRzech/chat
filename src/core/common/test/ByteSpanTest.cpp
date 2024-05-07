@@ -24,8 +24,9 @@ SCENARIO("Creating a byte span over a byte array", "[ByteSpan]")
     GIVEN("A byte array")
     {
         constexpr std::array<std::byte, 10> bytes = {
-            std::byte{0}, std::byte{1}, std::byte{2}, std::byte{3}, std::byte{4},
-            std::byte{5}, std::byte{6}, std::byte{7}, std::byte{8}, std::byte{9},
+            std::byte{0}, std::byte{1}, std::byte{2}, std::byte{3},
+            std::byte{4}, std::byte{5}, std::byte{6}, std::byte{7},
+            std::byte{8}, std::byte{9},
         };
 
         WHEN("A byte span is created over the byte array")

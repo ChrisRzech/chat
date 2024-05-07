@@ -15,8 +15,7 @@ InputByteStream& readIntegral(InputByteStream& in, T& value)
 {
     static_assert(std::is_integral_v<T>);
     ByteArray<sizeof(T)> buffer;
-    if(in >> buffer)
-    {
+    if(in >> buffer) {
         value = utility::toHostByteOrder<T>(buffer);
     }
     return in;
@@ -33,8 +32,7 @@ InputByteStream::InputByteStream(ByteSpan buffer)
 std::optional<ByteSpan> InputByteStream::read(std::size_t size)
 {
     std::optional<ByteSpan> bytes;
-    if(isEnoughBytes(size))
-    {
+    if(isEnoughBytes(size)) {
         bytes = std::make_optional(m_buffer.subspan(m_readIndex, size));
         m_readIndex += size;
     }
@@ -105,11 +103,9 @@ InputByteStream& operator>>(InputByteStream& in, std::uint64_t& value)
 InputByteStream& operator>>(InputByteStream& in, ByteSpan& span)
 {
     std::uint32_t size = 0;
-    if(in >> size)
-    {
+    if(in >> size) {
         auto bytes = in.read(size);
-        if(bytes.has_value())
-        {
+        if(bytes.has_value()) {
             span = bytes.value();
         }
     }
@@ -119,11 +115,9 @@ InputByteStream& operator>>(InputByteStream& in, ByteSpan& span)
 InputByteStream& operator>>(InputByteStream& in, ByteString& buffer)
 {
     std::uint32_t size = 0;
-    if(in >> size)
-    {
+    if(in >> size) {
         auto bytes = in.read(static_cast<std::size_t>(size));
-        if(bytes.has_value())
-        {
+        if(bytes.has_value()) {
             auto dataBegin = bytes.value().getData();
             auto dataEnd = dataBegin + bytes.value().getSize();
             buffer = ByteString{dataBegin, dataEnd};

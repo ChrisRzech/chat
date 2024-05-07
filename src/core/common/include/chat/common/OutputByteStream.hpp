@@ -13,7 +13,8 @@ namespace chat::common
 /**
  * @brief An output stream of bytes.
  *
- * @details The stream is used to build a byte string which usually contains objects that have been serialized into bytes.
+ * @details The stream is used to build a byte string which usually contains
+ * objects that have been serialized into bytes.
  */
 class OutputByteStream
 {
@@ -76,7 +77,8 @@ private:
  * @return The output byte stream.
  */
 template<std::size_t N>
-inline OutputByteStream& operator<<(OutputByteStream& out, const ByteArray<N>& buffer)
+inline OutputByteStream& operator<<(OutputByteStream& out,
+                                    const ByteArray<N>& buffer)
 {
     out.write(buffer.data(), buffer.size());
     return out;
@@ -85,7 +87,8 @@ inline OutputByteStream& operator<<(OutputByteStream& out, const ByteArray<N>& b
 /**
  * @brief Insert an integral value nto an output byte stream.
  *
- * @details The integral value is converted into network byte order (big-endian) which is then inserted into the stream.
+ * @details The integral value is converted into network byte order (big-endian)
+ * which is then inserted into the stream.
  *
  * @param out The output byte stream.
  *
@@ -107,8 +110,8 @@ OutputByteStream& operator<<(OutputByteStream& out, std::uint64_t value);
 /**
  * @brief Insert a byte span into an output byte stream.
  *
- * @details The size of the byte span is inserted into the stream first as a @c std::uint32_t, and then the data of the byte span is
- * inserted after.
+ * @details The size of the byte span is inserted into the stream first as a
+ * @c std::uint32_t, and then the data of the byte span is inserted after.
  *
  * @param out The output byte stream.
  *
@@ -121,8 +124,8 @@ OutputByteStream& operator<<(OutputByteStream& out, const ByteSpan& span);
 /**
  * @brief Insert a byte string into an output byte stream.
  *
- * @details The size of the byte string is inserted into the stream first as a @c std::uint32_t, and then the data of the byte string is
- * inserted after.
+ * @details The size of the byte string is inserted into the stream first as a
+ * @c std::uint32_t, and then the data of the byte string is inserted after.
  *
  * @details The size of the
  *

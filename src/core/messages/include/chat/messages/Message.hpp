@@ -8,20 +8,29 @@ namespace chat::messages
 {
 
 /**
- * @brief A serializable object to allow data communication between applications.
+ * @brief A serializable object to allow data communication between
+ * applications.
  *
- * @details The purpose of a message is to simplify transfering data between applications in a structured format that is known to the
- * applications. The applications determine the meaning of each message in their own context. Messages are designed to be serializable into
- * a buffer which can then be transported to another application using a transportation interface (e.g. socket).
+ * @details The purpose of a message is to simplify transfering data between
+ * applications in a structured format that is known to the applications. The
+ * applications determine the meaning of each message in their own context.
+ * Messages are designed to be serializable into a buffer which can then be
+ * transported to another application using a transportation interface (e.g.
+ * socket).
  *
- * A message can be serialized into a buffer using @c serialize(). The buffer can then be deserialized using @c deserialize() on the
- * apporpriate message type. Using @c deserialize() on its own has some complications as the correct derived message type must be created
- * before deserializing the buffer along with making sure the buffer is clear of any metadata. Therefore, it is recommended to use
- * @c chat::messages::Serializer to perform all message serialization and deserialization.
+ * A message can be serialized into a buffer using @c serialize(). The buffer
+ * can then be deserialized using @c deserialize() on the apporpriate message
+ * type. Using @c deserialize() on its own has some complications as the correct
+ * derived message type must be created before deserializing the buffer along
+ * with making sure the buffer is clear of any metadata. Therefore, it is
+ * recommended to use @c chat::messages::Serializer to perform all message
+ * serialization and deserialization.
  *
- * Messages are structured in a hierarchy of types. At the top level, there is @c Message which encapsulates all messages. The next level
- * splits into three major message types: @c Close, , @c Request, and @c Response. The next level, usually the last, is messages containing
- * message-specific data that applications will use.
+ * Messages are structured in a hierarchy of types. At the top level, there is
+ * @c Message which encapsulates all messages. The next level splits into three
+ * major message types: @c Close, , @c Request, and @c Response. The next level,
+ * usually the last, is messages containing message-specific data that
+ * applications will use.
  */
 class Message
 {

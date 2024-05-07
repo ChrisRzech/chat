@@ -8,9 +8,10 @@ namespace chat::common
 /**
  * @brief Syncrhonize an object throughout its lifetime.
  *
- * @details When an object needs to be synchronized, a mutex is usually paired with the object. However, simply pairing the two invites user
- * errors since the object can be used without locking the mutex. This class aims to prevent such errors by only exposing the object once
- * the mutex has been locked.
+ * @details When an object needs to be synchronized, a mutex is usually paired
+ * with the object. However, simply pairing the two invites user errors since
+ * the object can be used without locking the mutex. This class aims to prevent
+ * such errors by only exposing the object once the mutex has been locked.
  *
  * @tparam T The type of the object to synchronize.
  */
@@ -55,7 +56,8 @@ public:
     /**
      * @brief Provides mutually exclusive access to the object.
      *
-     * @details @c ConstProxy and @c Proxy only differ in the `const`ness of the return value of their respective @c get().
+     * @details @c ConstProxy and @c Proxy only differ in the `const`ness of the
+     * return value of their respective @c get().
      */
     class ConstProxy
     {
@@ -84,7 +86,8 @@ public:
         /**
          * @brief Get the object being synchronized.
          *
-         * @details This can only be called when the proxy is an lvalue to prevent obtaining a reference to the object while the mutex is
+         * @details This can only be called when the proxy is an lvalue to
+         * prevent obtaining a reference to the object while the mutex is
          * unlocked.
          *
          * @return The object being synchronized.
@@ -114,7 +117,8 @@ public:
     /**
      * @brief Provides mutually exclusive access to the object.
      *
-     * @details @c ConstProxy and @c Proxy only differ in the `const`ness of the return value of their respective @c get().
+     * @details @c ConstProxy and @c Proxy only differ in the `const`ness of the
+     * return value of their respective @c get().
      */
     class Proxy
     {
@@ -143,7 +147,8 @@ public:
         /**
          * @brief Get the object being synchronized.
          *
-         * @details This can only be called when the proxy is an lvalue to prevent obtaining a reference to the object while the mutex is
+         * @details This can only be called when the proxy is an lvalue to
+         * prevent obtaining a reference to the object while the mutex is
          * unlocked.
          *
          * @return The object being synchronized.

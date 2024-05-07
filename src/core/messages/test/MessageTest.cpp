@@ -29,9 +29,11 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
                 decltype(message) deserialized;
                 CHECK(deserialized.deserialize(packet));
 
-                THEN("The deserialized message is the same as the original message")
+                THEN(
+                    "The deserialized message is the same as the original "
+                    "message")
                 {
-                    //Message does not contain data to check
+                    // Message does not contain data to check
                 }
             }
         }
@@ -43,7 +45,8 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
 
         THEN("The message type is `Request`")
         {
-            CHECK(message.Message::getType() == chat::messages::Message::Type::Request);
+            CHECK(message.Message::getType() ==
+                  chat::messages::Message::Type::Request);
         }
 
         AND_THEN("The request type is `Ping`")
@@ -61,9 +64,11 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
                 decltype(message) deserialized;
                 CHECK(deserialized.deserialize(packet));
 
-                THEN("The deserialized message is the same as the original message")
+                THEN(
+                    "The deserialized message is the same as the original "
+                    "message")
                 {
-                    //Message does not contain data to check
+                    // Message does not contain data to check
                 }
             }
         }
@@ -75,7 +80,8 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
 
         THEN("The message type is `Response`")
         {
-            CHECK(message.Message::getType() == chat::messages::Message::Type::Response);
+            CHECK(message.Message::getType() ==
+                  chat::messages::Message::Type::Response);
         }
 
         AND_THEN("The request type is `Pong`")
@@ -93,9 +99,11 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
                 decltype(message) deserialized;
                 CHECK(deserialized.deserialize(packet));
 
-                THEN("The deserialized message is the same as the original message")
+                THEN(
+                    "The deserialized message is the same as the original "
+                    "message")
                 {
-                    //Message does not contain data to check
+                    // Message does not contain data to check
                 }
             }
         }

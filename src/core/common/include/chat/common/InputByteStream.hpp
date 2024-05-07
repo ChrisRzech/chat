@@ -14,11 +14,14 @@ namespace chat::common
 /**
  * @brief An input stream of bytes.
  *
- * @details The stream does not own a byte string but instead holds a span to a previously allocated byte string. It's important to ensure
- * that the byte string remains valid throughout the lifespan of this stream.
+ * @details The stream does not own a byte string but instead holds a span to a
+ * previously allocated byte string. It's important to ensure that the byte
+ * string remains valid throughout the lifespan of this stream.
  *
- * Reading bytes provides subspans into the input span rather than providing copies. This is to reduce the memory usage for use cases
- * where copies do not need to be made. The stream will keep track if the last read operation was successful using @c isGood().
+ * Reading bytes provides subspans into the input span rather than providing
+ * copies. This is to reduce the memory usage for use cases where copies do not
+ * need to be made. The stream will keep track if the last read operation was
+ * successful using @c isGood().
  */
 class InputByteStream
 {
@@ -54,12 +57,14 @@ public:
     /**
      * @brief Read bytes from the stream.
      *
-     * @details This is successful if there is a minimum number of readable bytes left to fullfil the requested size. Once bytes are read,
-     * they are no longer readable again.
+     * @details This is successful if there is a minimum number of readable
+     * bytes left to fullfil the requested size. Once bytes are read, they are
+     * no longer readable again.
      *
      * @param size The amount of bytes to read.
      *
-     * @return A value if there is a minimum number of readable bytes left to fullfil the requested size; otherwise, no value.
+     * @return A value if there is a minimum number of readable bytes left to
+     * fullfil the requested size; otherwise, no value.
      */
     std::optional<ByteSpan> read(std::size_t size);
 
@@ -88,11 +93,13 @@ public:
 
 private:
     /**
-     * @brief Check if there is a minimum number of readable bytes left to fullfil the requested size.
+     * @brief Check if there is a minimum number of readable bytes left to
+     * fullfil the requested size.
      *
      * @param size The number of bytes to check for.
      *
-     * @return True if there is a minimum number of readable bytes left to fullfil the requested size; otherwise, false.
+     * @return True if there is a minimum number of readable bytes left to
+     * fullfil the requested size; otherwise, false.
      */
     bool isEnoughBytes(std::size_t size);
 
@@ -116,10 +123,8 @@ template<std::size_t N>
 inline InputByteStream& operator>>(InputByteStream& in, ByteArray<N>& buffer)
 {
     auto bytes = in.read(buffer.size());
-    if(bytes.has_value())
-    {
-        for(std::size_t i = 0; i < buffer.size(); i++)
-        {
+    if(bytes.has_value()) {
+        for(std::size_t i = 0; i < buffer.size(); i++) {
             buffer[i] = bytes.value()[i];
         }
     }
@@ -129,8 +134,9 @@ inline InputByteStream& operator>>(InputByteStream& in, ByteArray<N>& buffer)
 /**
  * @brief Extract bytes from an input byte stream into an integral.
  *
- * @details The bytes used from the stream are assumed to be in network byte order (big-endian), and this function converts those bytes into
- * the host byte order (little-endian, big-endian, etc).
+ * @details The bytes used from the stream are assumed to be in network byte
+ * order (big-endian), and this function converts those bytes into the host byte
+ * order (little-endian, big-endian, etc).
  *
  * @tparam T The type of the integral value.
  *
@@ -154,8 +160,8 @@ InputByteStream& operator>>(InputByteStream& in, std::uint64_t& value);
 /**
  * @brief Extract bytes from an input byte stream into a byte span.
  *
- * @details This assumes that the stream contains a @c std::uint32_t, to specify the size of the span, and then the bytes with the
- * extracted size.
+ * @details This assumes that the stream contains a @c std::uint32_t, to specify
+ * the size of the span, and then the bytes with the extracted size.
  *
  * @param in The input byte stream.
  *
@@ -168,12 +174,13 @@ InputByteStream& operator>>(InputByteStream& in, ByteSpan& span);
 /**
  * @brief Extract bytes from an input byte stream into a byte string.
  *
- * @details This assumes that the stream contains a @c std::uint32_t, to specify the size of the string, and then the bytes with the
- * extracted size.
+ * @details This assumes that the stream contains a @c std::uint32_t, to specify
+ * the size of the string, and then the bytes with the extracted size.
  *
  * @param in The input byte stream.
  *
- * @param buffer The byte string to which the extract string will be assigned to.
+ * @param buffer The byte string to which the extract string will be assigned
+ * to.
  *
  * @return The input byte stream.
  */

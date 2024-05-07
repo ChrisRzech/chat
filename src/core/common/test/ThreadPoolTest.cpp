@@ -10,8 +10,11 @@ SCENARIO("Jobs can be queued to thread pools", "[ThreadPool]")
     constexpr std::chrono::milliseconds WAIT_TIME{100};
     constexpr std::chrono::milliseconds LEEWAY{10};
     std::atomic_uint32_t count = 0;
-    auto simpleJob = [&]{count++;};
-    auto sleepJob = [&]{count++; std::this_thread::sleep_for(WAIT_TIME);};
+    auto simpleJob = [&] { count++; };
+    auto sleepJob = [&] {
+        count++;
+        std::this_thread::sleep_for(WAIT_TIME);
+    };
 
     GIVEN("A thread pool with no threads")
     {
@@ -49,8 +52,7 @@ SCENARIO("Jobs can be queued to thread pools", "[ThreadPool]")
             pool.pause();
 
             constexpr uint32_t JOB_COUNT = 10;
-            for(uint32_t i = 0; i < JOB_COUNT; i++)
-            {
+            for(uint32_t i = 0; i < JOB_COUNT; i++) {
                 pool.queue(sleepJob);
             }
 
@@ -59,7 +61,9 @@ SCENARIO("Jobs can be queued to thread pools", "[ThreadPool]")
                 auto start = std::chrono::system_clock::now();
                 pool.resume();
                 pool.waitForCompletion();
-                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start);
+                auto elapsed =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now() - start);
 
                 CHECK(count == JOB_COUNT);
                 CHECK(elapsed >= JOB_COUNT * WAIT_TIME - LEEWAY);
@@ -69,8 +73,7 @@ SCENARIO("Jobs can be queued to thread pools", "[ThreadPool]")
 
     GIVEN("A thread pool with multiple threads")
     {
-        if(std::thread::hardware_concurrency() < 2)
-        {
+        if(std::thread::hardware_concurrency() < 2) {
             SKIP("Not enough CPU cores");
         }
 
@@ -81,8 +84,7 @@ SCENARIO("Jobs can be queued to thread pools", "[ThreadPool]")
         {
             pool.pause();
 
-            for(uint16_t i = 0; i < POOL_SIZE; i++)
-            {
+            for(uint16_t i = 0; i < POOL_SIZE; i++) {
                 pool.queue(sleepJob);
             }
 
@@ -91,7 +93,9 @@ SCENARIO("Jobs can be queued to thread pools", "[ThreadPool]")
                 auto start = std::chrono::system_clock::now();
                 pool.resume();
                 pool.waitForCompletion();
-                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start);
+                auto elapsed =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now() - start);
 
                 CHECK(count == POOL_SIZE);
                 CHECK(elapsed <= POOL_SIZE * WAIT_TIME - LEEWAY);
@@ -114,7 +118,7 @@ SCENARIO("Thread pools can be paused", "[ThreadPool]")
             {
                 constexpr std::chrono::milliseconds WAIT_TIME{100};
                 std::atomic_uint32_t count = 0;
-                pool.queue([&]{count++;});
+                pool.queue([&] { count++; });
 
                 THEN("The job is not performed")
                 {
@@ -156,7 +160,9 @@ SCENARIO("Thread pools can notify when the job queue is empty", "[ThreadPool]")
                     auto start = std::chrono::system_clock::now();
                     pool.resume();
                     pool.waitForCompletion();
-                    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start);
+                    auto elapsed =
+                        std::chrono::duration_cast<std::chrono::milliseconds>(
+                            std::chrono::system_clock::now() - start);
 
                     CHECK(count == 0);
                     CHECK(elapsed < LEEWAY);
@@ -167,7 +173,10 @@ SCENARIO("Thread pools can notify when the job queue is empty", "[ThreadPool]")
         AND_GIVEN("A job is queued")
         {
             constexpr std::chrono::milliseconds WAIT_TIME{100};
-            pool.queue([&]{count++; std::this_thread::sleep_for(WAIT_TIME);});
+            pool.queue([&] {
+                count++;
+                std::this_thread::sleep_for(WAIT_TIME);
+            });
 
             WHEN("Waiting for the job queue to be empty")
             {
@@ -176,7 +185,9 @@ SCENARIO("Thread pools can notify when the job queue is empty", "[ThreadPool]")
                     auto start = std::chrono::system_clock::now();
                     pool.resume();
                     pool.waitForCompletion();
-                    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start);
+                    auto elapsed =
+                        std::chrono::duration_cast<std::chrono::milliseconds>(
+                            std::chrono::system_clock::now() - start);
 
                     CHECK(count == 1);
                     CHECK(elapsed >= WAIT_TIME - LEEWAY);

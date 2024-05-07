@@ -41,7 +41,9 @@ SCENARIO("A result that can hold an error value", "[Result]")
         {
             result = chat::common::Error{ERROR_VALUE};
 
-            THEN("The success value is destroyed and the new error value is held")
+            THEN(
+                "The success value is destroyed and the new error value is "
+                "held")
             {
                 REQUIRE(!result.isSuccess());
                 CHECK_THROWS(result.getSuccessValue());
@@ -52,7 +54,8 @@ SCENARIO("A result that can hold an error value", "[Result]")
 
     GIVEN("A result that is constructed with an error value")
     {
-        chat::common::Result<int, int> result = chat::common::Error{ERROR_VALUE};
+        chat::common::Result<int, int> result =
+            chat::common::Error{ERROR_VALUE};
 
         THEN("The result holds the error value")
         {
@@ -77,7 +80,9 @@ SCENARIO("A result that can hold an error value", "[Result]")
         {
             result = SUCCESS_VALUE;
 
-            THEN("The error value is destroyed and the new success value is held")
+            THEN(
+                "The error value is destroyed and the new success value is "
+                "held")
             {
                 REQUIRE(result.isSuccess());
                 CHECK(result.getSuccessValue() == SUCCESS_VALUE);

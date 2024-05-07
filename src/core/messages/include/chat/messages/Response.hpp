@@ -12,7 +12,8 @@ namespace chat::messages
 /**
  * @brief A response message.
  *
- * @details A response is sent from the server to the client only in reply to a @c Request.
+ * @details A response is sent from the server to the client only in reply to a
+ * @c Request.
  */
 class Response : public Message
 {

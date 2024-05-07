@@ -17,12 +17,6 @@
 namespace chat::server
 {
 
-/*
-TODO Should a connection really handle itself? It seems like the object holding connections should be the one handling the connections.
-One of the nice things about having the connection handle itself is that a lot of the functions are hidden inside the class. Although, a
-custom socket class could handle some of these functions (e.g. receiving/sending packets and messages). A connection could be an object that
-holds a socket along with metadata about the connection (e.g. is connected, last usage time).
-*/
 /**
  * @brief A connection to a client.
  */
@@ -67,7 +61,8 @@ public:
     /**
      * @brief Check if the connection is currently being handled.
      *
-     * @return True if the connection is currently being handled; otherwise, false.
+     * @return True if the connection is currently being handled; otherwise,
+     * false.
      */
     [[nodiscard]] bool isBeingHandled() const;
 
@@ -79,7 +74,8 @@ public:
     /**
      * @brief Check if the connection is a zombie.
      *
-     * @details A zombie connection should be removed as they are no longer used or should be used.
+     * @details A zombie connection should be removed as they are no longer used
+     * or should be used.
      *
      * @return True if the connection is a zombie; otherwise, false.
      */
@@ -110,7 +106,8 @@ private:
      *
      * @return A request message from the socket. No value if an error occurred.
      */
-    [[nodiscard]] std::optional<std::unique_ptr<messages::Request>> receiveRequest();
+    [[nodiscard]] std::optional<std::unique_ptr<messages::Request>>
+    receiveRequest();
 
     /**
      * @brief Send a response message through the socket.
@@ -123,7 +120,8 @@ private:
     std::atomic_bool m_beingHandled;
     std::atomic_bool m_connected;
     std::atomic_uint32_t m_failCount;
-    chat::common::SynchronizedObject<std::chrono::steady_clock::time_point> m_lastUsageTime;
+    chat::common::SynchronizedObject<std::chrono::steady_clock::time_point>
+        m_lastUsageTime;
     messages::Serializer m_serializer;
 };
 

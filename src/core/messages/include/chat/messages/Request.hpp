@@ -12,8 +12,9 @@ namespace chat::messages
 /**
  * @brief A request message.
  *
- * @details A request is sent from the client to the server when the client wants the server to perform an operation. The client should
- * expect a @c Response from the server for each request sent.
+ * @details A request is sent from the client to the server when the client
+ * wants the server to perform an operation. The client should expect a
+ * @c Response from the server for each request sent.
  */
 class Request : public Message
 {

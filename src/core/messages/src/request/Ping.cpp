@@ -10,12 +10,12 @@ Ping::Ping()
 void Ping::serialize(sf::Packet& packet) const
 {
     Request::serialize(packet);
-    //No data to insert
+    // No data to insert
 }
 
 bool Ping::deserialize([[maybe_unused]] sf::Packet& packet)
 {
-    //No data to extract
+    // No data to extract
     return true;
 }
 

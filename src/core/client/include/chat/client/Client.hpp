@@ -12,7 +12,8 @@ namespace chat::client
 /**
  * @brief Chat client to a chat server.
  *
- * @details The client will attempt to establish a connection to the server if needed before sending requests.
+ * @details The client will attempt to establish a connection to the server if
+ * needed before sending requests.
  *
  * @warning A client is not thread-safe.
  */
@@ -50,9 +51,11 @@ public:
     ~Client();
 
     /**
-     * @brief Get the elapsed time for making a request and receiving a response.
+     * @brief Get the elapsed time for making a request and receiving a
+     * response.
      *
-     * @details The elapsed time measures the round trip time of sending a request and receiving a response.
+     * @details The elapsed time measures the round trip time of sending a
+     * request and receiving a response.
      *
      * @return The elapsed time for making a request and receiving a response.
      */

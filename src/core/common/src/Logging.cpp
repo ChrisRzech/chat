@@ -23,13 +23,32 @@ Logging::Logger& Logging::getLogger()
     return s_logger;
 }
 
-Logging::LogEntry Logging::createLogEntry(Severity severity, const std::filesystem::path& sourceFile, uint32_t line)
+Logging::LogEntry Logging::createLogEntry(
+    Severity severity, const std::filesystem::path& sourceFile, uint32_t line)
 {
     LogEntry entry;
 
+    auto time = std::chrono::system_clock::now();
+    auto cTime = std::chrono::system_clock::to_time_t(time);
+    auto calendar = *std::gmtime(&cTime);
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
+                            time.time_since_epoch()) %
+                        1000;
+
+    // Format `yyyy-mm-dd hh:mm:ss.ms` and GMT timezone
+    entry << std::setfill('0');
+    entry << calendar.tm_year + 1900 << '-';
+    entry << std::setw(2) << calendar.tm_mon + 1 << '-';
+    entry << std::setw(2) << calendar.tm_mday << ' ';
+    entry << std::setw(2) << calendar.tm_hour << ':';
+    entry << std::setw(2) << calendar.tm_min << ':';
+    entry << std::setw(2) << calendar.tm_sec << '.';
+    entry << std::setw(3) << milliseconds.count();
+    entry << std::setfill(' ');
+    entry << ' ';
+
     std::string_view severityString;
-    switch(severity)
-    {
+    switch(severity) {
     case Severity::Fatal:
         severityString = "FATAL";
         break;
@@ -46,27 +65,17 @@ Logging::LogEntry Logging::createLogEntry(Severity severity, const std::filesyst
         severityString = "DEBUG";
         break;
     }
+    entry << std::left;
+    entry << std::setw(5) << severityString;
+    entry << std::right;
+    entry << ' ';
 
     auto threadId = std::this_thread::get_id();
+    entry << '[' << threadId << ']';
+    entry << ' ';
 
-    auto time = std::chrono::system_clock::now();
-    auto cTime = std::chrono::system_clock::to_time_t(time);
-    auto calendar = *std::gmtime(&cTime);
-    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(time.time_since_epoch()) % 1000;
-
-    //`yyyy-mm-dd hh:mm:ss.ms` using GMT timezone
-    entry << std::setfill('0')
-        << calendar.tm_year + 1900 << '-'
-        << std::setw(2) << calendar.tm_mon + 1 << '-'
-        << std::setw(2) << calendar.tm_mday << ' '
-        << std::setw(2) << calendar.tm_hour << ':'
-        << std::setw(2) << calendar.tm_min << ':'
-        << std::setw(2) << calendar.tm_sec << '.'
-        << std::setw(3) << milliseconds.count()
-        << std::setfill(' ')  << ' '
-        << std::left << std::setw(5) << severityString << ' '
-        << '[' << threadId << ']' << ' '
-        << '[' << sourceFile.filename().string() << ':' << line << ']' << ':' << ' ';
+    entry << '[' << sourceFile.filename().string() << ':' << line << ']';
+    entry << ':' << ' ';
 
     return entry;
 }
@@ -77,13 +86,15 @@ Logging::Logger::Logger()
     m_fout{}
 {}
 
-void Logging::Logger::enableLoggingToFile(std::filesystem::path logFile, bool truncate)
+void Logging::Logger::enableLoggingToFile(std::filesystem::path logFile,
+                                          bool truncate)
 {
     m_logFile = std::move(logFile);
-    m_fout = std::make_unique<std::fstream>(m_logFile.value(), truncate ? std::fstream::out : std::fstream::out | std::fstream::app);
+    m_fout = std::make_unique<std::fstream>(
+        m_logFile.value(),
+        truncate ? std::fstream::out : std::fstream::out | std::fstream::app);
 
-    if(!m_fout->is_open())
-    {
+    if(!m_fout->is_open()) {
         m_logFile.reset();
         m_fout.reset();
         throw std::invalid_argument{"Could not open log file"};
@@ -104,10 +115,11 @@ void Logging::Logger::disableLoggingToFile()
 
 void Logging::Logger::operator+=(const LogEntry& logEntry)
 {
-    auto logEntryString = logEntry.toString(); //No need to hold the lock while converting to a string
+    // No need to hold the lock while converting to a string
+    auto logEntryString = logEntry.toString();
 
     auto lockedOut = m_out.lock();
-    *lockedOut.get() << logEntryString << std::endl; //Make sure to flush
+    *lockedOut.get() << logEntryString << std::endl; // Make sure to flush
 }
 
 std::string Logging::LogEntry::toString() const

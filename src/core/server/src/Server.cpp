@@ -28,11 +28,12 @@ public:
         m_stopping{false},
         m_serverThread{}
     {
-        //There needs to be at least 2 threads, one for the main server thread and one for handling the client requests
-        if(maxThreadCount < 2)
-        {
+        // There needs to be at least 2 threads, one for the main server thread
+        // and one for handling the client requests
+        if(maxThreadCount < 2) {
             LOG_FATAL << "Max thread count cannot be less than 2";
-            throw std::invalid_argument{"Max thread count cannot be less than 2"};
+            throw std::invalid_argument{
+                "Max thread count cannot be less than 2"};
         }
     }
 
@@ -67,31 +68,33 @@ private:
         sf::SocketSelector socketSelector;
         socketSelector.add(listener);
 
-        chat::common::ThreadPool threadPool{static_cast<uint16_t>(m_maxThreadCount - 1)}; //Count this thread towards the number of threads
+        // Count this thread towards the number of threads
+        chat::common::ThreadPool threadPool{
+            static_cast<uint16_t>(m_maxThreadCount - 1)};
 
-        while(!m_stopping)
-        {
-            if(socketSelector.wait(sf::milliseconds(250)))
-            {
-                if(socketSelector.isReady(listener))
-                {
+        while(!m_stopping) {
+            if(socketSelector.wait(sf::milliseconds(250))) {
+                if(socketSelector.isReady(listener)) {
                     listen(listener, connections, socketSelector);
                 }
 
-                for(auto& connection : connections)
-                {
-                    if(!connection.isBeingHandled() && !connection.isZombie() && socketSelector.isReady(connection.getSocket()))
-                    {
-                        /*
-                        The selector considers a socket "ready" if a socket is disconnected (i.e. receiving data would indicate socket is
-                        disconnected).
-
-                        This thread must set the connection as being handled. If done within the thread pool job, this thread might create
-                        multiple thread pool jobs to handle the same message. Imagine if the job never ran and only this thread was running,
-                        the connection would never be marked as handled and this thread would keep creating jobs.
-                        */
+                for(auto& connection : connections) {
+                    if(!connection.isBeingHandled() && !connection.isZombie() &&
+                       socketSelector.isReady(connection.getSocket())) {
+                        // The selector considers a socket "ready" if a socket
+                        // is disconnected (i.e. receiving data would indicate
+                        // socket is disconnected).
+                        //
+                        // This thread must set the connection as being handled.
+                        // If done within the thread pool job, this thread might
+                        // create multiple thread pool jobs to handle the same
+                        // message. Imagine if the job never ran and only this
+                        // thread was running, the connection would never be
+                        // marked as handled and this thread would keep creating
+                        // jobs.
                         connection.setBeingHandled();
-                        threadPool.queue([&connection]{connection.handle();});
+                        threadPool.queue(
+                            [&connection] { connection.handle(); });
                     }
                 }
             }
@@ -102,13 +105,13 @@ private:
         threadPool.waitForCompletion();
     }
 
-    void listen(sf::TcpListener& listener, std::list<Connection>& connections, sf::SocketSelector& socketSelector)
+    void listen(sf::TcpListener& listener, std::list<Connection>& connections,
+                sf::SocketSelector& socketSelector)
     {
         LOG_DEBUG << "Listening for connection...";
 
         auto socket = std::make_unique<sf::TcpSocket>();
-        switch(listener.accept(*socket))
-        {
+        switch(listener.accept(*socket)) {
         case sf::Socket::Status::Done:
             LOG_INFO << "Connection accepted";
 
@@ -117,15 +120,18 @@ private:
             break;
 
         case sf::Socket::Status::NotReady:
-            LOG_WARN << "Could not accept socket, unexpected `sf::Socket::Status::NotReady`";
+            LOG_WARN << "Could not accept socket, unexpected "
+                        "`sf::Socket::Status::NotReady`";
             break;
 
         case sf::Socket::Status::Partial:
-            LOG_WARN << "Could not accept socket, unexpected `sf::Socket::Status::Partial`";
+            LOG_WARN << "Could not accept socket, unexpected "
+                        "`sf::Socket::Status::Partial`";
             break;
 
         case sf::Socket::Status::Disconnected:
-            LOG_WARN << "Could not accept socket, unexpected `sf::Socket::Status::Disconnected`";
+            LOG_WARN << "Could not accept socket, unexpected "
+                        "`sf::Socket::Status::Disconnected`";
             break;
 
         case sf::Socket::Status::Error:
@@ -136,12 +142,12 @@ private:
         LOG_DEBUG << "Finished listening for connection";
     }
 
-    void cleanupConnections(std::list<Connection>& connections, sf::SocketSelector& socketSelector)
+    void cleanupConnections(std::list<Connection>& connections,
+                            sf::SocketSelector& socketSelector)
     {
-        for(auto it = connections.begin(); it != connections.end(); /* update in body */)
-        {
-            if(!it->isBeingHandled() && it->isZombie())
-            {
+        for(auto it = connections.begin(); it != connections.end();
+            /* update in body */) {
+            if(!it->isBeingHandled() && it->isZombie()) {
                 LOG_DEBUG << "Cleaning up connection...";
 
                 auto zombieIt = it++;
@@ -149,9 +155,7 @@ private:
                 connections.erase(zombieIt);
 
                 LOG_DEBUG << "Finished cleaning up connection";
-            }
-            else
-            {
+            } else {
                 it++;
             }
         }

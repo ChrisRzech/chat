@@ -4,29 +4,21 @@
 
 int main()
 {
-    try
-    {
+    try {
         const auto logFilepath = "client.log";
         chat::common::Logging::enableLoggingToFile(logFilepath, true);
 
         chat::client::Client client{"localhost", 25565};
         auto ping = client.ping();
-        if(ping.has_value())
-        {
+        if(ping.has_value()) {
             LOG_DEBUG << "Ping: " << ping.value().count() << "ms";
-        }
-        else
-        {
+        } else {
             LOG_DEBUG << "Ping failed";
         }
-    }
-    catch(const std::exception& exception)
-    {
+    } catch(const std::exception& exception) {
         LOG_ERROR << exception.what();
         return 1;
-    }
-    catch(...)
-    {
+    } catch(...) {
         LOG_ERROR << "Unknown exception!";
         return 1;
     }

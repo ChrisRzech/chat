@@ -4,8 +4,7 @@
 
 int main()
 {
-    try
-    {
+    try {
         const auto logFilepath = "server.log";
         chat::common::Logging::enableLoggingToFile(logFilepath, true);
 
@@ -14,19 +13,14 @@ int main()
         chat::server::Server server(PORT, MAX_THREAD_COUNT);
         server.start();
         bool stopping = false;
-        while(!stopping)
-        {
-            //TODO Wait for something to stop the server
+        while(!stopping) {
+            // TODO Wait for something to stop the server
         }
         server.stop();
-    }
-    catch(const std::exception& exception)
-    {
+    } catch(const std::exception& exception) {
         LOG_ERROR << exception.what();
         return 1;
-    }
-    catch(...)
-    {
+    } catch(...) {
         LOG_ERROR << "Unknown exception!";
         return 1;
     }

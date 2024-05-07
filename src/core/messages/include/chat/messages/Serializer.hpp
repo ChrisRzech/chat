@@ -15,7 +15,8 @@ namespace chat::messages
 {
 
 /**
- * @brief A tool that simplifies the process of serializing and deserializing messages.
+ * @brief A tool that simplifies the process of serializing and deserializing
+ * messages.
  */
 class Serializer
 {
@@ -58,20 +59,26 @@ public:
     /**
      * @brief Create a message from a packet containing a serialized message.
      *
-     * @details There may be data left over in the packet since only enough data to create the message is extracted from the packet.
+     * @details There may be data left over in the packet since only enough data
+     * to create the message is extracted from the packet.
      *
      * @param packet The packet containing a serialized message.
      *
-     * @return A deserialized message from the packet. No value if the process failed.
+     * @return A deserialized message from the packet. No value if the process
+     * failed.
      */
-    [[nodiscard]] std::optional<std::unique_ptr<Message>> deserialize(sf::Packet& packet) const;
+    [[nodiscard]] std::optional<std::unique_ptr<Message>> deserialize(
+        sf::Packet& packet) const;
 
 private:
     /**
-     * @brief A factory for creating objects of types in a class inheritance hierarchy.
+     * @brief A factory for creating objects of types in a class inheritance
+     * hierarchy.
      *
-     * @details Types must be registered to the factory before attempting to create objects of that type through the factory. Keys and types
-     * have a many-to-one relationship, meaning that a key cannot be registered to different types.
+     * @details Types must be registered to the factory before attempting to
+     * create objects of that type through the factory. Keys and types have a
+     * many-to-one relationship, meaning that a key cannot be registered to
+     * different types.
      *
      * @tparam BaseType The base type of the class inheritance hierarchy.
      *
@@ -140,7 +147,8 @@ private:
         [[nodiscard]] std::unique_ptr<BaseType> createObject(KeyType key) const;
 
     private:
-        std::unordered_map<KeyType, std::function<std::unique_ptr<BaseType>()>> m_registry;
+        std::unordered_map<KeyType, std::function<std::unique_ptr<BaseType>()>>
+            m_registry;
     };
 
     /**
@@ -151,8 +159,9 @@ private:
     /**
      * @brief Create a message.
      *
-     * @details The message type is extracted from the packet and provided to the factory for it to make a registered type. The message type
-     * is used as the key for the type for the factory to create.
+     * @details The message type is extracted from the packet and provided to
+     * the factory for it to make a registered type. The message type is used as
+     * the key for the type for the factory to create.
      *
      * @tparam BaseType The base type for the factory.
      *
@@ -162,12 +171,13 @@ private:
      *
      * @param packet The packet to extract information from.
      *
-     * @return A message created by the factory. No value if the message type could not be extracted from the packet or the type is not
-     * registered in the factory.
+     * @return A message created by the factory. No value if the message type
+     * could not be extracted from the packet or the type is not registered in
+     * the factory.
      */
     template<typename BaseType, typename KeyType>
-    [[nodiscard]] std::optional<std::unique_ptr<Message>> createMessage(const Factory<BaseType, KeyType>& factory,
-        sf::Packet& packet) const;
+    [[nodiscard]] std::optional<std::unique_ptr<Message>> createMessage(
+        const Factory<BaseType, KeyType>& factory, sf::Packet& packet) const;
 
     inline static Factory<Request, Request::Type> s_requestFactory;
     inline static Factory<Response, Response::Type> s_responseFactory;

@@ -21,7 +21,8 @@ SCENARIO("Handling requests", "[RequestHandler]")
             {
                 REQUIRE(response != nullptr);
 
-                auto casted =  dynamic_cast<chat::messages::Pong*>(response.get());
+                auto casted =
+                    dynamic_cast<chat::messages::Pong*>(response.get());
                 REQUIRE(casted != nullptr);
             }
         }

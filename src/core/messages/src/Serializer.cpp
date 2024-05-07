@@ -28,17 +28,16 @@ sf::Packet Serializer::serialize(const Message& message) const
     return packet;
 }
 
-std::optional<std::unique_ptr<Message>> Serializer::deserialize(sf::Packet& packet) const
+std::optional<std::unique_ptr<Message>> Serializer::deserialize(
+    sf::Packet& packet) const
 {
     std::underlying_type_t<Message::Type> messageTypeValue;
-    if(!(packet >> messageTypeValue))
-    {
+    if(!(packet >> messageTypeValue)) {
         return std::nullopt;
     }
 
     std::optional<std::unique_ptr<Message>> message;
-    switch(static_cast<Message::Type>(messageTypeValue))
-    {
+    switch(static_cast<Message::Type>(messageTypeValue)) {
     case Message::Type::Close:
         message = std::make_optional(std::make_unique<Close>());
         break;
@@ -52,8 +51,7 @@ std::optional<std::unique_ptr<Message>> Serializer::deserialize(sf::Packet& pack
         break;
     }
 
-    if(!message.has_value() || !message.value()->deserialize(packet))
-    {
+    if(!message.has_value() || !message.value()->deserialize(packet)) {
         return std::nullopt;
     }
 
@@ -64,11 +62,12 @@ template<typename BaseType, typename KeyType>
 template<typename DerivedType>
 void Serializer::Factory<BaseType, KeyType>::registerType(KeyType key)
 {
-    static_assert(std::is_base_of_v<BaseType, DerivedType>, "BaseType is not a base of DerivedType");
+    static_assert(std::is_base_of_v<BaseType, DerivedType>,
+                  "BaseType is not a base of DerivedType");
 
-    auto [iter, success] = m_registry.emplace(key, []{return std::make_unique<DerivedType>();});
-    if(!success)
-    {
+    auto [iter, success] =
+        m_registry.emplace(key, [] { return std::make_unique<DerivedType>(); });
+    if(!success) {
         throw std::invalid_argument{"Key is already registered"};
     }
 }
@@ -80,11 +79,11 @@ bool Serializer::Factory<BaseType, KeyType>::isTypeRegistered(KeyType key) const
 }
 
 template<typename BaseType, typename KeyType>
-std::unique_ptr<BaseType> Serializer::Factory<BaseType, KeyType>::createObject(KeyType key) const
+std::unique_ptr<BaseType> Serializer::Factory<BaseType, KeyType>::createObject(
+    KeyType key) const
 {
     auto iter = m_registry.find(key);
-    if(iter == m_registry.end())
-    {
+    if(iter == m_registry.end()) {
         throw std::invalid_argument{"Key is not registered"};
     }
 
@@ -93,25 +92,24 @@ std::unique_ptr<BaseType> Serializer::Factory<BaseType, KeyType>::createObject(K
 
 void Serializer::registerMessages()
 {
-    //Requests
+    // Requests
     s_requestFactory.registerType<Ping>(Request::Type::Ping);
 
-    //Responses
+    // Responses
     s_responseFactory.registerType<Pong>(Response::Type::Pong);
 }
 
 template<typename BaseType, typename KeyType>
-std::optional<std::unique_ptr<Message>> Serializer::createMessage(const Factory<BaseType, KeyType>& factory, sf::Packet& packet) const
+std::optional<std::unique_ptr<Message>> Serializer::createMessage(
+    const Factory<BaseType, KeyType>& factory, sf::Packet& packet) const
 {
     std::underlying_type_t<KeyType> typeValue;
-    if(!(packet >> typeValue))
-    {
+    if(!(packet >> typeValue)) {
         return std::nullopt;
     }
     auto type = static_cast<KeyType>(typeValue);
 
-    if(!factory.isTypeRegistered(type))
-    {
+    if(!factory.isTypeRegistered(type)) {
         return std::nullopt;
     }
     return factory.createObject(type);

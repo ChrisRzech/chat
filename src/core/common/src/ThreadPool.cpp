@@ -19,8 +19,7 @@ ThreadPool::ThreadPool(uint16_t threadCount)
     m_jobs{}
 {
     m_threads.reserve(m_threadCount);
-    for(uint16_t i = 0; i < m_threadCount; i++)
-    {
+    for(uint16_t i = 0; i < m_threadCount; i++) {
         m_threads.emplace_back(&ThreadPool::threadLoop, this);
     }
 }
@@ -34,8 +33,7 @@ ThreadPool::~ThreadPool()
     m_workCondvar.notify_all();
     m_idleCondvar.notify_all();
 
-    for(auto& thread : m_threads)
-    {
+    for(auto& thread : m_threads) {
         thread.join();
     }
 }
@@ -67,25 +65,26 @@ void ThreadPool::resume()
 void ThreadPool::waitForCompletion()
 {
     std::unique_lock lock{m_mutex};
-    m_idleCondvar.wait(lock, [this]{return (m_idleCount == m_threadCount && m_jobs.empty()) || m_stopping;});
+    m_idleCondvar.wait(lock, [this] {
+        return (m_idleCount == m_threadCount && m_jobs.empty()) || m_stopping;
+    });
 }
 
 void ThreadPool::threadLoop()
 {
-    while(true)
-    {
+    while(true) {
         std::function<void()> job;
         {
             std::unique_lock lock{m_mutex};
             m_idleCount++;
-            if(m_idleCount == m_threadCount && m_jobs.empty())
-            {
+            if(m_idleCount == m_threadCount && m_jobs.empty()) {
                 m_idleCondvar.notify_all();
             }
-            m_workCondvar.wait(lock, [this]{return (!m_jobs.empty() && !m_pause) || m_stopping;});
+            m_workCondvar.wait(lock, [this] {
+                return (!m_jobs.empty() && !m_pause) || m_stopping;
+            });
 
-            if(m_stopping)
-            {
+            if(m_stopping) {
                 return;
             }
 
@@ -94,16 +93,11 @@ void ThreadPool::threadLoop()
             m_idleCount--;
         }
 
-        try
-        {
+        try {
             job();
-        }
-        catch(const std::exception& exception)
-        {
+        } catch(const std::exception& exception) {
             LOG_ERROR << exception.what();
-        }
-        catch(...)
-        {
+        } catch(...) {
             LOG_ERROR << "Unknown exception!";
         }
     }

@@ -10,12 +10,12 @@ Close::Close()
 void Close::serialize([[maybe_unused]] sf::Packet& packet) const
 {
     Message::serialize(packet);
-    //No data to insert
+    // No data to insert
 }
 
 bool Close::deserialize([[maybe_unused]] sf::Packet& packet)
 {
-    //No data to extract
+    // No data to extract
     return true;
 }
 

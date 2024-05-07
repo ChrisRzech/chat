@@ -6,11 +6,11 @@
 namespace chat::server
 {
 
-//TODO Explore the idea of a type that holds all configuration options for the server. The client can also have its own version of this.
 /**
  * @brief Chat server.
  *
- * @details The server will wait for clients to connect and process client requests.
+ * @details The server will wait for clients to connect and process client
+ * requests.
  */
 class Server
 {

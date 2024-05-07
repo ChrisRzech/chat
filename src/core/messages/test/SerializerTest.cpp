@@ -7,7 +7,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-SCENARIO("Using the serializer to serializing and deserializing messages", "[Serializer]")
+SCENARIO("Using the serializer to serializing and deserializing messages",
+         "[Serializer]")
 {
     GIVEN("A serializer")
     {
@@ -25,11 +26,14 @@ SCENARIO("Using the serializer to serializing and deserializing messages", "[Ser
                 {
                     auto deserialized = serializer.deserialize(serialized);
 
-                    THEN("The deserialized message is the same as the original message")
+                    THEN(
+                        "The deserialized message is the same as the original "
+                        "message")
                     {
                         REQUIRE(deserialized.has_value());
                         REQUIRE(deserialized.value() != nullptr);
-                        CHECK(deserialized.value()->getType() == chat::messages::Message::Type::Close);
+                        CHECK(deserialized.value()->getType() ==
+                              chat::messages::Message::Type::Close);
                     }
                 }
             }
@@ -47,15 +51,20 @@ SCENARIO("Using the serializer to serializing and deserializing messages", "[Ser
                 {
                     auto deserialized = serializer.deserialize(serialized);
 
-                    THEN("The deserialized message is the same as the original message")
+                    THEN(
+                        "The deserialized message is the same as the original "
+                        "message")
                     {
                         REQUIRE(deserialized.has_value());
                         REQUIRE(deserialized.value() != nullptr);
-                        CHECK(deserialized.value()->getType() == chat::messages::Message::Type::Request);
+                        CHECK(deserialized.value()->getType() ==
+                              chat::messages::Message::Type::Request);
 
-                        auto casted = dynamic_cast<decltype(message)*>(deserialized.value().get());
+                        auto casted = dynamic_cast<decltype(message)*>(
+                            deserialized.value().get());
                         REQUIRE(casted != nullptr);
-                        CHECK(casted->getType() == chat::messages::Request::Type::Ping);
+                        CHECK(casted->getType() ==
+                              chat::messages::Request::Type::Ping);
                     }
                 }
             }
@@ -73,15 +82,20 @@ SCENARIO("Using the serializer to serializing and deserializing messages", "[Ser
                 {
                     auto deserialized = serializer.deserialize(serialized);
 
-                    THEN("The deserialized message is the same as the original message")
+                    THEN(
+                        "The deserialized message is the same as the original "
+                        "message")
                     {
                         REQUIRE(deserialized.has_value());
                         REQUIRE(deserialized.value() != nullptr);
-                        CHECK(deserialized.value()->getType() == chat::messages::Message::Type::Response);
+                        CHECK(deserialized.value()->getType() ==
+                              chat::messages::Message::Type::Response);
 
-                        auto casted = dynamic_cast<decltype(message)*>(deserialized.value().get());
+                        auto casted = dynamic_cast<decltype(message)*>(
+                            deserialized.value().get());
                         REQUIRE(casted != nullptr);
-                        CHECK(casted->getType() == chat::messages::Response::Type::Pong);
+                        CHECK(casted->getType() ==
+                              chat::messages::Response::Type::Pong);
                     }
                 }
             }

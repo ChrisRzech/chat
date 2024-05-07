@@ -14,16 +14,22 @@ namespace chat::common
 /**
  * @brief Contains all logging functionality.
  *
- * @details Log entries are outputted to a file with a specific format in a thread-safe manner.
+ * @details Log entries are outputted to a file with a specific format in a
+ * thread-safe manner.
  *
- * By default, logging is outputted to @c std::cout. This behavior can be changed to using files instead by using @c enableLoggingToFile().
- * Using @c disableLoggingToFile() reverts the behavior to the default behavior.
+ * By default, logging is outputted to @c std::cout. This behavior can be
+ * changed to using files instead by using @c enableLoggingToFile(). Using
+ * @c disableLoggingToFile() reverts the behavior to the default behavior.
  *
- * A severity is needed when creating a log entry. The severity only determines the string value for the severity column in the log entry.
- * However, log entries with a debug severity will only log if debug logging is enabled; otherwise, the log entry is elided at compile-time.
+ * A severity is needed when creating a log entry. The severity only determines
+ * the string value for the severity column in the log entry. However, log
+ * entries with a debug severity will only log if debug logging is enabled;
+ * otherwise, the log entry is elided at compile-time.
  *
- * In order to log objects, use the `LOG()` or `LOG_X()` macros followed by a sequence of insertion operators (`operator<<`). The object
- * following the insertion operator must have an overload for `operator<<` with an `std::ostream`.
+ * In order to log objects, use the `LOG()` or `LOG_X()` macros followed by a
+ * sequence of insertion operators (`operator<<`). The object following the
+ * insertion operator must have an overload for `operator<<` with an
+ * `std::ostream`.
  */
 class Logging
 {
@@ -74,9 +80,11 @@ public:
      *
      * @param logFile The path to a file to log all log entries.
      *
-     * @param truncate True if the log file should be truncated when opened; otherwise, the file will not be truncated when opened.
+     * @param truncate True if the log file should be truncated when opened;
+     * otherwise, the file will not be truncated when opened.
      */
-    static void enableLoggingToFile(std::filesystem::path logFile, bool truncate);
+    static void enableLoggingToFile(std::filesystem::path logFile,
+                                    bool truncate);
 
     /**
      * @brief Disable logging to a file.
@@ -92,7 +100,8 @@ public:
      */
     [[nodiscard]] static constexpr bool shouldLog(Severity severity)
     {
-        return severity == Severity::Debug ? ENABLE_LOGGING_DEBUG_SEVERITY : true;
+        return severity == Severity::Debug ? ENABLE_LOGGING_DEBUG_SEVERITY
+                                           : true;
     }
 
     /**
@@ -105,30 +114,37 @@ public:
     /**
      * @brief Create a new log entry.
      *
-     * @details The log entry should be filled with items using @c LogEntry::operator<<; otherwise, the log entry will only contain a header
-     * with no information.
+     * @details The log entry should be filled with items using
+     * @c LogEntry::operator<<; otherwise, the log entry will only contain a
+     * header with no information.
      *
      * @param severity The severity of the log entry.
      *
-     * @param sourceFile The source file that the log entry is being created in. Usually, the value is `__FILE__`.
+     * @param sourceFile The source file that the log entry is being created in.
+     * Usually, the value is `__FILE__`.
      *
-     * @param line The line number of the source file that the log entry was created at. Usually, the value is `__LINE__`.
+     * @param line The line number of the source file that the log entry was
+     * created at. Usually, the value is `__LINE__`.
      *
      * @return A new log entry.
      */
-    [[nodiscard]] static LogEntry createLogEntry(Severity severity, const std::filesystem::path& sourceFile, uint32_t line);
+    [[nodiscard]] static LogEntry createLogEntry(
+        Severity severity, const std::filesystem::path& sourceFile,
+        uint32_t line);
 
     /**
-     * @brief Determines if debug severity will log a log entry. Usually, the value is determined by the project build mode.
+     * @brief Determines if debug severity will log a log entry. Usually, the
+     * value is determined by the project build mode.
      */
-    static constexpr bool ENABLE_LOGGING_DEBUG_SEVERITY = true; //TODO Change value based off of project build mode (debug vs release)
+    static constexpr bool ENABLE_LOGGING_DEBUG_SEVERITY = true;
 
 private:
-    //TODO Support file rotation. Once the current file passes some threshold (e.g. certain file size), create a new file to log to.
     /**
-     * @brief Handles all logic for logging such as logging a @c LogEntry and file rotation.
+     * @brief Handles all logic for logging such as logging a @c LogEntry and
+     * file rotation.
      *
-     * @details By default, the logger outputs to @c std::cout. Using @c enableLoggingToFile() will make the logger output to files instead.
+     * @details By default, the logger outputs to @c std::cout. Using
+     * @c enableLoggingToFile() will make the logger output to files instead.
      */
     class Logger
     {
@@ -164,7 +180,8 @@ private:
          *
          * @param logFile The path to a file to log all log entries.
          *
-         * @param truncate True if the log file should be truncated when opened; otherwise, the file will not be truncated when opened.
+         * @param truncate True if the log file should be truncated when opened;
+         * otherwise, the file will not be truncated when opened.
          */
         void enableLoggingToFile(std::filesystem::path logFile, bool truncate);
 
@@ -176,9 +193,11 @@ private:
         /**
          * @brief Log a log entry.
          *
-         * @details This function is thread-safe. The reasoning behind using `operator+=` is to allow this function to be called after the
-         * log entry has been fully built. Any operator could work as long as it is overloadable and does not take precedence over
-         * `operator<<`, which is used for building the @c LogEntry.
+         * @details This function is thread-safe. The reasoning behind using
+         * `operator+=` is to allow this function to be called after the log
+         * entry has been fully built. Any operator could work as long as it is
+         * overloadable and does not take precedence over `operator<<`, which is
+         * used for building the @c LogEntry.
          *
          * @param logEntry Log entry to be logged.
          */
@@ -225,10 +244,12 @@ private:
         /**
          * @brief Insert an object into the log entry.
          *
-         * @details This is the function to use when needing to log objects. Operator chaining is supported to allow easily insert multiple
+         * @details This is the function to use when needing to log objects.
+         * Operator chaining is supported to allow easily insert multiple
          * objects.
          *
-         * @tparam T The type of the object. This type must have an operator overload for `operator<<` with an `std::ostream`.
+         * @tparam T The type of the object. This type must have an operator
+         * overload for `operator<<` with an `std::ostream`.
          *
          * @param object The object to insert.
          *
@@ -255,9 +276,12 @@ private:
     inline static Logger s_logger;
 };
 
-#define LOG(severity) \
-    if constexpr(!chat::common::Logging::shouldLog(severity)) {} \
-    else chat::common::Logging::getLogger() += chat::common::Logging::createLogEntry(severity, __FILE__, __LINE__)
+#define LOG(severity)                                                 \
+    if constexpr(!chat::common::Logging::shouldLog(severity)) {       \
+    } else                                                            \
+        chat::common::Logging::getLogger() +=                         \
+            chat::common::Logging::createLogEntry(severity, __FILE__, \
+                                                  __LINE__)
 #define LOG_FATAL LOG(chat::common::Logging::Severity::Fatal)
 #define LOG_ERROR LOG(chat::common::Logging::Severity::Error)
 #define LOG_WARN LOG(chat::common::Logging::Severity::Warn)

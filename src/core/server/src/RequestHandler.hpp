@@ -7,7 +7,6 @@
 
 #include <memory>
 
-
 namespace chat::server
 {
 
@@ -50,7 +49,8 @@ public:
      *
      * @return A response to the request.
      */
-    std::unique_ptr<messages::Response> handle(const messages::Request& request);
+    std::unique_ptr<messages::Response> handle(
+        const messages::Request& request);
 
 private:
     /**
@@ -60,7 +60,8 @@ private:
      *
      * @return A response to the request.
      */
-    std::unique_ptr<messages::Response> handlePing(const messages::Ping& request);
+    std::unique_ptr<messages::Response> handlePing(
+        const messages::Ping& request);
 };
 
 }

@@ -67,7 +67,8 @@ public:
     void resume();
 
     /**
-     * @brief Block until all threads are idle and there are no more jobs to run.
+     * @brief Block until all threads are idle and there are no more jobs to
+     * run.
      */
     void waitForCompletion();
 
@@ -75,9 +76,11 @@ private:
     /**
      * @brief The function the threads run.
      *
-     * @details This function runs jobs from the queue when available. This function stops when the thread pool is being destroyed. This
-     * function pauses execution when the thread pool is paused even if there are jobs available. This function notifies anyone calling
-     * @c waitForCompletion() when there are no more jobs available and all threads are idle.
+     * @details This function runs jobs from the queue when available. This
+     * function stops when the thread pool is being destroyed. This function
+     * pauses execution when the thread pool is paused even if there are jobs
+     * available. This function notifies anyone calling @c waitForCompletion()
+     * when there are no more jobs available and all threads are idle.
      */
     void threadLoop();
 

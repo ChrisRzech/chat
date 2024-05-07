@@ -22,8 +22,7 @@ OutputByteStream& writeIntegral(OutputByteStream& out, const T& value)
 void OutputByteStream::write(const std::byte* buffer, std::size_t size)
 {
     m_buffer.reserve(m_buffer.size() + size);
-    for(std::size_t i = 0; i < size; i++)
-    {
+    for(std::size_t i = 0; i < size; i++) {
         m_buffer.push_back(buffer[i]);
     }
 }
@@ -72,7 +71,6 @@ OutputByteStream& operator<<(OutputByteStream& out, std::uint64_t value)
 {
     return writeIntegral(out, value);
 }
-
 
 OutputByteStream& operator<<(OutputByteStream& out, const ByteSpan& span)
 {

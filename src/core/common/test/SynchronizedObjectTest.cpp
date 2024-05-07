@@ -37,7 +37,8 @@ SCENARIO("Synchronized objects can be modified", "[SynchronizedObject]")
     }
 }
 
-SCENARIO("Synchronized objects provide mutual exclusive access", "[SynchronizedObject]")
+SCENARIO("Synchronized objects provide mutual exclusive access",
+         "[SynchronizedObject]")
 {
     GIVEN("A synchronized object with an initial value")
     {
@@ -57,21 +58,17 @@ SCENARIO("Synchronized objects provide mutual exclusive access", "[SynchronizedO
             bool startThread2 = false;
             std::condition_variable condvar;
 
-            std::thread thread
-            {
-                [&]
+            std::thread thread{[&] {
                 {
-                    {
-                        std::unique_lock lock{mutex};
-                        condvar.wait(lock, [&]{return startThread2;});
-                    }
-
-                    auto locked = object.lock();
-                    startThread1 = true;
-                    condvar.notify_one();
-                    std::this_thread::sleep_for(MIN_LOCK_TIME);
+                    std::unique_lock lock{mutex};
+                    condvar.wait(lock, [&] { return startThread2; });
                 }
-            };
+
+                auto locked = object.lock();
+                startThread1 = true;
+                condvar.notify_one();
+                std::this_thread::sleep_for(MIN_LOCK_TIME);
+            }};
 
             THEN("Another thread cannot access the object")
             {
@@ -79,12 +76,14 @@ SCENARIO("Synchronized objects provide mutual exclusive access", "[SynchronizedO
                     std::unique_lock lock{mutex};
                     startThread2 = true;
                     condvar.notify_one();
-                    condvar.wait(lock, [&]{return startThread1.load();});
+                    condvar.wait(lock, [&] { return startThread1.load(); });
                 }
 
                 auto start = std::chrono::system_clock::now();
                 auto locked = object.lock();
-                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start);
+                auto elapsed =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now() - start);
 
                 CHECK(elapsed >= MIN_LOCK_TIME);
             }

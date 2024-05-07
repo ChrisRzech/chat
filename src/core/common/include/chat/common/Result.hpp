@@ -52,7 +52,8 @@ struct Error
 /**
  * @brief Deduction guide.
  *
- * @details Deduce the template parameter of @c Error as the constructor's parameter type.
+ * @details Deduce the template parameter of @c Error as the constructor's
+ * parameter type.
  *
  * @tparam U The type of the value.
  *
@@ -64,17 +65,23 @@ Error(U) -> Error<U>;
 /**
  * @brief A type that holds either a success value or an error value.
  *
- * @details A common use case is to allow a function to return a success value or an error value. The type of the success value is the type
- * expected to be returned when the function is performed successfully. The type of the error value is the type that indicates why a success
- * value is not returned, which is usually simply an integral type but not required to be.
+ * @details A common use case is to allow a function to return a success value
+ * or an error value. The type of the success value is the type expected to be
+ * returned when the function is performed successfully. The type of the error
+ * value is the type that indicates why a success value is not returned, which
+ * is usually simply an integral type but not required to be.
  *
- * To make a result hold a success value, simply use the appropriate constructor or assignment operator. To make a result hold an error
- * value, the error value should be placed in an @c Error before being passed to the appropriate constructor or assignment operator.
+ * To make a result hold a success value, simply use the appropriate constructor
+ * or assignment operator. To make a result hold an error value, the error value
+ * should be placed in an @c Error before being passed to the appropriate
+ * constructor or assignment operator.
  *
- * Requiring the explicit use of @c Error prevents mistaking whether a result holds a success value or an error value. In addition, this
- * also allows the success and error types to be the same.
+ * Requiring the explicit use of @c Error prevents mistaking whether a result
+ * holds a success value or an error value. In addition, this also allows the
+ * success and error types to be the same.
  *
- * If the error type is `void`, a partial template specialization of @c Result is used.
+ * If the error type is `void`, a partial template specialization of @c Result
+ * is used.
  *
  * @tparam S The type of the success value.
  *
@@ -132,8 +139,9 @@ public:
     /**
      * @brief Assign a new success value.
      *
-     * @details If a success value already exists, it is replaced with the new success value. If an error value already exists, it is
-     * destroyed and the new success value is held.
+     * @details If a success value already exists, it is replaced with the new
+     * success value. If an error value already exists, it is destroyed and the
+     * new success value is held.
      *
      * @tparam T The type of the success value.
      *
@@ -152,8 +160,9 @@ public:
     /**
      * @brief Assign a new error value.
      *
-     * @details If a success value already exists, it is destroyed and the new error value is held. If an error value already exists, it is
-     * replaced with the new error value.
+     * @details If a success value already exists, it is destroyed and the new
+     * error value is held. If an error value already exists, it is replaced
+     * with the new error value.
      *
      * @tparam T The type of the error value.
      *
@@ -227,8 +236,9 @@ private:
 /**
  * @brief A type that holds a success value or no success value.
  *
- * @details This is a partial template specialization of @c Result where the error value never exists and instead can only indicate that a
- * success value exists or not. This essentially acts as an @c std::optional.
+ * @details This is a partial template specialization of @c Result where the
+ * error value never exists and instead can only indicate that a success value
+ * exists or not. This essentially acts as an @c std::optional.
  *
  * @tparam S The type of the success value.
  */
@@ -277,8 +287,9 @@ public:
     /**
      * @brief Assign a new success value.
      *
-     * @details If a success value already exists, it is replaced with the new success value. If a success value does not exist, the new
-     * success value is held.
+     * @details If a success value already exists, it is replaced with the new
+     * success value. If a success value does not exist, the new success value
+     * is held.
      *
      * @tparam T The type of the value.
      *

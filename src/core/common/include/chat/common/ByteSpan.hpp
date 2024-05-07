@@ -8,7 +8,8 @@ namespace chat::common
 /**
  * @brief An immutable reference to a contiguous sequence of bytes.
  *
- * @details The byte span does not manage the lifetime of the bytes it refers to.
+ * @details The byte span does not manage the lifetime of the bytes it refers
+ * to.
  */
 class ByteSpan
 {
@@ -74,11 +75,13 @@ public:
     /**
      * @brief Create a new byte span from this byte span.
      *
-     * @param offset The starting index of this byte span for the new byte span to reference to.
+     * @param offset The starting index of this byte span for the new byte span
+     * to reference to.
      *
      * @param size The size of the new byte span.
      *
-     * @return A byte span that refers to a subset of the bytes from this byte span.
+     * @return A byte span that refers to a subset of the bytes from this byte
+     * span.
      */
     ByteSpan subspan(std::size_t offset, std::size_t size) const;
 

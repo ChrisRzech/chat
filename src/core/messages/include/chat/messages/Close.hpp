@@ -10,8 +10,10 @@ namespace chat::messages
 /**
  * @brief A close message.
  *
- * @details This message is sent from the client to the server to indicate that the client wants to close the connection to the server.
- * Once the server receives this message, it can assume that the client will not send anymore messages and the connection can be closed.
+ * @details This message is sent from the client to the server to indicate that
+ * the client wants to close the connection to the server. Once the server
+ * receives this message, it can assume that the client will not send anymore
+ * messages and the connection can be closed.
  */
 class Close : public Message
 {
