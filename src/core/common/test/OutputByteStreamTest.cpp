@@ -17,7 +17,7 @@ SCENARIO("Writing data into an output byte stream", "[OutputByteStream]")
         AND_GIVEN("Data")
         {
             constexpr std::size_t DATA_SIZE = 256;
-            std::array<std::byte, DATA_SIZE> data;
+            std::array<std::byte, DATA_SIZE> data = {};
             std::generate(data.begin(), data.end(), [i = 0]() mutable {
                 return static_cast<std::byte>(i++);
             });
@@ -110,7 +110,7 @@ SCENARIO("Inserting a byte span into an output byte stream",
         AND_GIVEN("Data and byte span of the data")
         {
             constexpr std::size_t DATA_SIZE = 256;
-            std::array<std::byte, DATA_SIZE> data;
+            std::array<std::byte, DATA_SIZE> data = {};
             std::generate(data.begin(), data.end(), [i = 0]() mutable {
                 return static_cast<std::byte>(i++);
             });
@@ -125,7 +125,7 @@ SCENARIO("Inserting a byte span into an output byte stream",
                     "the byte span")
                 {
                     std::array<std::byte, sizeof(std::uint32_t) + DATA_SIZE>
-                        expectedData;
+                        expectedData = {};
                     constexpr auto sizeBytes =
                         chat::common::utility::toNetworkByteOrder<
                             std::uint32_t>(DATA_SIZE);
@@ -169,7 +169,7 @@ SCENARIO("Inserting a byte string into an output byte stream",
                     "of the byte string")
                 {
                     std::array<std::byte, sizeof(std::uint32_t) + DATA_SIZE>
-                        expectedData;
+                        expectedData = {};
                     constexpr auto sizeBytes =
                         chat::common::utility::toNetworkByteOrder<
                             std::uint32_t>(DATA_SIZE);

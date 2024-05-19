@@ -14,7 +14,7 @@ SCENARIO("Reading data from an input byte stream", "[InputByteStream]")
     GIVEN("An input byte stream containing data")
     {
         constexpr std::size_t DATA_SIZE = 256;
-        std::array<std::byte, DATA_SIZE> data;
+        std::array<std::byte, DATA_SIZE> data = {};
         std::generate(data.begin(), data.end(), [i = 0]() mutable {
             return static_cast<std::byte>(i++);
         });
@@ -78,7 +78,7 @@ SCENARIO("Reading a byte array from an input byte stream", "[InputByteStream]")
     GIVEN("An input byte stream containing data")
     {
         constexpr std::size_t DATA_SIZE = 256;
-        std::array<std::byte, DATA_SIZE> data;
+        std::array<std::byte, DATA_SIZE> data = {};
         std::generate(data.begin(), data.end(), [i = 0]() mutable {
             return static_cast<std::byte>(i++);
         });
@@ -173,7 +173,7 @@ SCENARIO("Reading a byte span from an input byte stream", "[InputByteStream]")
     {
         constexpr std::size_t SIZE_SIZE = sizeof(std::uint32_t);
         constexpr std::size_t DATA_SIZE = 256;
-        std::array<std::byte, SIZE_SIZE + DATA_SIZE> data;
+        std::array<std::byte, SIZE_SIZE + DATA_SIZE> data = {};
         constexpr auto sizeBytes =
             chat::common::utility::toNetworkByteOrder<std::uint32_t>(DATA_SIZE);
         auto dataStart =
@@ -228,7 +228,7 @@ SCENARIO("Reading a byte string from an input byte stream", "[InputByteStream]")
     {
         constexpr std::size_t SIZE_SIZE = sizeof(std::uint32_t);
         constexpr std::size_t DATA_SIZE = 256;
-        std::array<std::byte, SIZE_SIZE + DATA_SIZE> data;
+        std::array<std::byte, SIZE_SIZE + DATA_SIZE> data = {};
         constexpr auto sizeBytes =
             chat::common::utility::toNetworkByteOrder<std::uint32_t>(DATA_SIZE);
         auto dataStart =

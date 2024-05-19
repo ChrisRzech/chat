@@ -31,7 +31,7 @@ sf::Packet Serializer::serialize(const Message& message) const
 std::optional<std::unique_ptr<Message>> Serializer::deserialize(
     sf::Packet& packet) const
 {
-    std::underlying_type_t<Message::Type> messageTypeValue;
+    std::underlying_type_t<Message::Type> messageTypeValue{};
     if(!(packet >> messageTypeValue)) {
         return std::nullopt;
     }
