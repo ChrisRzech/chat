@@ -20,7 +20,7 @@ std::unique_ptr<messages::Response> RequestHandler::handle(
     std::unique_ptr<messages::Response> response;
     switch(request.getType()) {
     case messages::Request::Type::Ping:
-        response = handlePing(static_cast<const messages::Ping&>(request));
+        response = handlePing(dynamic_cast<const messages::Ping&>(request));
         break;
     }
 
