@@ -94,7 +94,7 @@ public:
          */
         [[nodiscard]] const T& get() &
         {
-            return m_value;
+            return *m_value;
         }
 
     private:
@@ -107,11 +107,11 @@ public:
          */
         ConstProxy(const SynchronizedObject& synchronizedValue)
           : m_lock{synchronizedValue.m_mutex},
-            m_value{synchronizedValue.m_value}
+            m_value{&synchronizedValue.m_value}
         {}
 
         std::unique_lock<std::mutex> m_lock;
-        const T& m_value;
+        const T* m_value;
     };
 
     /**
@@ -155,7 +155,7 @@ public:
          */
         [[nodiscard]] T& get() &
         {
-            return m_value;
+            return *m_value;
         }
 
     private:
@@ -168,11 +168,11 @@ public:
          */
         Proxy(SynchronizedObject& synchronizedValue)
           : m_lock{synchronizedValue.m_mutex},
-            m_value{synchronizedValue.m_value}
+            m_value{&synchronizedValue.m_value}
         {}
 
         std::unique_lock<std::mutex> m_lock;
-        T& m_value;
+        T* m_value;
     };
 
     /**
