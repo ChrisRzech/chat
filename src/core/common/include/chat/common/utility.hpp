@@ -41,10 +41,10 @@ constexpr ByteArray<sizeof(T)> toNetworkByteOrder(T value)
                   "'bool' is not supported since 'std::make_unsigned' does not "
                   "support 'bool'");
     ByteArray<sizeof(T)> bytes = {};
+    std::make_unsigned_t<T> unsignedValue = value;
     for(std::size_t i = 0; i < bytes.size(); i++) {
-        constexpr auto BYTE_MASK = (1 << CHAR_BIT) - 1;
-        bytes[i] = static_cast<std::byte>(
-            (value >> ((bytes.size() - 1 - i) * CHAR_BIT)) & BYTE_MASK);
+        unsigned int shift = ((bytes.size() - 1 - i) * CHAR_BIT);
+        bytes[i] = static_cast<std::byte>(unsignedValue >> shift);
     }
     return bytes;
 }
@@ -80,12 +80,13 @@ constexpr T toHostByteOrder(const ByteArray<sizeof(T)>& bytes)
     static_assert(!std::is_same_v<T, bool>,
                   "'bool' is not supported since 'std::make_unsigned' does not "
                   "support 'bool'");
-    T value = 0;
+    std::make_unsigned_t<T> unsignedValue = 0;
     for(std::size_t i = 0; i < bytes.size(); i++) {
-        value |= static_cast<T>(static_cast<std::make_unsigned_t<T>>(bytes[i])
-                                << ((bytes.size() - 1 - i) * CHAR_BIT));
+        unsigned int shift = (bytes.size() - 1 - i) * CHAR_BIT;
+        unsignedValue |= static_cast<std::make_unsigned_t<T>>(
+            static_cast<std::make_unsigned_t<T>>(bytes[i]) << shift);
     }
-    return value;
+    return static_cast<T>(unsignedValue);
 }
 
 /**
