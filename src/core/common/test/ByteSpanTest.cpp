@@ -44,3 +44,25 @@ SCENARIO("Creating a byte span over a byte array", "[ByteSpan]")
         }
     }
 }
+
+SCENARIO("Using byte span in range-based for loop", "[ByteSpan]")
+{
+    GIVEN("A byte span")
+    {
+        constexpr std::array<std::byte, 10> bytes = {
+            std::byte{0}, std::byte{1}, std::byte{2}, std::byte{3},
+            std::byte{4}, std::byte{5}, std::byte{6}, std::byte{7},
+            std::byte{8}, std::byte{9},
+        };
+        chat::common::ByteSpan span{bytes.data(), bytes.size()};
+
+        THEN("Using a ranged-based loop goes through all the elements")
+        {
+            int expectedValue = 0;
+            for(auto byte : span) {
+                CHECK(byte == static_cast<std::byte>(expectedValue));
+                expectedValue++;
+            }
+        }
+    }
+}

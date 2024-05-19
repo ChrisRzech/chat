@@ -50,9 +50,9 @@ public:
     ~ByteSpan() = default;
 
     /**
-     * @brief Get a reference to the data.
+     * @brief Get a pointer to the start of the data.
      *
-     * @return A reference to the data.
+     * @return A pointer to the start of the data.
      */
     [[nodiscard]] const std::byte* getData() const;
 
@@ -71,6 +71,23 @@ public:
      * @return A reference to the indexed byte.
      */
     [[nodiscard]] const std::byte& operator[](std::size_t index) const;
+
+    /**
+     * @brief Get an iterator to the first element.
+     *
+     * @return An iterator to the first element.
+     */
+    [[nodiscard]] const std::byte* begin() const;
+
+    /**
+     * @brief Get an iterator to the element following the last element.
+     *
+     * @details The iterator returned is a placeholder and should not be
+     * accessed.
+     *
+     * @return An iterator to the element following the last element.
+     */
+    [[nodiscard]] const std::byte* end() const;
 
     /**
      * @brief Create a new byte span from this byte span.
