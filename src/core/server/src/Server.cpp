@@ -90,7 +90,8 @@ private:
             static_cast<uint16_t>(m_maxThreadCount - 1)};
 
         while(!m_stopping) {
-            if(socketSelector.wait(sf::milliseconds(250))) {
+            constexpr sf::Int32 SOCKET_READY_TIMEOUT{250};
+            if(socketSelector.wait(sf::milliseconds(SOCKET_READY_TIMEOUT))) {
                 if(socketSelector.isReady(listener)) {
                     listen(listener, connections, socketSelector);
                 }
