@@ -37,6 +37,23 @@ public:
         }
     }
 
+    /**
+     * @brief Copy operations are disabled.
+     * @{
+     */
+    Impl(const Impl& other) = delete;
+    Impl& operator=(const Impl& other) = delete;
+    /** @} */
+
+    /**
+     * @brief Move operations are disabled.
+     * @{
+     */
+    Impl(Impl&& other) = delete;
+    Impl& operator=(Impl&& other) = delete;
+
+    /** @} */
+
     ~Impl()
     {
         stop();
