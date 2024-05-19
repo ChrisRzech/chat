@@ -196,12 +196,11 @@ private:
                 // no standard library functionality to transfer ownership from
                 // a `std::unique_ptr` base type to a `std::unique_ptr` derived
                 // type. This must be done manually.
-                if(auto temp =
-                       dynamic_cast<ResponseType*>(message.value().get());
-                   temp != nullptr) {
-                    message.value().release();
-                    response =
-                        std::make_optional(std::unique_ptr<ResponseType>{temp});
+                if(message.value()->getType() ==
+                   messages::Message::Type::Response) {
+                    response = std::make_optional(std::unique_ptr<ResponseType>(
+                        dynamic_cast<ResponseType*>(
+                            message.value().release())));
                 } else {
                     LOG_ERROR << "Received unexpected response type";
                 }
