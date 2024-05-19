@@ -59,7 +59,7 @@ public:
      *
      * @return The data the stream is building.
      */
-    const ByteString& getData() const;
+    [[nodiscard]] const ByteString& getData() const;
 
 private:
     ByteString m_buffer;

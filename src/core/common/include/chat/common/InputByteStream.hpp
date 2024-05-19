@@ -66,21 +66,21 @@ public:
      * @return A value if there is a minimum number of readable bytes left to
      * fullfil the requested size; otherwise, no value.
      */
-    std::optional<ByteSpan> read(std::size_t size);
+    [[nodiscard]] std::optional<ByteSpan> read(std::size_t size);
 
     /**
      * @brief Check if the last read was successful.
      *
      * @return True if the last read was successful; otherwise, false.
      */
-    bool isGood() const;
+    [[nodiscard]] bool isGood() const;
 
     /**
      * @brief Check if there are readable bytes left.
      *
      * @return True if there are readable bytes left; otherwise, false.
      */
-    bool isEmpty() const;
+    [[nodiscard]] bool isEmpty() const;
 
     /**
      * @brief Check if the last read was successful.
@@ -101,7 +101,7 @@ private:
      * @return True if there is a minimum number of readable bytes left to
      * fullfil the requested size; otherwise, false.
      */
-    bool isEnoughBytes(std::size_t size);
+    [[nodiscard]] bool isEnoughBytes(std::size_t size);
 
     ByteSpan m_buffer;
     std::size_t m_readIndex;

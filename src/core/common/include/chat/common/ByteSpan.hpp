@@ -54,14 +54,14 @@ public:
      *
      * @return A reference to the data.
      */
-    const std::byte* getData() const;
+    [[nodiscard]] const std::byte* getData() const;
 
     /**
      * @brief Get the size of the data.
      *
      * @return The size of the data.
      */
-    std::size_t getSize() const;
+    [[nodiscard]] std::size_t getSize() const;
 
     /**
      * @brief Get a reference to a byte.
@@ -70,7 +70,7 @@ public:
      *
      * @return A reference to the indexed byte.
      */
-    const std::byte& operator[](std::size_t index) const;
+    [[nodiscard]] const std::byte& operator[](std::size_t index) const;
 
     /**
      * @brief Create a new byte span from this byte span.
@@ -83,7 +83,7 @@ public:
      * @return A byte span that refers to a subset of the bytes from this byte
      * span.
      */
-    ByteSpan subspan(std::size_t offset, std::size_t size) const;
+    [[nodiscard]] ByteSpan subspan(std::size_t offset, std::size_t size) const;
 
 private:
     const std::byte* m_data;

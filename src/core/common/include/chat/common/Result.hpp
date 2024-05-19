@@ -183,7 +183,7 @@ public:
      *
      * @return True if a success value is held; otherwise, false.
      */
-    bool isSuccess() const
+    [[nodiscard]] bool isSuccess() const
     {
         return m_success.has_value();
     }
@@ -193,7 +193,7 @@ public:
      *
      * @return The success value.
      */
-    S& getSuccessValue()
+    [[nodiscard]] S& getSuccessValue()
     {
         return m_success.value();
     }
@@ -203,7 +203,7 @@ public:
      *
      * @return The success value.
      */
-    const S& getSuccessValue() const
+    [[nodiscard]] const S& getSuccessValue() const
     {
         return m_success.value();
     }
@@ -213,7 +213,7 @@ public:
      *
      * @return The error value.
      */
-    E& getErrorValue()
+    [[nodiscard]] E& getErrorValue()
     {
         return m_error.value();
     }
@@ -223,7 +223,7 @@ public:
      *
      * @return The error value.
      */
-    const E& getErrorValue() const
+    [[nodiscard]] const E& getErrorValue() const
     {
         return m_error.value();
     }
@@ -309,7 +309,7 @@ public:
      *
      * @return True if a success value is held; otherwise, false.
      */
-    bool isSuccess() const
+    [[nodiscard]] bool isSuccess() const
     {
         return m_success.has_value();
     }
@@ -319,7 +319,7 @@ public:
      *
      * @return The success value.
      */
-    S& getSuccessValue()
+    [[nodiscard]] S& getSuccessValue()
     {
         return m_success.value();
     }
@@ -329,7 +329,7 @@ public:
      *
      * @return The success value.
      */
-    const S& getSuccessValue() const
+    [[nodiscard]] const S& getSuccessValue() const
     {
         return m_success.value();
     }
