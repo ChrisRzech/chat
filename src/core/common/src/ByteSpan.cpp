@@ -28,6 +28,16 @@ const std::byte& ByteSpan::operator[](std::size_t index) const
     return m_data[index];
 }
 
+const std::byte* ByteSpan::begin() const
+{
+    return m_data;
+}
+
+const std::byte* ByteSpan::end() const
+{
+    return m_data + m_size;
+}
+
 ByteSpan ByteSpan::subspan(std::size_t offset, std::size_t size) const
 {
     return ByteSpan{m_data + offset, size};
