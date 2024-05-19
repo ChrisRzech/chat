@@ -37,8 +37,8 @@ struct Error
      * @brief Move operations are enabled.
      * @{
      */
-    Error(Error&& other) = default;
-    Error& operator=(Error&& other) = default;
+    Error(Error&& other) noexcept = default;
+    Error& operator=(Error&& other) noexcept = default;
     /** @} */
 
     /**
@@ -127,8 +127,8 @@ public:
      * @brief Move operations are enabled.
      * @{
      */
-    Result(Result&& other) = default;
-    Result& operator=(Result&& other) = default;
+    Result(Result&& other) noexcept = default;
+    Result& operator=(Result&& other) noexcept = default;
     /** @} */
 
     /**
@@ -275,8 +275,8 @@ public:
      * @brief Move operations are enabled.
      * @{
      */
-    Result(Result&& other) = default;
-    Result& operator=(Result&& other) = default;
+    Result(Result&& other) noexcept = default;
+    Result& operator=(Result&& other) noexcept = default;
     /** @} */
 
     /**
