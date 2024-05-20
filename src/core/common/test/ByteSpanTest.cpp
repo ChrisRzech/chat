@@ -38,7 +38,7 @@ SCENARIO("Creating a byte span over a byte array", "[ByteSpan]")
                 REQUIRE(span.getData() == bytes.data());
                 REQUIRE(span.getSize() == bytes.size());
                 for(std::size_t i = 0; i < span.getSize(); i++) {
-                    CHECK(span[i] == bytes[i]);
+                    CHECK(span[i] == bytes.at(i));
                 }
             }
         }

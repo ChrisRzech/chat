@@ -22,13 +22,13 @@ void hexdump(std::ostream& out, const std::byte* bytes, std::size_t size)
         if(i < size) {
             out << std::setw(2) << std::setfill('0') << std::hex
                 << static_cast<int>(bytes[i]) << std::dec << std::setfill(' ');
-            chars[i % BYTES_PER_LINE] =
+            chars.at(i % BYTES_PER_LINE) =
                 std::isprint(static_cast<int>(bytes[i])) != 0
                     ? static_cast<char>(bytes[i])
                     : '.';
         } else {
             out << "  ";
-            chars[i % BYTES_PER_LINE] = ' ';
+            chars.at(i % BYTES_PER_LINE) = ' ';
         }
 
         if((i + 1) % BYTES_PER_LINE == 0) {
