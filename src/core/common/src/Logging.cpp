@@ -25,17 +25,18 @@ std::tm getCalendar(const time_t& timer)
 
 void Logging::enableLoggingToFile(std::filesystem::path logFile, bool truncate)
 {
-    s_logger.enableLoggingToFile(std::move(logFile), truncate);
+    getLogger().enableLoggingToFile(std::move(logFile), truncate);
 }
 
 void Logging::disableLoggingToFile()
 {
-    s_logger.disableLoggingToFile();
+    getLogger().disableLoggingToFile();
 }
 
 Logging::Logger& Logging::getLogger()
 {
-    return s_logger;
+    static Logger logger;
+    return logger;
 }
 
 Logging::LogEntry Logging::createLogEntry(

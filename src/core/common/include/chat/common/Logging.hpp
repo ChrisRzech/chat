@@ -272,8 +272,6 @@ private:
     private:
         std::stringstream m_builder;
     };
-
-    inline static Logger s_logger;
 };
 
 #define LOG(severity)                                                 \
