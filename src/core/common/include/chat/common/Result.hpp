@@ -16,13 +16,12 @@ struct Error
     /**
      * @brief Construct an error with a value.
      *
-     * @tparam U The type of the value.
+     * @tparam T The type of the value.
      *
      * @param value The value.
      */
-    template<typename U>
-    Error(U&& value)
-      : value{std::forward<U>(value)}
+    explicit Error(T value)
+      : value{std::move(value)}
     {}
 
     /**
@@ -50,19 +49,6 @@ struct Error
 };
 
 /**
- * @brief Deduction guide.
- *
- * @details Deduce the template parameter of @c Error as the constructor's
- * parameter type.
- *
- * @tparam U The type of the value.
- *
- * @param value The value.
- */
-template<typename U>
-Error(U) -> Error<U>;
-
-/**
  * @brief A type that holds either a success value or an error value.
  *
  * @details A common use case is to allow a function to return a success value
@@ -80,8 +66,8 @@ Error(U) -> Error<U>;
  * holds a success value or an error value. In addition, this also allows the
  * success and error types to be the same.
  *
- * If the error type is `void`, a partial template specialization of @c Result
- * is used.
+ * If the error type is `void` or is not provided, a partial template
+ * specialization of @c Result is used.
  *
  * @tparam S The type of the success value.
  *
@@ -94,13 +80,10 @@ public:
     /**
      * @brief Construct a result that holds a success value.
      *
-     * @tparam T The type of the success value.
-     *
      * @param value The value.
      */
-    template<typename T>
-    Result(T&& value)
-      : m_success{std::forward<T>(value)},
+    explicit Result(S value)
+      : m_success{std::move(value)},
         m_error{}
     {}
 
@@ -109,8 +92,7 @@ public:
      *
      * @param value The value.
      */
-    template<typename T>
-    Result(Error<T>&& value)
+    explicit Result(Error<E> value)
       : m_success{},
         m_error{std::move(value.value)}
     {}
@@ -143,16 +125,13 @@ public:
      * success value. If an error value already exists, it is destroyed and the
      * new success value is held.
      *
-     * @tparam T The type of the success value.
-     *
      * @param value The value.
      *
      * @return This object.
      */
-    template<typename T>
-    Result& operator=(T&& value)
+    Result& operator=(S value)
     {
-        m_success = std::forward<T>(value);
+        m_success = std::move(value);
         m_error.reset();
         return *this;
     }
@@ -164,14 +143,11 @@ public:
      * error value is held. If an error value already exists, it is replaced
      * with the new error value.
      *
-     * @tparam T The type of the error value.
-     *
      * @param value The value.
      *
      * @return This object.
      */
-    template<typename T>
-    Result& operator=(Error<T>&& value)
+    Result& operator=(Error<E> value)
     {
         m_success.reset();
         m_error = std::move(value.value);
@@ -237,7 +213,7 @@ private:
  * @brief A type that holds a success value or no success value.
  *
  * @details This is a partial template specialization of @c Result where the
- * error value never exists and instead can only indicate that a success value
+ * error value does not exist and instead can only indicate that a success value
  * exists or not. This essentially acts as an @c std::optional.
  *
  * @tparam S The type of the success value.
@@ -254,13 +230,10 @@ public:
     /**
      * @brief Construct a result that holds a success value.
      *
-     * @tparam T The type of the success value.
-     *
      * @param value The value.
      */
-    template<typename T>
-    Result(T&& value)
-      : m_success{std::forward<T>(value)}
+    explicit Result(S value)
+      : m_success{std::move(value)}
     {}
 
     /**
@@ -291,16 +264,13 @@ public:
      * success value. If a success value does not exist, the new success value
      * is held.
      *
-     * @tparam T The type of the value.
-     *
      * @param value The value.
      *
      * @return This object.
      */
-    template<typename T>
-    Result& operator=(T&& value)
+    Result& operator=(S value)
     {
-        m_success = std::forward<T>(value);
+        m_success = std::move(value);
         return *this;
     }
 

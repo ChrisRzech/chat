@@ -16,7 +16,7 @@ SCENARIO("A result that can hold an error value", "[Result]")
 {
     GIVEN("A result that is constructed with a success value")
     {
-        chat::common::Result<int, int> result = SUCCESS_VALUE;
+        chat::common::Result<int, int> result{SUCCESS_VALUE};
 
         THEN("The result holds the success value")
         {
@@ -54,8 +54,7 @@ SCENARIO("A result that can hold an error value", "[Result]")
 
     GIVEN("A result that is constructed with an error value")
     {
-        chat::common::Result<int, int> result =
-            chat::common::Error{ERROR_VALUE};
+        chat::common::Result<int, int> result{chat::common::Error{ERROR_VALUE}};
 
         THEN("The result holds the error value")
         {
@@ -118,7 +117,7 @@ SCENARIO("A result that cannot hold an error value", "[Result]")
 
     GIVEN("A result that is constructed with a success value")
     {
-        chat::common::Result<int> result = SUCCESS_VALUE;
+        chat::common::Result<int> result{SUCCESS_VALUE};
 
         THEN("The result holds the success value")
         {
