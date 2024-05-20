@@ -30,14 +30,15 @@ Logging::LogEntry Logging::createLogEntry(
 
     auto time = std::chrono::system_clock::now();
     auto cTime = std::chrono::system_clock::to_time_t(time);
-    auto calendar = *std::gmtime(&cTime);
+    constexpr int MILLISECONDS_IN_SECOND = 1000;
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
                             time.time_since_epoch()) %
-                        1000;
+                        MILLISECONDS_IN_SECOND;
 
     // Format `yyyy-mm-dd hh:mm:ss.ms` and GMT timezone
+    constexpr int START_YEAR = 1900;
     entry << std::setfill('0');
-    entry << calendar.tm_year + 1900 << '-';
+    entry << calendar.tm_year + START_YEAR << '-';
     entry << std::setw(2) << calendar.tm_mon + 1 << '-';
     entry << std::setw(2) << calendar.tm_mday << ' ';
     entry << std::setw(2) << calendar.tm_hour << ':';
@@ -65,8 +66,9 @@ Logging::LogEntry Logging::createLogEntry(
         severityString = "DEBUG";
         break;
     }
+    constexpr int SEVERITY_WIDTH = 5;
     entry << std::left;
-    entry << std::setw(5) << severityString;
+    entry << std::setw(SEVERITY_WIDTH) << severityString;
     entry << std::right;
     entry << ' ';
 
