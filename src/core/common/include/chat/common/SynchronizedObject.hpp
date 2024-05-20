@@ -27,7 +27,7 @@ public:
      * @param args The arguments used to construct the object.
      */
     template<typename... Args>
-    SynchronizedObject(Args&&... args)
+    explicit SynchronizedObject(Args&&... args)
       : m_mutex{},
         m_value{std::forward<Args>(args)...}
     {}
@@ -105,7 +105,7 @@ public:
          *
          * @param synchronizedValue The synchronized value creating the proxy.
          */
-        ConstProxy(const SynchronizedObject& synchronizedValue)
+        explicit ConstProxy(const SynchronizedObject& synchronizedValue)
           : m_lock{synchronizedValue.m_mutex},
             m_value{&synchronizedValue.m_value}
         {}
@@ -166,7 +166,7 @@ public:
          *
          * @param synchronizedValue The synchronized value creating the proxy.
          */
-        Proxy(SynchronizedObject& synchronizedValue)
+        explicit Proxy(SynchronizedObject& synchronizedValue)
           : m_lock{synchronizedValue.m_mutex},
             m_value{&synchronizedValue.m_value}
         {}

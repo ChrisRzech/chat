@@ -12,7 +12,7 @@ SCENARIO("Synchronized objects can be modified", "[SynchronizedObject]")
 {
     GIVEN("A synchronized object with an initial value")
     {
-        chat::common::SynchronizedObject<std::string> object = "initial";
+        chat::common::SynchronizedObject<std::string> object{"initial"};
 
         THEN("The object starts with that value")
         {
@@ -42,7 +42,7 @@ SCENARIO("Synchronized objects provide mutual exclusive access",
 {
     GIVEN("A synchronized object with an initial value")
     {
-        chat::common::SynchronizedObject<std::string> object = "initial";
+        chat::common::SynchronizedObject<std::string> object{"initial"};
 
         THEN("The object starts with that value")
         {
