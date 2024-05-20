@@ -15,8 +15,9 @@ void hexdump(std::ostream& out, const std::byte* bytes, std::size_t size)
 
     for(std::size_t i = 0; i < size + linePaddingCount; i++) {
         if(i % BYTES_PER_LINE == 0) {
-            out << std::setw(8) << std::setfill('0') << std::hex << i
-                << std::dec << std::setfill(' ') << "  ";
+            constexpr int ADDRESS_DIGIT_COUNT = 8;
+            out << std::setw(ADDRESS_DIGIT_COUNT) << std::setfill('0')
+                << std::hex << i << std::dec << std::setfill(' ') << "  ";
         }
 
         if(i < size) {
