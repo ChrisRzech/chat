@@ -89,7 +89,7 @@ public:
      *
      * @return True if the last read was successful; otherwise, false.
      */
-    operator bool() const;
+    explicit operator bool() const;
 
 private:
     /**
