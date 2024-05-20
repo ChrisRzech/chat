@@ -24,7 +24,7 @@ InputByteStream& readIntegral(InputByteStream& in, T& value)
 }
 
 InputByteStream::InputByteStream(ByteSpan buffer)
-  : m_buffer{std::move(buffer)},
+  : m_buffer{buffer},
     m_readIndex{0},
     m_failed{false}
 {}
