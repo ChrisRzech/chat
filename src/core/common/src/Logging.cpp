@@ -1,5 +1,6 @@
 #include "chat/common/Logging.hpp"
 
+#include <ctime>
 #include <iostream>
 #include <stdexcept>
 #include <string_view>
@@ -7,6 +8,20 @@
 
 namespace chat::common
 {
+
+namespace
+{
+
+std::tm getCalendar(const time_t& timer)
+{
+    // `std::gmtime()` is not thread safe while `::gmtime_r()` should be. The
+    // only concern is that `::gmtime_r()` might not be portable.
+    std::tm calendar{};
+    auto result = ::gmtime_r(&timer, &calendar);
+    return result != nullptr ? *result : std::tm{};
+}
+
+}
 
 void Logging::enableLoggingToFile(std::filesystem::path logFile, bool truncate)
 {
@@ -30,6 +45,7 @@ Logging::LogEntry Logging::createLogEntry(
 
     auto time = std::chrono::system_clock::now();
     auto cTime = std::chrono::system_clock::to_time_t(time);
+    auto calendar = getCalendar(cTime);
     constexpr int MILLISECONDS_IN_SECOND = 1000;
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
                             time.time_since_epoch()) %
