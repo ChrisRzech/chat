@@ -19,12 +19,9 @@ OutputByteStream& writeIntegral(OutputByteStream& out, const T& value)
 
 }
 
-void OutputByteStream::write(const std::byte* buffer, std::size_t size)
+void OutputByteStream::write(const ByteSpan& bytes)
 {
-    m_buffer.reserve(m_buffer.size() + size);
-    for(std::size_t i = 0; i < size; i++) {
-        m_buffer.push_back(buffer[i]);
-    }
+    m_buffer.insert(m_buffer.end(), bytes.begin(), bytes.end());
 }
 
 const ByteString& OutputByteStream::getData() const
@@ -75,7 +72,7 @@ OutputByteStream& operator<<(OutputByteStream& out, std::uint64_t value)
 OutputByteStream& operator<<(OutputByteStream& out, const ByteSpan& span)
 {
     out << static_cast<std::uint32_t>(span.getSize());
-    out.write(span.getData(), span.getSize());
+    out.write(span);
     return out;
 }
 

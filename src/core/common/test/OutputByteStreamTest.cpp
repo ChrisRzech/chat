@@ -21,10 +21,11 @@ SCENARIO("Writing data into an output byte stream", "[OutputByteStream]")
             std::generate(data.begin(), data.end(), [i = 0]() mutable {
                 return static_cast<std::byte>(i++);
             });
+            const chat::common::ByteSpan bytes{data.data(), data.size()};
 
             WHEN("The data is written to the stream")
             {
-                stream.write(data.data(), data.size());
+                stream.write(bytes);
 
                 THEN("The stream contains the data")
                 {

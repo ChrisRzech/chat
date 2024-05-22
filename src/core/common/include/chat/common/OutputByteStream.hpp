@@ -48,11 +48,9 @@ public:
     /**
      * @brief Write bytes into the stream.
      *
-     * @param buffer The buffer of bytes to use.
-     *
-     * @param size The size of the buffer.
+     * @param bytes The bytes to use.
      */
-    void write(const std::byte* buffer, std::size_t size);
+    void write(const ByteSpan& bytes);
 
     /**
      * @brief Get the data the stream is building.
@@ -80,7 +78,7 @@ template<std::size_t N>
 inline OutputByteStream& operator<<(OutputByteStream& out,
                                     const ByteArray<N>& buffer)
 {
-    out.write(buffer.data(), buffer.size());
+    out.write(ByteSpan{buffer.data(), buffer.size()});
     return out;
 }
 
