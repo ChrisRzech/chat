@@ -9,7 +9,7 @@ SCENARIO("Creating an empty byte span", "[ByteSpan]")
 {
     GIVEN("An empty byte span")
     {
-        chat::common::ByteSpan span;
+        const chat::common::ByteSpan span;
 
         THEN("The byte span does not refer to data")
         {
@@ -31,7 +31,7 @@ SCENARIO("Creating a byte span over a byte array", "[ByteSpan]")
 
         WHEN("A byte span is created over the byte array")
         {
-            chat::common::ByteSpan span{bytes.data(), bytes.size()};
+            const chat::common::ByteSpan span{bytes.data(), bytes.size()};
 
             THEN("The span refers to the same bytes as the byte array")
             {
@@ -54,7 +54,7 @@ SCENARIO("Using byte span in range-based for loop", "[ByteSpan]")
             std::byte{4}, std::byte{5}, std::byte{6}, std::byte{7},
             std::byte{8}, std::byte{9},
         };
-        chat::common::ByteSpan span{bytes.data(), bytes.size()};
+        const chat::common::ByteSpan span{bytes.data(), bytes.size()};
 
         THEN("Using a ranged-based loop goes through all the elements")
         {

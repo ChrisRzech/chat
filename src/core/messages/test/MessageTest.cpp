@@ -12,7 +12,7 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
 {
     GIVEN("A close message")
     {
-        chat::messages::Close message;
+        const chat::messages::Close message;
 
         THEN("The message type is `Close`")
         {
@@ -26,7 +26,7 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
 
             AND_WHEN("The message is deserialized")
             {
-                decltype(message) deserialized;
+                chat::messages::Close deserialized;
                 CHECK(deserialized.deserialize(packet));
 
                 THEN(
@@ -41,7 +41,7 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
 
     GIVEN("A ping request message")
     {
-        chat::messages::Ping message;
+        const chat::messages::Ping message;
 
         THEN("The message type is `Request`")
         {
@@ -61,7 +61,7 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
 
             AND_WHEN("The message is deserialized")
             {
-                decltype(message) deserialized;
+                chat::messages::Ping deserialized;
                 CHECK(deserialized.deserialize(packet));
 
                 THEN(
@@ -76,7 +76,7 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
 
     GIVEN("A pong response message")
     {
-        chat::messages::Pong message;
+        const chat::messages::Pong message;
 
         THEN("The message type is `Response`")
         {
@@ -96,7 +96,7 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
 
             AND_WHEN("The message is deserialized")
             {
-                decltype(message) deserialized;
+                chat::messages::Pong deserialized;
                 CHECK(deserialized.deserialize(packet));
 
                 THEN(

@@ -14,7 +14,7 @@ SCENARIO("Handling requests", "[RequestHandler]")
 
         WHEN("Handling a ping request")
         {
-            chat::messages::Ping request;
+            const chat::messages::Ping request;
             auto response = handler.handle(request);
 
             THEN("A pong response is provided")

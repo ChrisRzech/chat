@@ -12,11 +12,11 @@ SCENARIO("Using the serializer to serializing and deserializing messages",
 {
     GIVEN("A serializer")
     {
-        chat::messages::Serializer serializer;
+        const chat::messages::Serializer serializer;
 
         AND_GIVEN("A close message")
         {
-            chat::messages::Close message;
+            const chat::messages::Close message;
 
             WHEN("The message is serialized using the serializer")
             {
@@ -41,7 +41,7 @@ SCENARIO("Using the serializer to serializing and deserializing messages",
 
         AND_GIVEN("A ping request message")
         {
-            chat::messages::Ping message;
+            const chat::messages::Ping message;
 
             WHEN("The message is serialized using the serializer")
             {
@@ -72,7 +72,7 @@ SCENARIO("Using the serializer to serializing and deserializing messages",
 
         AND_GIVEN("A pong response message")
         {
-            chat::messages::Pong message;
+            const chat::messages::Pong message;
 
             WHEN("The message is serialized using the serializer")
             {

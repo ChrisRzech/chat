@@ -27,7 +27,7 @@ ThreadPool::ThreadPool(uint16_t threadCount)
 ThreadPool::~ThreadPool()
 {
     {
-        std::unique_lock lock{m_mutex};
+        const std::unique_lock lock{m_mutex};
         m_stopping = true;
     }
     m_workCondvar.notify_all();
@@ -41,7 +41,7 @@ ThreadPool::~ThreadPool()
 void ThreadPool::queue(std::function<void()> job)
 {
     {
-        std::unique_lock lock{m_mutex};
+        const std::unique_lock lock{m_mutex};
         m_jobs.emplace(std::move(job));
     }
     m_workCondvar.notify_one();
@@ -49,14 +49,14 @@ void ThreadPool::queue(std::function<void()> job)
 
 void ThreadPool::pause()
 {
-    std::unique_lock lock{m_mutex};
+    const std::unique_lock lock{m_mutex};
     m_pause = true;
 }
 
 void ThreadPool::resume()
 {
     {
-        std::unique_lock lock{m_mutex};
+        const std::unique_lock lock{m_mutex};
         m_pause = false;
     }
     m_workCondvar.notify_all();

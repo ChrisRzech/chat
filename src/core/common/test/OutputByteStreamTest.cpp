@@ -114,7 +114,7 @@ SCENARIO("Inserting a byte span into an output byte stream",
             std::generate(data.begin(), data.end(), [i = 0]() mutable {
                 return static_cast<std::byte>(i++);
             });
-            chat::common::ByteSpan span{data.data(), data.size()};
+            const chat::common::ByteSpan span{data.data(), data.size()};
 
             WHEN("The byte span is written to the stream")
             {

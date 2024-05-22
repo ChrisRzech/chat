@@ -11,7 +11,8 @@ void hexdump(std::ostream& out, const std::byte* bytes, std::size_t size)
     constexpr std::size_t BYTES_PER_LINE = 16;
     // Make sure to have null-terminator
     std::array<char, BYTES_PER_LINE + 1> chars = {'\0'};
-    std::size_t linePaddingCount = BYTES_PER_LINE - (size % BYTES_PER_LINE);
+    const std::size_t linePaddingCount =
+        BYTES_PER_LINE - (size % BYTES_PER_LINE);
 
     for(std::size_t i = 0; i < size + linePaddingCount; i++) {
         if(i % BYTES_PER_LINE == 0) {

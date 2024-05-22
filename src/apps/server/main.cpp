@@ -12,7 +12,7 @@ int main()
         constexpr uint16_t MAX_THREAD_COUNT = 4;
         chat::server::Server server(PORT, MAX_THREAD_COUNT);
         server.start();
-        bool stopping = false;
+        const bool stopping = false;
         while(!stopping) {
             // TODO Wait for something to stop the server
         }

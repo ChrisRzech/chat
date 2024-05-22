@@ -181,7 +181,7 @@ SCENARIO("Reading a byte span from an input byte stream", "[InputByteStream]")
         std::generate(dataStart, data.end(), [i = 0]() mutable {
             return static_cast<std::byte>(i++);
         });
-        chat::common::ByteSpan expectedSpan{dataStart, DATA_SIZE};
+        const chat::common::ByteSpan expectedSpan{dataStart, DATA_SIZE};
 
         chat::common::InputByteStream stream{
             chat::common::ByteSpan{data.data(), data.size()}};

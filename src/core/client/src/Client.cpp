@@ -174,7 +174,7 @@ private:
         LOG_DEBUG << "Sending request...";
 
         auto packet = m_serializer.serialize(request);
-        bool success = sendPacket(packet);
+        const bool success = sendPacket(packet);
 
         LOG_DEBUG << "Finished sending request";
         return success;
