@@ -118,9 +118,7 @@ InputByteStream& operator>>(InputByteStream& in, ByteString& buffer)
     if(in >> size) {
         auto bytes = in.read(static_cast<std::size_t>(size));
         if(bytes.has_value()) {
-            auto dataBegin = bytes.value().getData();
-            auto dataEnd = dataBegin + bytes.value().getSize();
-            buffer = ByteString{dataBegin, dataEnd};
+            buffer = ByteString{bytes.value().begin(), bytes.value().end()};
         }
     }
     return in;

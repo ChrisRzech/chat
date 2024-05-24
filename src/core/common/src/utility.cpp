@@ -5,23 +5,23 @@
 namespace chat::common::utility
 {
 
-void hexdump(std::ostream& out, const std::byte* bytes, std::size_t size)
+void hexdump(std::ostream& out, const ByteSpan& bytes)
 {
     constexpr std::size_t BYTES_PER_CHUNK = 2;
     constexpr std::size_t BYTES_PER_LINE = 16;
     // Make sure to have null-terminator
     std::array<char, BYTES_PER_LINE + 1> chars = {'\0'};
     const std::size_t linePaddingCount =
-        BYTES_PER_LINE - (size % BYTES_PER_LINE);
+        BYTES_PER_LINE - (bytes.getSize() % BYTES_PER_LINE);
 
-    for(std::size_t i = 0; i < size + linePaddingCount; i++) {
+    for(std::size_t i = 0; i < bytes.getSize() + linePaddingCount; i++) {
         if(i % BYTES_PER_LINE == 0) {
             constexpr int ADDRESS_DIGIT_COUNT = 8;
             out << std::setw(ADDRESS_DIGIT_COUNT) << std::setfill('0')
                 << std::hex << i << std::dec << std::setfill(' ') << "  ";
         }
 
-        if(i < size) {
+        if(i < bytes.getSize()) {
             out << std::setw(2) << std::setfill('0') << std::hex
                 << static_cast<int>(bytes[i]) << std::dec << std::setfill(' ');
             chars.at(i % BYTES_PER_LINE) =

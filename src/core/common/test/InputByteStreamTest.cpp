@@ -49,10 +49,8 @@ SCENARIO("Reading data from an input byte stream", "[InputByteStream]")
             {
                 REQUIRE(read.has_value());
                 REQUIRE(read.value().getSize() == data.size());
-                CHECK(
-                    std::equal(read.value().getData(),
-                               read.value().getData() + read.value().getSize(),
-                               data.begin()));
+                CHECK(std::equal(read.value().begin(), read.value().end(),
+                                 data.begin()));
             }
 
             WHEN("Attempting to read more data than there is in the stream")
@@ -214,9 +212,8 @@ SCENARIO("Reading a byte span from an input byte stream", "[InputByteStream]")
             THEN("The byte span contains the expected value")
             {
                 REQUIRE(span.getSize() == expectedSpan.getSize());
-                CHECK(std::equal(span.getData(),
-                                 span.getData() + span.getSize(),
-                                 expectedSpan.getData()));
+                CHECK(
+                    std::equal(span.begin(), span.end(), expectedSpan.begin()));
             }
         }
     }

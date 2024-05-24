@@ -1,6 +1,7 @@
 #pragma once
 
 #include "chat/common/ByteArray.hpp"
+#include "chat/common/ByteSpan.hpp"
 
 #include <climits>
 #include <cstddef>
@@ -98,10 +99,8 @@ constexpr T toHostByteOrder(const ByteArray<sizeof(T)>& bytes)
  *
  * @param out The stream to output to.
  *
- * @param bytes A pointer to the bytes to be printed.
- *
- * @param size The number of bytes to print.
+ * @param bytes The bytes to be printed.
  */
-void hexdump(std::ostream& out, const std::byte* bytes, std::size_t size);
+void hexdump(std::ostream& out, const ByteSpan& bytes);
 
 }
