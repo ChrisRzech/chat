@@ -27,7 +27,7 @@ public:
      *
      * @param port The port that the chat server is bound to.
      */
-    Client(std::string host, uint16_t port);
+    Client(const std::string& host, uint16_t port);
 
     /**
      * @brief Copy operations are disabled.
