@@ -22,23 +22,35 @@ namespace chat::messages
 namespace
 {
 
-template<typename T>
-using Creator = std::function<std::unique_ptr<T>()>;
+template<typename KeyType, typename BaseType>
+using Factory =
+    std::unordered_map<KeyType, std::function<std::unique_ptr<BaseType>()>>;
+using RequestFactory = Factory<Request::Type, Request>;
+using ResponseFactory = Factory<Response::Type, Response>;
 
 template<typename T>
-Creator<T> create()
+std::unique_ptr<T> create()
 {
-    return [] { return std::make_unique<T>(); };
+    return std::make_unique<T>();
 }
 
-template<typename KeyType, typename BaseType>
-using Factory = std::unordered_map<KeyType, BaseType>;
+const RequestFactory& getRequestFactory()
+{
+    // Using `thread_local` here instead of just `static` removes the
+    // requirement of needing to use synchronization mechanisms
+    thread_local const RequestFactory factory = {
+        {Request::Type::Ping, create<Ping>}};
+    return factory;
+}
 
-const Factory<Request::Type, Creator<Request>> requestFactory = {
-    {Request::Type::Ping, create<Ping>()}};
-
-const Factory<Response::Type, Creator<Response>> responseFactory = {
-    {Response::Type::Pong, create<Pong>()}};
+const ResponseFactory& getResponseFactory()
+{
+    // Using `thread_local` here instead of just `static` removes the
+    // requirement of needing to use synchronization mechanisms
+    thread_local const ResponseFactory factory = {
+        {Response::Type::Pong, create<Pong>}};
+    return factory;
+}
 
 template<typename KeyType, typename BaseType>
 std::optional<std::unique_ptr<Message>> createMessage(
@@ -83,11 +95,11 @@ std::optional<std::unique_ptr<Message>> deserialize(
         break;
 
     case Message::Type::Request:
-        message = createMessage(requestFactory, stream);
+        message = createMessage(getRequestFactory(), stream);
         break;
 
     case Message::Type::Response:
-        message = createMessage(responseFactory, stream);
+        message = createMessage(getResponseFactory(), stream);
         break;
     }
 
