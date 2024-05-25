@@ -1,8 +1,9 @@
 #pragma once
 
-#include "chat/messages/Message.hpp"
+#include "chat/common/InputByteStream.hpp"
+#include "chat/common/OutputByteStream.hpp"
 
-#include <SFML/Network/Packet.hpp>
+#include "chat/messages/Message.hpp"
 
 #include <cstdint>
 
@@ -55,11 +56,11 @@ public:
     [[nodiscard]] Type getType() const;
 
     /**
-     * @brief Serialize the message into a packet.
+     * @brief Serialize the message into a stream.
      *
-     * @param packet The packet to serialize the message into.
+     * @param stream The stream to serialize the message into.
      */
-    void serialize(sf::Packet& packet) const override;
+    void serialize(common::OutputByteStream& stream) const override;
 
 protected:
     /**

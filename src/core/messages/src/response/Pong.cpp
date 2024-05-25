@@ -7,13 +7,13 @@ Pong::Pong()
   : Response{Type::Pong}
 {}
 
-void Pong::serialize(sf::Packet& packet) const
+void Pong::serialize(common::OutputByteStream& stream) const
 {
-    Response::serialize(packet);
+    Response::serialize(stream);
     // No data to insert
 }
 
-bool Pong::deserialize([[maybe_unused]] sf::Packet& packet)
+bool Pong::deserialize([[maybe_unused]] common::InputByteStream& stream)
 {
     // No data to extract
     return true;

@@ -12,9 +12,9 @@ Message::Type Message::getType() const
     return m_type;
 }
 
-void Message::serialize(sf::Packet& packet) const
+void Message::serialize(common::OutputByteStream& stream) const
 {
-    packet << std::underlying_type_t<Type>(m_type);
+    stream << std::underlying_type_t<Type>(m_type);
 }
 
 }

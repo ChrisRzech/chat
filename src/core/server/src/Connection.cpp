@@ -6,6 +6,7 @@
 
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
+#include "chat/messages/serialize.hpp"
 
 #include "chat/messages/request/Ping.hpp"
 
@@ -19,8 +20,7 @@ Connection::Connection(std::unique_ptr<sf::TcpSocket> socket)
     m_beingHandled{false},
     m_connected{true},
     m_failCount{0},
-    m_lastUsageTime{std::chrono::steady_clock::now()},
-    m_serializer{}
+    m_lastUsageTime{std::chrono::steady_clock::now()}
 {
     // TODO A custom socket class should be made to allow custom features to it
     // such as blocking non-blocking send/receive and secure communication. A
@@ -199,7 +199,10 @@ std::optional<std::unique_ptr<messages::Request>> Connection::receiveRequest()
 
     std::optional<std::unique_ptr<messages::Request>> request;
     if(auto packet = receivePacket(); packet.has_value()) {
-        if(auto message = m_serializer.deserialize(packet.value());
+        common::ByteSpan serialized{
+            reinterpret_cast<const std::byte*>(packet.value().getData()),
+            packet.value().getDataSize()};
+        if(auto message = messages::deserialize(serialized);
            message.has_value()) {
             // The message is placed inside an `std::unique_ptr`. There is no
             // standard library functionality to transfer ownership from a
@@ -223,7 +226,9 @@ void Connection::sendResponse(const messages::Response& response)
 {
     LOG_DEBUG << "Sending response...";
 
-    auto packet = m_serializer.serialize(response);
+    auto serialized = messages::serialize(response);
+    sf::Packet packet;
+    packet.append(serialized.data(), serialized.size());
     sendPacket(packet);
 
     LOG_DEBUG << "Finished sending response";

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <SFML/Network/Packet.hpp>
+#include "chat/common/InputByteStream.hpp"
+#include "chat/common/OutputByteStream.hpp"
 
 #include <cstdint>
 
@@ -23,7 +24,8 @@ namespace chat::messages
  * type. Using @c deserialize() on its own has some complications as the correct
  * derived message type must be created before deserializing the buffer along
  * with making sure the buffer is clear of any metadata. Therefore, it is
- * recommended to use @c chat::messages::Serializer to perform all message
+ * recommended to use the @c chat::messages::serialize() and
+ * @c chat::messages::deserialize() utility functions to perform all message
  * serialization and deserialization.
  *
  * Messages are structured in a hierarchy of types. At the top level, there is
@@ -74,20 +76,20 @@ public:
     [[nodiscard]] Type getType() const;
 
     /**
-     * @brief Serialize the message into a packet.
+     * @brief Serialize the message into a stream.
      *
-     * @param packet The packet to serialize the message into.
+     * @param stream The stream to serialize the message into.
      */
-    virtual void serialize(sf::Packet& packet) const;
+    virtual void serialize(common::OutputByteStream& stream) const;
 
     /**
-     * @brief Deserialize the message from a packet.
+     * @brief Deserialize the message from a stream.
      *
-     * @param packet The packet to deserialize the message from.
+     * @param stream The stream to deserialize the message from.
      *
      * @return True if the message successfully deserialized; otherwise, false.
      */
-    [[nodiscard]] virtual bool deserialize(sf::Packet& packet) = 0;
+    [[nodiscard]] virtual bool deserialize(common::InputByteStream& stream) = 0;
 
 protected:
     /**

@@ -13,10 +13,10 @@ Request::Type Request::getType() const
     return m_type;
 }
 
-void Request::serialize(sf::Packet& packet) const
+void Request::serialize(common::OutputByteStream& stream) const
 {
-    Message::serialize(packet);
-    packet << static_cast<std::underlying_type_t<Type>>(m_type);
+    Message::serialize(stream);
+    stream << static_cast<std::underlying_type_t<Type>>(m_type);
 }
 
 }

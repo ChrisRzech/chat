@@ -7,13 +7,13 @@ Close::Close()
   : Message{Type::Close}
 {}
 
-void Close::serialize([[maybe_unused]] sf::Packet& packet) const
+void Close::serialize([[maybe_unused]] common::OutputByteStream& stream) const
 {
-    Message::serialize(packet);
+    Message::serialize(stream);
     // No data to insert
 }
 
-bool Close::deserialize([[maybe_unused]] sf::Packet& packet)
+bool Close::deserialize([[maybe_unused]] common::InputByteStream& stream)
 {
     // No data to extract
     return true;

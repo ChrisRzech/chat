@@ -4,7 +4,6 @@
 
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
-#include "chat/messages/Serializer.hpp"
 
 #include <SFML/Network/Packet.hpp>
 #include <SFML/Network/TcpSocket.hpp>
@@ -122,7 +121,6 @@ private:
     std::atomic_uint32_t m_failCount;
     chat::common::SynchronizedObject<std::chrono::steady_clock::time_point>
         m_lastUsageTime;
-    messages::Serializer m_serializer;
 };
 
 }

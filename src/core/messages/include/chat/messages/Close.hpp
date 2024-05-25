@@ -1,8 +1,9 @@
 #pragma once
 
-#include "chat/messages/Message.hpp"
+#include "chat/common/InputByteStream.hpp"
+#include "chat/common/OutputByteStream.hpp"
 
-#include <SFML/Network/Packet.hpp>
+#include "chat/messages/Message.hpp"
 
 namespace chat::messages
 {
@@ -45,20 +46,20 @@ public:
     ~Close() override = default;
 
     /**
-     * @brief Serialize the message's data into a packet.
+     * @brief Serialize the message into a stream.
      *
-     * @param packet The packet to insert the message's data into.
+     * @param stream The stream to serialize the message into.
      */
-    void serialize(sf::Packet& packet) const override;
+    void serialize(common::OutputByteStream& stream) const override;
 
     /**
-     * @brief Deserialize the message's data from a packet.
+     * @brief Deserialize the message from a stream.
      *
-     * @param packet The packet to extract the message's data from.
+     * @param stream The stream to deserialize the message from.
      *
-     * @return True if the message was deserialized.
+     * @return True if the message successfully deserialized; otherwise, false.
      */
-    [[nodiscard]] bool deserialize(sf::Packet& packet) override;
+    [[nodiscard]] bool deserialize(common::InputByteStream& stream) override;
 };
 
 }

@@ -1,3 +1,6 @@
+#include "chat/common/InputByteStream.hpp"
+#include "chat/common/OutputByteStream.hpp"
+
 #include "chat/messages/Close.hpp"
 
 #include "chat/messages/request/Ping.hpp"
@@ -5,8 +8,6 @@
 #include "chat/messages/response/Pong.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-
-#include <SFML/Network/Packet.hpp>
 
 SCENARIO("Serializing and deserializing messages", "[Message]")
 {
@@ -21,13 +22,16 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
 
         WHEN("The message is serialized")
         {
-            sf::Packet packet;
-            message.serialize(packet);
+            chat::common::OutputByteStream out;
+            message.serialize(out);
+            const auto& serialized = out.getData();
 
             AND_WHEN("The message is deserialized")
             {
+                chat::common::InputByteStream in{chat::common::ByteSpan{
+                    serialized.data(), serialized.size()}};
                 chat::messages::Close deserialized;
-                CHECK(deserialized.deserialize(packet));
+                CHECK(deserialized.deserialize(in));
 
                 THEN(
                     "The deserialized message is the same as the original "
@@ -56,13 +60,16 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
 
         WHEN("The message is serialized")
         {
-            sf::Packet packet;
-            message.serialize(packet);
+            chat::common::OutputByteStream out;
+            message.serialize(out);
+            const auto& serialized = out.getData();
 
             AND_WHEN("The message is deserialized")
             {
+                chat::common::InputByteStream in{chat::common::ByteSpan{
+                    serialized.data(), serialized.size()}};
                 chat::messages::Ping deserialized;
-                CHECK(deserialized.deserialize(packet));
+                CHECK(deserialized.deserialize(in));
 
                 THEN(
                     "The deserialized message is the same as the original "
@@ -91,13 +98,16 @@ SCENARIO("Serializing and deserializing messages", "[Message]")
 
         WHEN("The message is serialized")
         {
-            sf::Packet packet;
-            message.serialize(packet);
+            chat::common::OutputByteStream out;
+            message.serialize(out);
+            const auto& serialized = out.getData();
 
             AND_WHEN("The message is deserialized")
             {
+                chat::common::InputByteStream in{chat::common::ByteSpan{
+                    serialized.data(), serialized.size()}};
                 chat::messages::Pong deserialized;
-                CHECK(deserialized.deserialize(packet));
+                CHECK(deserialized.deserialize(in));
 
                 THEN(
                     "The deserialized message is the same as the original "

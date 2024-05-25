@@ -1,5 +1,8 @@
 #pragma once
 
+#include "chat/common/InputByteStream.hpp"
+#include "chat/common/OutputByteStream.hpp"
+
 #include "chat/messages/Response.hpp"
 
 namespace chat::messages
@@ -38,20 +41,20 @@ public:
     ~Pong() override = default;
 
     /**
-     * @brief Serialize the message into a packet.
+     * @brief Serialize the message into a stream.
      *
-     * @param packet The packet to serialize the message into.
+     * @param stream The stream to serialize the message into.
      */
-    void serialize(sf::Packet& packet) const override;
+    void serialize(common::OutputByteStream& stream) const override;
 
     /**
-     * @brief Deserialize the message from a packet.
+     * @brief Deserialize the message from a stream.
      *
-     * @param packet The packet to deserialize the message from.
+     * @param stream The stream to deserialize the message from.
      *
      * @return True if the message successfully deserialized; otherwise, false.
      */
-    [[nodiscard]] bool deserialize(sf::Packet& packet) override;
+    [[nodiscard]] bool deserialize(common::InputByteStream& stream) override;
 };
 
 }

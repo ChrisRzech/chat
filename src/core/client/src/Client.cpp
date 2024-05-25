@@ -2,13 +2,14 @@
 
 #include "chat/common/Logging.hpp"
 
-#include "chat/messages/Serializer.hpp"
+#include "chat/messages/serialize.hpp"
 
 #include "chat/messages/request/Ping.hpp"
 
 #include "chat/messages/response/Pong.hpp"
 
 #include <SFML/Network/IpAddress.hpp>
+#include <SFML/Network/Packet.hpp>
 #include <SFML/Network/TcpSocket.hpp>
 
 namespace chat::client
@@ -21,8 +22,7 @@ public:
       : m_host{host},
         m_port{port},
         m_socket{},
-        m_connected{false},
-        m_serializer{}
+        m_connected{false}
     {
         m_socket.setBlocking(true);
     }
@@ -173,7 +173,9 @@ private:
     {
         LOG_DEBUG << "Sending request...";
 
-        auto packet = m_serializer.serialize(request);
+        auto serialized = messages::serialize(request);
+        sf::Packet packet;
+        packet.append(serialized.data(), serialized.size());
         const bool success = sendPacket(packet);
 
         LOG_DEBUG << "Finished sending request";
@@ -190,7 +192,10 @@ private:
 
         std::optional<std::unique_ptr<ResponseType>> response;
         if(auto packet = receivePacket(); packet.has_value()) {
-            if(auto message = m_serializer.deserialize(packet.value());
+            common::ByteSpan serialized{
+                reinterpret_cast<const std::byte*>(packet.value().getData()),
+                packet.value().getDataSize()};
+            if(auto message = messages::deserialize(serialized);
                message.has_value()) {
                 // The message is placed inside an `std::unique_ptr`. There is
                 // no standard library functionality to transfer ownership from
@@ -231,7 +236,6 @@ private:
     uint16_t m_port;
     sf::TcpSocket m_socket;
     bool m_connected;
-    messages::Serializer m_serializer;
 };
 
 Client::Client(const std::string& host, uint16_t port)

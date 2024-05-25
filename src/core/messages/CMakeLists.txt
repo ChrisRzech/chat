@@ -12,7 +12,7 @@ target_sources(${LIBRARY_NAME}
         ${SOURCE_PATH}/Message.cpp
         ${SOURCE_PATH}/Request.cpp
         ${SOURCE_PATH}/Response.cpp
-        ${SOURCE_PATH}/Serializer.cpp
+        ${SOURCE_PATH}/serialize.cpp
         ${SOURCE_PATH}/request/Ping.cpp
         ${SOURCE_PATH}/response/Pong.cpp
 )
@@ -25,8 +25,6 @@ target_include_directories(${LIBRARY_NAME}
 
 target_link_libraries(${LIBRARY_NAME}
     PUBLIC
-        sfml-network
-    PRIVATE
         chat::common
 )
 

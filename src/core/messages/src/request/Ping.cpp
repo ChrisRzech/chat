@@ -7,13 +7,13 @@ Ping::Ping()
   : Request{Type::Ping}
 {}
 
-void Ping::serialize(sf::Packet& packet) const
+void Ping::serialize(common::OutputByteStream& stream) const
 {
-    Request::serialize(packet);
+    Request::serialize(stream);
     // No data to insert
 }
 
-bool Ping::deserialize([[maybe_unused]] sf::Packet& packet)
+bool Ping::deserialize([[maybe_unused]] common::InputByteStream& stream)
 {
     // No data to extract
     return true;
