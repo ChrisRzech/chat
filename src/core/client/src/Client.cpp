@@ -18,7 +18,7 @@ namespace chat::client
 class Client::Impl
 {
 public:
-    Impl(const std::string& host, uint16_t port)
+    Impl(const std::string& host, std::uint16_t port)
       : m_host{host},
         m_port{port},
         m_socket{},
@@ -233,12 +233,12 @@ private:
     }
 
     sf::IpAddress m_host;
-    uint16_t m_port;
+    std::uint16_t m_port;
     sf::TcpSocket m_socket;
     bool m_connected;
 };
 
-Client::Client(const std::string& host, uint16_t port)
+Client::Client(const std::string& host, std::uint16_t port)
   : m_impl{std::make_unique<Impl>(host, port)}
 {}
 

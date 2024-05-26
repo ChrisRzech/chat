@@ -40,7 +40,7 @@ public:
     /**
      * @brief The type of a message.
      */
-    enum class Type : uint32_t
+    enum class Type : std::uint32_t
     {
         Close,
         Request,

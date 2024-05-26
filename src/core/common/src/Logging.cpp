@@ -40,7 +40,7 @@ Logging::Logger& Logging::getLogger()
 }
 
 Logging::LogEntry Logging::createLogEntry(
-    Severity severity, const std::filesystem::path& sourceFile, uint32_t line)
+    Severity severity, const std::filesystem::path& sourceFile, int line)
 {
     LogEntry entry;
 

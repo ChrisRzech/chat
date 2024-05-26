@@ -7,7 +7,7 @@ SCENARIO("Sending requests to a server", "[Client]")
     GIVEN("A server address")
     {
         const std::string hostAddress = "localhost";
-        constexpr uint16_t port = 25565;
+        constexpr std::uint16_t port = 25565;
 
         AND_GIVEN("The client connects")
         {

@@ -23,7 +23,7 @@ public:
     /**
      * @brief The type of a request.
      */
-    enum class Type : uint32_t
+    enum class Type : std::uint32_t
     {
         Ping
     };

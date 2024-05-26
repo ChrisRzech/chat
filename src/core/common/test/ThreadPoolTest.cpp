@@ -51,8 +51,8 @@ SCENARIO("Jobs can be queued to thread pools", "[ThreadPool]")
         {
             pool.pause();
 
-            constexpr uint32_t JOB_COUNT = 10;
-            for(uint32_t i = 0; i < JOB_COUNT; i++) {
+            constexpr int JOB_COUNT = 10;
+            for(int i = 0; i < JOB_COUNT; i++) {
                 pool.queue(sleepJob);
             }
 
@@ -77,14 +77,14 @@ SCENARIO("Jobs can be queued to thread pools", "[ThreadPool]")
             SKIP("Not enough CPU cores");
         }
 
-        constexpr uint16_t POOL_SIZE = 2;
+        constexpr int POOL_SIZE = 2;
         chat::common::ThreadPool pool{POOL_SIZE};
 
         WHEN("Multiple jobs are queued")
         {
             pool.pause();
 
-            for(uint16_t i = 0; i < POOL_SIZE; i++) {
+            for(int i = 0; i < POOL_SIZE; i++) {
                 pool.queue(sleepJob);
             }
 

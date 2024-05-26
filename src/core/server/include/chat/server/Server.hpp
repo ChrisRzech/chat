@@ -22,7 +22,7 @@ public:
      *
      * @param maxThreadCount The number of threads for the server to use.
      */
-    Server(uint16_t port, uint16_t maxThreadCount);
+    Server(std::uint16_t port, int maxThreadCount);
 
     /**
      * @brief Copy operations are disabled.

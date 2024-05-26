@@ -22,7 +22,7 @@ namespace chat::server
 class Server::Impl
 {
 public:
-    Impl(uint16_t port, uint16_t maxThreadCount)
+    Impl(std::uint16_t port, int maxThreadCount)
       : m_port{port},
         m_maxThreadCount{maxThreadCount},
         m_stopping{false},
@@ -86,8 +86,7 @@ private:
         socketSelector.add(listener);
 
         // Count this thread towards the number of threads
-        chat::common::ThreadPool threadPool{
-            static_cast<uint16_t>(m_maxThreadCount - 1)};
+        chat::common::ThreadPool threadPool{m_maxThreadCount - 1};
 
         while(!m_stopping) {
             constexpr sf::Int32 SOCKET_READY_TIMEOUT{250};
@@ -179,13 +178,13 @@ private:
         }
     }
 
-    uint16_t m_port;
-    uint16_t m_maxThreadCount;
+    std::uint16_t m_port;
+    int m_maxThreadCount;
     std::atomic_bool m_stopping;
     std::thread m_serverThread;
 };
 
-Server::Server(uint16_t port, uint16_t maxThreadCount)
+Server::Server(std::uint16_t port, int maxThreadCount)
   : m_impl{std::make_unique<Impl>(port, maxThreadCount)}
 {}
 

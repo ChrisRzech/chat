@@ -57,7 +57,7 @@ void Connection::setBeingHandled()
 
 bool Connection::isZombie() const
 {
-    constexpr uint32_t MAX_FAIL_COUNT = 5;
+    constexpr int MAX_FAIL_COUNT = 5;
     constexpr std::chrono::seconds MAX_IDLE_TIME{60};
     const auto now = std::chrono::steady_clock::now();
     auto lockedLastUsageTime = m_lastUsageTime.lock();

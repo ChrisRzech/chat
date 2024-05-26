@@ -130,7 +130,7 @@ public:
      */
     [[nodiscard]] static LogEntry createLogEntry(
         Severity severity, const std::filesystem::path& sourceFile,
-        uint32_t line);
+        int line);
 
     /**
      * @brief Determines if debug severity will log a log entry. Usually, the

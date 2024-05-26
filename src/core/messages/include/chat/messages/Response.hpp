@@ -22,7 +22,7 @@ public:
     /**
      * @brief The type of a response.
      */
-    enum class Type : uint32_t
+    enum class Type : std::uint32_t
     {
         Pong
     };

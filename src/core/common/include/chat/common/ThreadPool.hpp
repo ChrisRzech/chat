@@ -22,7 +22,7 @@ public:
      *
      * @param threadCount The number of threads the pool will have.
      */
-    explicit ThreadPool(uint16_t threadCount);
+    explicit ThreadPool(int threadCount);
 
     /**
      * @brief Copy operations are disabled.
@@ -84,11 +84,11 @@ private:
      */
     void threadLoop();
 
-    uint16_t m_threadCount;
+    int m_threadCount;
     std::mutex m_mutex;
     bool m_stopping;
     bool m_pause;
-    uint16_t m_idleCount;
+    int m_idleCount;
     std::condition_variable m_workCondvar;
     std::condition_variable m_idleCondvar;
     std::vector<std::thread> m_threads;
