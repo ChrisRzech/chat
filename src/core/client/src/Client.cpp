@@ -192,7 +192,7 @@ private:
 
         std::optional<std::unique_ptr<ResponseType>> response;
         if(auto packet = receivePacket(); packet.has_value()) {
-            common::ByteSpan serialized{
+            const common::ByteSpan serialized{
                 static_cast<const std::byte*>(packet.value().getData()),
                 packet.value().getDataSize()};
             if(auto message = messages::deserialize(serialized);

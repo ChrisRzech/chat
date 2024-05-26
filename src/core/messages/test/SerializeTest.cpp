@@ -20,8 +20,8 @@ SCENARIO("Using the serializer to serializing and deserializing messages",
 
             AND_WHEN("The message is deserialized")
             {
-                chat::common::ByteSpan bytes{serialized.data(),
-                                             serialized.size()};
+                const chat::common::ByteSpan bytes{serialized.data(),
+                                                   serialized.size()};
                 auto deserialized = chat::messages::deserialize(bytes);
 
                 THEN(
@@ -47,8 +47,8 @@ SCENARIO("Using the serializer to serializing and deserializing messages",
 
             AND_WHEN("The message is deserialized")
             {
-                chat::common::ByteSpan bytes{serialized.data(),
-                                             serialized.size()};
+                const chat::common::ByteSpan bytes{serialized.data(),
+                                                   serialized.size()};
                 auto deserialized = chat::messages::deserialize(bytes);
 
                 THEN(
@@ -80,8 +80,8 @@ SCENARIO("Using the serializer to serializing and deserializing messages",
 
             AND_WHEN("The message is deserialized")
             {
-                chat::common::ByteSpan bytes{serialized.data(),
-                                             serialized.size()};
+                const chat::common::ByteSpan bytes{serialized.data(),
+                                                   serialized.size()};
                 auto deserialized = chat::messages::deserialize(bytes);
 
                 THEN(
