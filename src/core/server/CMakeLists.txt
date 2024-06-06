@@ -9,6 +9,8 @@ target_sources(${LIBRARY_NAME}
         ${SOURCE_PATH}/Connection.cpp
         ${SOURCE_PATH}/RequestHandler.cpp
         ${SOURCE_PATH}/Server.cpp
+        ${SOURCE_PATH}/ServerImpl.cpp
+        ${SOURCE_PATH}/StateManager.cpp
 )
 
 target_include_directories(${LIBRARY_NAME}

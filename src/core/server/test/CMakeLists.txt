@@ -6,6 +6,7 @@ chat_add_test(${TEST_NAME})
 target_sources(${TEST_NAME}
     PRIVATE
         ${SOURCE_PATH}/RequestHandlerTest.cpp
+        ${SOURCE_PATH}/StateManagerTest.cpp
 )
 
 target_link_libraries(${TEST_NAME} PRIVATE chat::server)

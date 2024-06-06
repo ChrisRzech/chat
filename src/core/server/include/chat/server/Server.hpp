@@ -46,11 +46,11 @@ public:
     ~Server();
 
     /**
-     * @brief Start the server.
+     * @brief Run the server.
      *
-     * @details This does not block.
+     * @details This blocks until the server is stopped.
      */
-    void start();
+    void run();
 
     /**
      * @brief Stop the server.

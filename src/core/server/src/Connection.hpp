@@ -119,7 +119,7 @@ private:
     std::atomic_bool m_beingHandled;
     std::atomic_bool m_connected;
     std::atomic_uint32_t m_failCount;
-    chat::common::SynchronizedObject<std::chrono::steady_clock::time_point>
+    common::SynchronizedObject<std::chrono::steady_clock::time_point>
         m_lastUsageTime;
 };
 

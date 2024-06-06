@@ -97,6 +97,19 @@ public:
             return *m_value;
         }
 
+        /**
+         * @brief Get the lock used on the mutex.
+         *
+         * @details This allows this type to be used with mechanisms like
+         * @c std::condition_variable.
+         *
+         * @return The locked used on the mutex.
+         */
+        [[nodiscard]] std::unique_lock<std::mutex>& getLock()
+        {
+            return m_lock;
+        }
+
     private:
         friend class SynchronizedObject;
 
@@ -156,6 +169,19 @@ public:
         [[nodiscard]] T& get() &
         {
             return *m_value;
+        }
+
+        /**
+         * @brief Get the lock used on the mutex.
+         *
+         * @details This allows this type to be used with mechanisms like
+         * @c std::condition_variable.
+         *
+         * @return The locked used on the mutex.
+         */
+        [[nodiscard]] std::unique_lock<std::mutex>& getLock()
+        {
+            return m_lock;
         }
 
     private:
