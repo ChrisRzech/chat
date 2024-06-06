@@ -1,0 +1,108 @@
+---
+Checks: "
+    *,
+    -abseil-*,
+    -altera-*,
+    -android-*,
+    -boost-*,
+    -bugprone-easily-swappable-parameters,
+    -bugprone-unchecked-optional-access,
+    -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+    -fuchsia-*,
+    -google-*,
+    -hicpp-no-array-decay,
+    -llvm-*,
+    -llvmlibc-*,
+    -modernize-use-default-member-init,
+    -modernize-use-trailing-return-type,
+    -readability-convert-member-functions-to-static,
+    -readability-identifier-length,
+    -readability-qualified-auto,
+    -readability-redundant-member-init,
+    -zircon-*,
+"
+
+# Rational for disabling checks:
+# abseil-*:
+# Only relevant when using the Abseil library.
+#
+# altera-*:
+# Only relevant when using OpenCL.
+#
+# android-*:
+# Only relevant when using Android.
+#
+# boost-*:
+# Only relevant when using Boost.
+#
+# bugprone-easily-swappable-parameters:
+# The usual solution to this would be to create strong types for different
+# parameters so that each parameter would have a different type. While this
+# might solve most cases, it is still possible to run into the same problem.
+#
+# bugprone-unchecked-optional-access:
+# Flags false positives in tests. While this check should generally be used,
+# this check is not necessary. `std::optional::operator*()` and
+# `std::optional::operator->()` should not be used as they can invoke undefined
+# behavior if there is no value. Instead, `std::optional::value()` (or an
+# equivalent) should be used as it will throw if there is no value.
+#
+# cppcoreguidelines-pro-bounds-array-to-pointer-decay:
+# It is common to decay arrays to pointers. The only problem in doing so is that
+# the extent is lost. Although, there are types that keeps track of the extent
+# along with the pointer such as `std::string_view` and `std::span`.
+#
+# fuchsia-*:
+# Specific to the Fuchsia codebase.
+#
+# google-*:
+# Specific to the Google codebase.
+#
+# hicpp-no-array-decay:
+# Same as cppcoreguidelines-pro-bounds-array-to-pointer-decay.
+#
+# llvm-*:
+# Specific to the LLVM codebase.
+#
+# llvmlibc-*:
+# Specific to the LLVM libc codebase.
+#
+# modernize-use-default-member-init:
+# Using default member initializers can split where members are initialized
+# between the member declaration and the constructor definition. Usually,
+# member initializer lists are used with all members being initialized, so there
+# should be no need for requiring default member initialization. Although, it
+# can still be used for scenarios such as in simple structs.
+#
+# modernize-use-trailing-return-type:
+# Should not be enforced as it is "purely stylistic" according to the check
+# documentation.
+#
+# readability-convert-member-functions-to-static:
+# Converting from non-static to static member function depends on the intent of
+# the struct or class. Also, the lack of member variables might be temporary and
+# will be added in the future.
+#
+# readability-identifier-length:
+# While it helps to have identifiers with meaningful names, a short identifier
+# does not determine whether or not it has a meaningful name.
+#
+# readability-qualified-auto:
+# While this might increase readability, it is unnecessary to do and should not
+# be forced.
+#
+# readability-redundant-member-init:
+# All members should be explicitly initialized in the member initialization list
+# to prevent missing a member and so that the member is sure to be initialized.
+#
+# zircon-*:
+# Specific to the Zircon codebase.
+
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+FormatStyle:     none
+
+CheckOptions:
+    cppcoreguidelines-macro-usage.AllowedRegexp: 'LOG_*'
+    misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: 'true'
+    readability-function-cognitive-complexity.IgnoreMacros: 'true'

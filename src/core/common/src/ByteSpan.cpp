@@ -25,6 +25,9 @@ std::size_t ByteSpan::getSize() const
 
 const std::byte& ByteSpan::operator[](std::size_t index) const
 {
+    // The purpose of this class is to prevent having to use pointers
+    // arithmetic. However, to do so, pointer arithmetic must be used.
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return m_data[index];
 }
 
@@ -35,11 +38,17 @@ const std::byte* ByteSpan::begin() const
 
 const std::byte* ByteSpan::end() const
 {
+    // The purpose of this class is to prevent having to use pointers
+    // arithmetic. However, to do so, pointer arithmetic must be used.
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return m_data + m_size;
 }
 
 ByteSpan ByteSpan::subspan(std::size_t offset, std::size_t size) const
 {
+    // The purpose of this class is to prevent having to use pointers
+    // arithmetic. However, to do so, pointer arithmetic must be used.
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return ByteSpan{m_data + offset, size};
 }
 
