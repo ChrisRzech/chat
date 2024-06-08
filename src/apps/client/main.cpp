@@ -17,10 +17,10 @@ int main()
             LOG_DEBUG << "Ping failed";
         }
     } catch(const std::exception& exception) {
-        LOG_ERROR << exception.what();
+        LOG_FATAL << exception.what();
         return 1;
     } catch(...) {
-        LOG_ERROR << "Unknown exception!";
+        LOG_FATAL << "Unknown exception!";
         return 1;
     }
 
