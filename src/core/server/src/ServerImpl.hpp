@@ -1,15 +1,11 @@
 #pragma once
 
-#include "Connection.hpp"
+#include "SessionManager.hpp"
 #include "StateManager.hpp"
 
 #include "chat/server/Server.hpp"
 
-#include <SFML/Network/SocketSelector.hpp>
-#include <SFML/Network/TcpListener.hpp>
-
 #include <cstdint>
-#include <list>
 
 namespace chat::server
 {
@@ -65,17 +61,8 @@ public:
     void stop();
 
 private:
-    void doRun();
-
-    void listen(sf::TcpListener& listener, std::list<Connection>& connections,
-                sf::SocketSelector& socketSelector);
-
-    void cleanupConnections(std::list<Connection>& connections,
-                            sf::SocketSelector& socketSelector);
-
-    std::uint16_t m_port;
-    int m_maxThreadCount;
     StateManager m_state;
+    SessionManager m_sessionManager;
 };
 
 }

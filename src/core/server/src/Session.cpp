@@ -1,4 +1,4 @@
-#include "Connection.hpp"
+#include "Session.hpp"
 
 #include "RequestHandler.hpp"
 
@@ -15,7 +15,7 @@
 namespace chat::server
 {
 
-Connection::Connection(std::unique_ptr<sf::TcpSocket> socket)
+Session::Session(std::unique_ptr<sf::TcpSocket> socket)
   : m_socket{std::move(socket)},
     m_beingHandled{false},
     m_connected{true},
@@ -40,22 +40,22 @@ Connection::Connection(std::unique_ptr<sf::TcpSocket> socket)
     m_socket->setBlocking(false);
 }
 
-sf::TcpSocket& Connection::getSocket()
+sf::TcpSocket& Session::getSocket()
 {
     return *m_socket;
 }
 
-bool Connection::isBeingHandled() const
+bool Session::isBeingHandled() const
 {
     return m_beingHandled;
 }
 
-void Connection::setBeingHandled()
+void Session::setBeingHandled()
 {
     m_beingHandled = true;
 }
 
-bool Connection::isZombie() const
+bool Session::isZombie() const
 {
     constexpr int MAX_FAIL_COUNT = 5;
     constexpr std::chrono::seconds MAX_IDLE_TIME{60};
@@ -65,9 +65,9 @@ bool Connection::isZombie() const
            now - lockedLastUsageTime.get() > MAX_IDLE_TIME;
 }
 
-void Connection::handle()
+void Session::handle()
 {
-    LOG_DEBUG << "Handling connection...";
+    LOG_DEBUG << "Handling session...";
 
     {
         auto lockedLastUsageTime = m_lastUsageTime.lock();
@@ -76,9 +76,10 @@ void Connection::handle()
 
     std::optional<std::unique_ptr<messages::Response>> response;
     try {
-        if(auto request = receiveRequest(); request.has_value()) {
-            response =
-                std::make_optional(RequestHandler{}.handle(*request.value()));
+        auto request = receiveRequest();
+        if(request.has_value()) {
+            RequestHandler handler;
+            response = std::make_optional(handler.handle(*request.value()));
         }
     } catch(const std::exception& exception) {
         LOG_ERROR << exception.what();
@@ -109,11 +110,11 @@ void Connection::handle()
         sendResponse(*response.value());
     }
 
-    LOG_DEBUG << "Finished handling connection";
+    LOG_DEBUG << "Finished handling Session";
     m_beingHandled = false;
 }
 
-std::optional<sf::Packet> Connection::receivePacket()
+std::optional<sf::Packet> Session::receivePacket()
 {
     LOG_DEBUG << "Receiving packet...";
 
@@ -156,7 +157,7 @@ std::optional<sf::Packet> Connection::receivePacket()
     return success ? std::make_optional(packet) : std::nullopt;
 }
 
-void Connection::sendPacket(sf::Packet& packet)
+void Session::sendPacket(sf::Packet& packet)
 {
     LOG_DEBUG << "Sending packet...";
 
@@ -193,17 +194,18 @@ void Connection::sendPacket(sf::Packet& packet)
     LOG_DEBUG << "Finished sending packet";
 }
 
-std::optional<std::unique_ptr<messages::Request>> Connection::receiveRequest()
+std::optional<std::unique_ptr<messages::Request>> Session::receiveRequest()
 {
     LOG_DEBUG << "Receiving request...";
 
     std::optional<std::unique_ptr<messages::Request>> request;
-    if(auto packet = receivePacket(); packet.has_value()) {
+    auto packet = receivePacket();
+    if(packet.has_value()) {
         const common::ByteSpan serialized{
             static_cast<const std::byte*>(packet.value().getData()),
             packet.value().getDataSize()};
-        if(auto message = messages::deserialize(serialized);
-           message.has_value()) {
+        auto message = messages::deserialize(serialized);
+        if(message.has_value()) {
             // The message is placed inside an `std::unique_ptr`. There is no
             // standard library functionality to transfer ownership from a
             // `std::unique_ptr` base type to a `std::unique_ptr` derived type.
@@ -222,7 +224,7 @@ std::optional<std::unique_ptr<messages::Request>> Connection::receiveRequest()
     return request;
 }
 
-void Connection::sendResponse(const messages::Response& response)
+void Session::sendResponse(const messages::Response& response)
 {
     LOG_DEBUG << "Sending response...";
 

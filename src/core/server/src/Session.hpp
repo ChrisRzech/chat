@@ -17,38 +17,38 @@ namespace chat::server
 {
 
 /**
- * @brief A connection to a client.
+ * @brief A client session.
  */
-class Connection
+class Session
 {
 public:
     /**
-     * @brief Construct a connection.
+     * @brief Construct a session.
      *
      * @param socket The socket used to communicate with the client.
      */
-    explicit Connection(std::unique_ptr<sf::TcpSocket> socket);
+    explicit Session(std::unique_ptr<sf::TcpSocket> socket);
 
     /**
      * @brief Copy operations are disabled.
      * @{
      */
-    Connection(const Connection& other) = delete;
-    Connection& operator=(const Connection& other) = delete;
+    Session(const Session& other) = delete;
+    Session& operator=(const Session& other) = delete;
     /** @} */
 
     /**
      * @brief Move operations are disabled.
      * @{
      */
-    Connection(Connection&& other) = delete;
-    Connection& operator=(Connection&& other) = delete;
+    Session(Session&& other) = delete;
+    Session& operator=(Session&& other) = delete;
     /** @} */
 
     /**
-     * @brief Destroy the connection.
+     * @brief Destroy the session.
      */
-    ~Connection() = default;
+    ~Session() = default;
 
     /**
      * @brief Get the socket used to communicate with the client.
@@ -58,25 +58,25 @@ public:
     [[nodiscard]] sf::TcpSocket& getSocket();
 
     /**
-     * @brief Check if the connection is currently being handled.
+     * @brief Check if the session is currently being handled.
      *
-     * @return True if the connection is currently being handled; otherwise,
+     * @return True if the session is currently being handled; otherwise,
      * false.
      */
     [[nodiscard]] bool isBeingHandled() const;
 
     /**
-     * @brief Mark the connection as currently being handled.
+     * @brief Mark the session as currently being handled.
      */
     void setBeingHandled();
 
     /**
-     * @brief Check if the connection is a zombie.
+     * @brief Check if the session is a zombie.
      *
-     * @details A zombie connection should be removed as they are no longer used
+     * @details A zombie session should be removed as they are no longer used
      * or should be used.
      *
-     * @return True if the connection is a zombie; otherwise, false.
+     * @return True if the session is a zombie; otherwise, false.
      */
     [[nodiscard]] bool isZombie() const;
 

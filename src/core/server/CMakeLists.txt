@@ -6,10 +6,11 @@ chat_add_library(${LIBRARY_NAME})
 
 target_sources(${LIBRARY_NAME}
     PRIVATE
-        ${SOURCE_PATH}/Connection.cpp
         ${SOURCE_PATH}/RequestHandler.cpp
         ${SOURCE_PATH}/Server.cpp
         ${SOURCE_PATH}/ServerImpl.cpp
+        ${SOURCE_PATH}/Session.cpp
+        ${SOURCE_PATH}/SessionManager.cpp
         ${SOURCE_PATH}/StateManager.cpp
 )
 
