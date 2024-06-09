@@ -116,8 +116,6 @@ void Session::handle()
 
 std::optional<sf::Packet> Session::receivePacket()
 {
-    LOG_DEBUG << "Receiving packet...";
-
     bool success = false;
     sf::Packet packet;
     switch(m_socket->receive(packet)) {
@@ -127,77 +125,60 @@ std::optional<sf::Packet> Session::receivePacket()
         break;
 
     case sf::Socket::Status::NotReady:
-        LOG_WARN << "Could not receive packet, unexpected "
-                    "`sf::Socket::Status::NotReady`";
+        LOG_WARN << "Failed to receive packet: unexpected not ready";
         m_failCount++;
         break;
 
     case sf::Socket::Status::Partial:
-        LOG_WARN << "Could not receive packet, unexpected "
-                    "`sf::Socket::Status::Partial`";
+        LOG_WARN << "Failed to receive packet: unexpected partial";
         m_failCount++;
         break;
 
     case sf::Socket::Status::Disconnected:
-        LOG_DEBUG
-            << "Could not receive packet since the socket is disconnected";
+        LOG_DEBUG << "Failed to receive packet: disconnected";
         m_connected = false;
         break;
 
     case sf::Socket::Status::Error:
-        LOG_WARN << "Could not receive packet since an error occurred";
+        LOG_WARN << "Failed to receive packet: unexpected error";
         m_failCount++;
         break;
     }
-
-    LOG_DEBUG << (m_connected ? "Still connected" : "Disconnected")
-              << ". Failed '" << m_failCount << "' times";
-    LOG_DEBUG << "Finished receiving packet";
 
     return success ? std::make_optional(packet) : std::nullopt;
 }
 
 void Session::sendPacket(sf::Packet& packet)
 {
-    LOG_DEBUG << "Sending packet...";
-
     switch(m_socket->send(packet)) {
     case sf::Socket::Status::Done:
         LOG_DEBUG << "Packet sent";
         break;
 
     case sf::Socket::Status::NotReady:
-        LOG_WARN << "Could not send packet, unexpected "
-                    "`sf::Socket::Status::NotReady`";
+        LOG_WARN << "Failed to send packet: unexpected not ready";
         m_failCount++;
         break;
 
     case sf::Socket::Status::Partial:
-        LOG_WARN << "Could not send packet, unexpected "
-                    "`sf::Socket::Status::Partial`";
+        LOG_WARN << "Failed to send packet: unexpected partial";
         m_failCount++;
         break;
 
     case sf::Socket::Status::Disconnected:
-        LOG_DEBUG << "Could not send packet since the socket is disconnected";
+        LOG_DEBUG << "Failed to send packet: disconnected";
         m_connected = false;
         break;
 
     case sf::Socket::Status::Error:
-        LOG_WARN << "Could not send packet since an error occurred";
+        LOG_WARN << "Failed to send packet: unexpected error";
         m_failCount++;
         break;
     }
-
-    LOG_DEBUG << (m_connected ? "Still connected" : "Disconnected")
-              << ". Failed '" << m_failCount << "' times";
-    LOG_DEBUG << "Finished sending packet";
 }
 
 std::optional<std::unique_ptr<messages::Request>> Session::receiveRequest()
 {
-    LOG_DEBUG << "Receiving request...";
-
     std::optional<std::unique_ptr<messages::Request>> request;
     auto packet = receivePacket();
     if(packet.has_value()) {
@@ -220,20 +201,15 @@ std::optional<std::unique_ptr<messages::Request>> Session::receiveRequest()
         }
     }
 
-    LOG_DEBUG << "Finished receiving request";
     return request;
 }
 
 void Session::sendResponse(const messages::Response& response)
 {
-    LOG_DEBUG << "Sending response...";
-
     auto serialized = messages::serialize(response);
     sf::Packet packet;
     packet.append(serialized.data(), serialized.size());
     sendPacket(packet);
-
-    LOG_DEBUG << "Finished sending response";
 }
 
 }
