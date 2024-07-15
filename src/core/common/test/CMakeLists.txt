@@ -6,6 +6,7 @@ chat_add_test(${TEST_NAME})
 target_sources(${TEST_NAME}
     PRIVATE
         ${SOURCE_PATH}/ByteSpanTest.cpp
+        ${SOURCE_PATH}/EnumMetaTest.cpp
         ${SOURCE_PATH}/InputByteStreamTest.cpp
         ${SOURCE_PATH}/OutputByteStreamTest.cpp
         ${SOURCE_PATH}/ResultTest.cpp
