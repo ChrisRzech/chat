@@ -7,268 +7,155 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-#include <algorithm>
+#include <array>
+#include <cstddef>
 
-SCENARIO("Reading data from an input byte stream", "[InputByteStream]")
+namespace
 {
-    GIVEN("An input byte stream containing data")
-    {
-        constexpr std::size_t DATA_SIZE = 256;
-        std::array<std::byte, DATA_SIZE> data = {};
-        std::generate(data.begin(), data.end(), [i = 0]() mutable {
-            return static_cast<std::byte>(i++);
-        });
-        chat::common::InputByteStream stream{
-            chat::common::ByteSpan{data.data(), data.size()}};
-
-        THEN("The stream is in a good state")
-        {
-            CHECK(stream.isGood());
-        }
-
-        THEN("The stream is not empty")
-        {
-            CHECK(!stream.isEmpty());
-        }
-
-        WHEN("Reading all the data from the stream")
-        {
-            auto read = stream.read(DATA_SIZE);
-
-            THEN("The read operation was successful")
-            {
-                CHECK(stream.isGood());
-            }
-
-            THEN("The stream is empty")
-            {
-                CHECK(stream.isEmpty());
-            }
-
-            THEN("The returned data matches the data used for the stream")
-            {
-                REQUIRE(read.has_value());
-                REQUIRE(read.value().getSize() == data.size());
-                CHECK(std::equal(read.value().begin(), read.value().end(),
-                                 data.begin()));
-            }
-
-            WHEN("Attempting to read more data than there is in the stream")
-            {
-                auto badRead = stream.read(DATA_SIZE);
-
-                THEN("The read operation was unsuccessful")
-                {
-                    CHECK(!stream.isGood());
-                }
-
-                THEN("The result has no value")
-                {
-                    CHECK(!badRead.has_value());
-                }
-            }
-        }
+constexpr auto createBytes()
+{
+    constexpr std::size_t size = 256;
+    std::array<std::byte, size> bytes = {};
+    int i = 0;
+    for(auto& byte : bytes) {
+        byte = static_cast<std::byte>(i++);
     }
+    return bytes;
 }
 
-SCENARIO("Reading a byte array from an input byte stream", "[InputByteStream]")
+template<std::size_t size>
+constexpr auto createSizedBytes(const std::array<std::byte, size>& bytes)
 {
-    GIVEN("An input byte stream containing data")
-    {
-        constexpr std::size_t DATA_SIZE = 256;
-        std::array<std::byte, DATA_SIZE> data = {};
-        std::generate(data.begin(), data.end(), [i = 0]() mutable {
-            return static_cast<std::byte>(i++);
-        });
-        chat::common::InputByteStream stream{
-            chat::common::ByteSpan{data.data(), data.size()}};
-
-        THEN("The stream is in a good state")
-        {
-            CHECK(stream.isGood());
+    auto copy = [](auto begin, auto end, auto result) {
+        for(auto curr = begin; curr != end; curr++) {
+            *result = *curr;
+            result++;
         }
+        return result;
+    };
 
-        THEN("The stream is not empty")
-        {
-            CHECK(!stream.isEmpty());
-        }
-
-        WHEN("Reading all the data from the stream into the byte array")
-        {
-            chat::common::ByteArray<DATA_SIZE> inputData = {};
-            stream >> inputData;
-
-            THEN("The read operation was successful")
-            {
-                CHECK(stream.isGood());
-            }
-
-            THEN("The stream is empty")
-            {
-                CHECK(stream.isEmpty());
-            }
-
-            THEN("The byte array contains the data")
-            {
-                REQUIRE(inputData.size() == data.size());
-                CHECK(std::equal(inputData.begin(), inputData.end(),
-                                 data.begin()));
-            }
-        }
-    }
+    std::array<std::byte, sizeof(std::uint32_t) + size> sizedBytes = {};
+    constexpr auto sizeBytes =
+        chat::common::utility::toNetworkByteOrder<std::uint32_t>(size);
+    auto end = copy(sizeBytes.begin(), sizeBytes.end(), sizedBytes.begin());
+    copy(bytes.begin(), bytes.end(), end);
+    return sizedBytes;
+}
 }
 
-TEMPLATE_TEST_CASE("Reading an integral from an input byte stream",
-                   "[InputByteStream]", std::int8_t, std::uint8_t, std::int16_t,
-                   std::uint16_t, std::int32_t, std::uint32_t, std::int64_t,
-                   std::uint64_t)
+TEST_CASE("Empty stream is initially in a good state", "[InputByteStream]")
 {
-    GIVEN("An input byte stream containing an integral")
-    {
-        using Integral = TestType;
-        constexpr Integral expectedValue = 42;
-        constexpr auto expectedValueBytes =
-            chat::common::utility::toNetworkByteOrder(expectedValue);
-        chat::common::InputByteStream stream{chat::common::ByteSpan{
-            expectedValueBytes.data(), expectedValueBytes.size()}};
-
-        THEN("The stream is in a good state")
-        {
-            CHECK(stream.isGood());
-        }
-
-        THEN("The stream is not empty")
-        {
-            CHECK(!stream.isEmpty());
-        }
-
-        WHEN("Reading all the data from the stream into an integral")
-        {
-            Integral value;
-            stream >> value;
-
-            THEN("The read operation was successful")
-            {
-                CHECK(stream.isGood());
-            }
-
-            THEN("The stream is empty")
-            {
-                CHECK(stream.isEmpty());
-            }
-
-            THEN("The integral contains the expected value")
-            {
-                CHECK(value == expectedValue);
-            }
-        }
-    }
+    const chat::common::InputByteStream stream{
+        chat::common::ByteSpan{nullptr, 0}};
+    REQUIRE(stream.isGood());
+    REQUIRE(stream.isEmpty());
 }
 
-SCENARIO("Reading a byte span from an input byte stream", "[InputByteStream]")
+TEST_CASE("Non-empty stream is initially in a good state", "[InputByteStream]")
 {
-    GIVEN("An input byte stream containing a byte span")
-    {
-        constexpr std::size_t SIZE_SIZE = sizeof(std::uint32_t);
-        constexpr std::size_t DATA_SIZE = 256;
-        std::array<std::byte, SIZE_SIZE + DATA_SIZE> data = {};
-        constexpr auto sizeBytes =
-            chat::common::utility::toNetworkByteOrder<std::uint32_t>(DATA_SIZE);
-        auto dataStart =
-            std::copy(sizeBytes.begin(), sizeBytes.end(), data.begin());
-        std::generate(dataStart, data.end(), [i = 0]() mutable {
-            return static_cast<std::byte>(i++);
-        });
-        const chat::common::ByteSpan expectedSpan{dataStart, DATA_SIZE};
-
-        chat::common::InputByteStream stream{
-            chat::common::ByteSpan{data.data(), data.size()}};
-
-        THEN("The stream is in a good state")
-        {
-            CHECK(stream.isGood());
-        }
-
-        THEN("The stream is not empty")
-        {
-            CHECK(!stream.isEmpty());
-        }
-
-        WHEN("Reading all the data from the stream into a byte stream")
-        {
-            chat::common::ByteSpan span;
-            stream >> span;
-
-            THEN("The read operation was successful")
-            {
-                CHECK(stream.isGood());
-            }
-
-            THEN("The stream is empty")
-            {
-                CHECK(stream.isEmpty());
-            }
-
-            THEN("The byte span contains the expected value")
-            {
-                REQUIRE(span.getSize() == expectedSpan.getSize());
-                CHECK(
-                    std::equal(span.begin(), span.end(), expectedSpan.begin()));
-            }
-        }
-    }
+    constexpr auto bytes = createBytes();
+    const chat::common::InputByteStream stream{
+        chat::common::ByteSpan{bytes.data(), bytes.size()}};
+    REQUIRE(stream.isGood());
+    REQUIRE(!stream.isEmpty());
 }
 
-SCENARIO("Reading a byte string from an input byte stream", "[InputByteStream]")
+TEST_CASE("Reading from an empty stream", "[InputByteStream]")
 {
-    GIVEN("An input byte stream containing a byte string")
-    {
-        constexpr std::size_t SIZE_SIZE = sizeof(std::uint32_t);
-        constexpr std::size_t DATA_SIZE = 256;
-        std::array<std::byte, SIZE_SIZE + DATA_SIZE> data = {};
-        constexpr auto sizeBytes =
-            chat::common::utility::toNetworkByteOrder<std::uint32_t>(DATA_SIZE);
-        auto dataStart =
-            std::copy(sizeBytes.begin(), sizeBytes.end(), data.begin());
-        std::generate(dataStart, data.end(), [i = 0]() mutable {
-            return static_cast<std::byte>(i++);
-        });
-        chat::common::ByteString expectedString{dataStart, data.end()};
+    chat::common::InputByteStream stream{chat::common::ByteSpan{nullptr, 0}};
+    auto read = stream.read(1);
+    REQUIRE(!stream.isGood());
+    REQUIRE(!read.has_value());
+}
 
-        chat::common::InputByteStream stream{
-            chat::common::ByteSpan{data.data(), data.size()}};
+TEST_CASE("Reading from a non-empty stream", "[InputByteStream]")
+{
+    constexpr auto bytes = createBytes();
+    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
+    chat::common::InputByteStream stream{span};
 
-        THEN("The stream is in a good state")
-        {
-            CHECK(stream.isGood());
-        }
+    auto read = stream.read(bytes.size());
+    REQUIRE(stream.isGood());
+    REQUIRE(stream.isEmpty());
+    REQUIRE(read.has_value());
+    REQUIRE(read.value().getSize() == bytes.size());
+    REQUIRE(read.value() == span);
+}
 
-        THEN("The stream is not empty")
-        {
-            CHECK(!stream.isEmpty());
-        }
+TEST_CASE("Reading more than there is from a stream", "[InputByteStream]")
+{
+    constexpr auto bytes = createBytes();
+    chat::common::InputByteStream stream{
+        chat::common::ByteSpan{bytes.data(), bytes.size()}};
 
-        WHEN("Reading all the data from the stream into a byte stream")
-        {
-            chat::common::ByteString string;
-            stream >> string;
+    auto read = stream.read(bytes.size() + 1);
+    REQUIRE(!stream.isGood());
+    REQUIRE(!stream.isEmpty());
+    REQUIRE(!read.has_value());
+}
 
-            THEN("The read operation was successful")
-            {
-                CHECK(stream.isGood());
-            }
+TEST_CASE("Reading a byte array from a stream", "[InputByteStream]")
+{
+    constexpr auto bytes = createBytes();
+    chat::common::InputByteStream stream{
+        chat::common::ByteSpan{bytes.data(), bytes.size()}};
 
-            THEN("The stream is empty")
-            {
-                CHECK(stream.isEmpty());
-            }
+    chat::common::ByteArray<bytes.size()> array = {};
+    stream >> array;
+    REQUIRE(stream.isGood());
+    REQUIRE(stream.isEmpty());
+    REQUIRE(array == bytes);
+}
 
-            THEN("The byte string contains the expected value")
-            {
-                REQUIRE(string.size() == expectedString.size());
-                CHECK(std::equal(string.begin(), string.end(),
-                                 expectedString.begin()));
-            }
-        }
-    }
+TEMPLATE_TEST_CASE("Reading an integral from a stream", "[InputByteStream]",
+                   std::int8_t, std::uint8_t, std::int16_t, std::uint16_t,
+                   std::int32_t, std::uint32_t, std::int64_t, std::uint64_t)
+{
+    using Integral = TestType;
+    constexpr Integral expected = 42;
+    constexpr auto expectedBytes =
+        chat::common::utility::toNetworkByteOrder(expected);
+
+    chat::common::InputByteStream stream{
+        chat::common::ByteSpan{expectedBytes.data(), expectedBytes.size()}};
+
+    Integral value;
+    stream >> value;
+    REQUIRE(stream.isGood());
+    REQUIRE(stream.isEmpty());
+    REQUIRE(value == expected);
+}
+
+TEST_CASE("Reading a byte span from a stream", "[InputByteStream]")
+{
+    constexpr auto bytes = createBytes();
+    constexpr auto sizedBytes = createSizedBytes(bytes);
+
+    chat::common::InputByteStream stream{
+        chat::common::ByteSpan{sizedBytes.data(), sizedBytes.size()}};
+
+    chat::common::ByteSpan span;
+    stream >> span;
+    REQUIRE(stream.isGood());
+    REQUIRE(stream.isEmpty());
+
+    const chat::common::ByteSpan expected{bytes.data(), bytes.size()};
+    REQUIRE(span == expected);
+}
+
+TEST_CASE("Reading a byte string from a stream", "[InputByteStream]")
+{
+    constexpr auto bytes = createBytes();
+    constexpr auto sizedBytes = createSizedBytes(bytes);
+
+    chat::common::InputByteStream stream{
+        chat::common::ByteSpan{sizedBytes.data(), sizedBytes.size()}};
+
+    chat::common::ByteString string;
+    stream >> string;
+    REQUIRE(stream.isGood());
+    REQUIRE(stream.isEmpty());
+
+    const chat::common::ByteString expected{bytes.begin(), bytes.end()};
+    REQUIRE(string == expected);
 }

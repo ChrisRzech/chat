@@ -8,7 +8,7 @@ Request::Request(Type type)
     m_type{type}
 {}
 
-Request::Type Request::getType() const
+Request::Type Request::getRequestType() const
 {
     return m_type;
 }

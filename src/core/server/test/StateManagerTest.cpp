@@ -6,119 +6,109 @@
 
 using State = chat::server::StateManager::State;
 
-SCENARIO("Transitioning from stopped state", "[StateManager]")
+TEST_CASE("Initial state is stopped", "[StateManager]")
 {
-    GIVEN("A state manager")
-    {
-        chat::server::StateManager state;
-
-        THEN("The initial state is stopped")
-        {
-            REQUIRE(state.get() == State::Stopped);
-        }
-
-        THEN("Transitioning to a non-transitionable state fails")
-        {
-            REQUIRE(!state.to(State::Stopped));
-            REQUIRE(!state.to(State::Stopping));
-        }
-
-        WHEN("Transitioning to the running state")
-        {
-            REQUIRE(state.to(State::Running));
-
-            THEN("The state changes")
-            {
-                REQUIRE(state.get() == State::Running);
-            }
-        }
-    }
+    const chat::server::StateManager state;
+    REQUIRE(state.get() == State::Stopped);
 }
 
-SCENARIO("Transitioning from running state", "[StateManager]")
+TEST_CASE("Transitioning from stopped state to stopped state", "[StateManager]")
 {
-    GIVEN("A state manager that is in the running state")
-    {
-        chat::server::StateManager state;
-        REQUIRE(state.to(State::Running));
-
-        THEN("Transitioning to a non-transitionable state fails")
-        {
-            REQUIRE(!state.to(State::Stopped));
-            REQUIRE(!state.to(State::Running));
-        }
-
-        WHEN("Transitioning to the stopping state")
-        {
-            REQUIRE(state.to(State::Stopping));
-
-            THEN("The state changes")
-            {
-                REQUIRE(state.get() == State::Stopping);
-            }
-        }
-    }
+    chat::server::StateManager state;
+    REQUIRE(!state.to(State::Stopped));
+    REQUIRE(state.get() == State::Stopped);
 }
 
-SCENARIO("Transitioning from stopping state", "[StateManager]")
+TEST_CASE("Transitioning from stopped state to running state", "[StateManager]")
 {
-    GIVEN("A state manager that is in the stopping state")
-    {
-        chat::server::StateManager state;
-        REQUIRE(state.to(State::Running));
-        REQUIRE(state.to(State::Stopping));
-
-        THEN("Transitioning to a non-transitionable state fails")
-        {
-            REQUIRE(!state.to(State::Running));
-            REQUIRE(!state.to(State::Stopping));
-        }
-
-        WHEN("Transitioning to the stopped state")
-        {
-            REQUIRE(state.to(State::Stopped));
-
-            THEN("The state changes")
-            {
-                REQUIRE(state.get() == State::Stopped);
-            }
-        }
-    }
+    chat::server::StateManager state;
+    REQUIRE(state.to(State::Running));
+    REQUIRE(state.get() == State::Running);
 }
 
-SCENARIO("Waiting until a specific state", "[StateManager]")
+TEST_CASE("Transitioning from stopped state to stopping state",
+          "[StateManager]")
 {
-    GIVEN("A state manager")
-    {
-        chat::server::StateManager state;
+    chat::server::StateManager state;
+    REQUIRE(!state.to(State::Stopping));
+    REQUIRE(state.get() == State::Stopped);
+}
 
-        AND_GIVEN("A thread that changes the state")
-        {
-            constexpr State EXPECTED_STATE = State::Running;
-            constexpr std::chrono::milliseconds LEEWAY{10};
-            constexpr std::chrono::milliseconds WAIT_TIME{500};
-            std::thread thread{[&] {
-                std::this_thread::sleep_for(WAIT_TIME);
-                state.to(EXPECTED_STATE);
-            }};
+TEST_CASE("Transitioning from running state to stopped state", "[StateManager]")
+{
+    chat::server::StateManager state;
+    REQUIRE(state.to(State::Running));
+    REQUIRE(!state.to(State::Stopped));
+    REQUIRE(state.get() == State::Running);
+}
 
-            WHEN("Waiting for the state to change")
-            {
-                auto start = std::chrono::system_clock::now();
-                state.waitUntil(EXPECTED_STATE);
-                auto end = std::chrono::system_clock::now();
+TEST_CASE("Transitioning from running state to running state", "[StateManager]")
+{
+    chat::server::StateManager state;
+    REQUIRE(state.to(State::Running));
+    REQUIRE(!state.to(State::Running));
+    REQUIRE(state.get() == State::Running);
+}
 
-                THEN("A notification is received")
-                {
-                    REQUIRE(
-                        std::chrono::duration_cast<std::chrono::milliseconds>(
-                            end - start) >= WAIT_TIME - LEEWAY);
-                }
-            }
+TEST_CASE("Transitioning from running state to stopping state",
+          "[StateManager]")
+{
+    chat::server::StateManager state;
+    REQUIRE(state.to(State::Running));
+    REQUIRE(state.to(State::Stopping));
+    REQUIRE(state.get() == State::Stopping);
+}
 
-            if(thread.joinable()) {
-                thread.join();
-            }
-        }
+TEST_CASE("Transitioning from stopping state to stopped state",
+          "[StateManager]")
+{
+    chat::server::StateManager state;
+    REQUIRE(state.to(State::Running));
+    REQUIRE(state.to(State::Stopping));
+    REQUIRE(state.to(State::Stopped));
+    REQUIRE(state.get() == State::Stopped);
+}
+
+TEST_CASE("Transitioning from stopping state to running state",
+          "[StateManager]")
+{
+    chat::server::StateManager state;
+    REQUIRE(state.to(State::Running));
+    REQUIRE(state.to(State::Stopping));
+    REQUIRE(!state.to(State::Running));
+    REQUIRE(state.get() == State::Stopping);
+}
+
+TEST_CASE("Transitioning from stopping state to stopping state",
+          "[StateManager]")
+{
+    chat::server::StateManager state;
+    REQUIRE(state.to(State::Running));
+    REQUIRE(state.to(State::Stopping));
+    REQUIRE(!state.to(State::Stopping));
+    REQUIRE(state.get() == State::Stopping);
+}
+
+TEST_CASE("Waiting until a specific state", "[StateManager]")
+{
+    chat::server::StateManager state;
+
+    constexpr auto expected = State::Running;
+    constexpr std::chrono::milliseconds waitTime{500};
+    constexpr std::chrono::milliseconds leeway{10};
+    std::thread thread{[&] {
+        std::this_thread::sleep_for(waitTime);
+        state.to(expected);
+    }};
+
+    auto start = std::chrono::system_clock::now();
+    state.waitUntil(expected);
+    auto end = std::chrono::system_clock::now();
+
+    REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(
+                end - start) >= waitTime - leeway);
+
+    if(thread.joinable()) {
+        thread.join();
     }
 }

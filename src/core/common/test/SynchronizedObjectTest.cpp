@@ -6,91 +6,75 @@
 #include <chrono>
 #include <condition_variable>
 #include <mutex>
+#include <string>
 #include <thread>
 
-SCENARIO("Synchronized objects can be modified", "[SynchronizedObject]")
+namespace
 {
-    GIVEN("A synchronized object with an initial value")
-    {
-        chat::common::SynchronizedObject<std::string> object{"initial"};
-
-        THEN("The object starts with that value")
-        {
-            auto locked = object.lock();
-            REQUIRE(locked.get() == "initial");
-        }
-
-        WHEN("The object is locked")
-        {
-            auto locked = object.lock();
-
-            THEN("The object can be modified")
-            {
-                locked.get() = "changed";
-
-                AND_THEN("The object's value should be changed")
-                {
-                    REQUIRE(locked.get() == "changed");
-                }
-            }
-        }
-    }
+std::string getInitialValue()
+{
+    return "initial";
 }
 
-SCENARIO("Synchronized objects provide mutual exclusive access",
-         "[SynchronizedObject]")
+std::string getNewValue()
 {
-    GIVEN("A synchronized object with an initial value")
+    return "new";
+}
+}
+
+TEST_CASE("Creating a synchronized object", "[SynchronizedObject]")
+{
+    chat::common::SynchronizedObject<std::string> object{getInitialValue()};
+    auto locked = object.lock();
+    REQUIRE(locked.get() == getInitialValue());
+}
+
+TEST_CASE("Modifying a synchronized object", "[SynchronizedObject]")
+{
+    chat::common::SynchronizedObject<std::string> object{getInitialValue()};
+    auto locked = object.lock();
+    locked.get() = getNewValue();
+    REQUIRE(locked.get() == getNewValue());
+}
+
+TEST_CASE("Synchronized object provides mutual exclusive access",
+          "[SynchronizedObject]")
+{
+    chat::common::SynchronizedObject<std::string> object;
+
+    constexpr std::chrono::milliseconds minLockTime{100};
+    std::mutex mutex;
+    std::atomic_bool startThread1 = false;
+    bool startThread2 = false;
+    std::condition_variable condvar;
+
+    std::thread thread{[&] {
+        {
+            std::unique_lock lock{mutex};
+            condvar.wait(lock, [&] { return startThread2; });
+        }
+
+        auto locked = object.lock();
+        startThread1 = true;
+        condvar.notify_one();
+        std::this_thread::sleep_for(minLockTime);
+    }};
+
     {
-        chat::common::SynchronizedObject<std::string> object{"initial"};
+        std::unique_lock lock{mutex};
+        startThread2 = true;
+        condvar.notify_one();
+        condvar.wait(lock, [&] { return startThread1.load(); });
+    }
 
-        THEN("The object starts with that value")
-        {
-            auto locked = object.lock();
-            REQUIRE(locked.get() == "initial");
-        }
+    auto start = std::chrono::system_clock::now();
+    auto locked = object.lock();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now() - start);
 
-        WHEN("A thread locks the object")
-        {
-            constexpr std::chrono::milliseconds MIN_LOCK_TIME{100};
-            std::mutex mutex;
-            std::atomic_bool startThread1 = false;
-            bool startThread2 = false;
-            std::condition_variable condvar;
+    REQUIRE(elapsed >= minLockTime);
 
-            std::thread thread{[&] {
-                {
-                    std::unique_lock lock{mutex};
-                    condvar.wait(lock, [&] { return startThread2; });
-                }
-
-                auto locked = object.lock();
-                startThread1 = true;
-                condvar.notify_one();
-                std::this_thread::sleep_for(MIN_LOCK_TIME);
-            }};
-
-            THEN("Another thread cannot access the object")
-            {
-                {
-                    std::unique_lock lock{mutex};
-                    startThread2 = true;
-                    condvar.notify_one();
-                    condvar.wait(lock, [&] { return startThread1.load(); });
-                }
-
-                auto start = std::chrono::system_clock::now();
-                auto locked = object.lock();
-                auto elapsed =
-                    std::chrono::duration_cast<std::chrono::milliseconds>(
-                        std::chrono::system_clock::now() - start);
-
-                CHECK(elapsed >= MIN_LOCK_TIME);
-            }
-
-            if(thread.joinable()) {
-                thread.join();
-            }
-        }
+    if(thread.joinable()) {
+        thread.join();
     }
 }

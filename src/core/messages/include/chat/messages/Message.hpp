@@ -73,7 +73,7 @@ public:
      *
      * @return The message type.
      */
-    [[nodiscard]] Type getType() const;
+    [[nodiscard]] Type getMessageType() const;
 
     /**
      * @brief Serialize the message into a stream.

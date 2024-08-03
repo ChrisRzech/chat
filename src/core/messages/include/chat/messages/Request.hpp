@@ -54,7 +54,7 @@ public:
      *
      * @return The type of the request.
      */
-    [[nodiscard]] Type getType() const;
+    [[nodiscard]] Type getRequestType() const;
 
     /**
      * @brief Serialize the message into a stream.

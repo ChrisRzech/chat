@@ -9,113 +9,65 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-SCENARIO("Serializing and deserializing messages", "[Message]")
+TEST_CASE("Creating a close message", "[Message]")
 {
-    GIVEN("A close message")
-    {
-        const chat::messages::Close message;
+    const chat::messages::Close message;
+    REQUIRE(message.getMessageType() == chat::messages::Message::Type::Close);
+}
 
-        THEN("The message type is `Close`")
-        {
-            CHECK(message.getType() == chat::messages::Message::Type::Close);
-        }
+TEST_CASE("Serializing and deserializing a close message", "[Message]")
+{
+    const chat::messages::Close message;
 
-        WHEN("The message is serialized")
-        {
-            chat::common::OutputByteStream out;
-            message.serialize(out);
-            const auto& serialized = out.getData();
+    chat::common::OutputByteStream out;
+    message.serialize(out);
+    const auto& serialized = out.getData();
 
-            AND_WHEN("The message is deserialized")
-            {
-                chat::common::InputByteStream in{chat::common::ByteSpan{
-                    serialized.data(), serialized.size()}};
-                chat::messages::Close deserialized;
-                CHECK(deserialized.deserialize(in));
+    chat::common::InputByteStream in{
+        chat::common::ByteSpan{serialized.data(), serialized.size()}};
+    chat::messages::Close deserialized;
+    REQUIRE(deserialized.deserialize(in));
+}
 
-                THEN(
-                    "The deserialized message is the same as the original "
-                    "message")
-                {
-                    // Message does not contain data to check
-                }
-            }
-        }
-    }
+TEST_CASE("Creating a ping request message", "[Message]")
+{
+    const chat::messages::Ping message;
+    REQUIRE(message.getMessageType() == chat::messages::Message::Type::Request);
+    REQUIRE(message.getRequestType() == chat::messages::Request::Type::Ping);
+}
 
-    GIVEN("A ping request message")
-    {
-        const chat::messages::Ping message;
+TEST_CASE("Serializing and deserializing a ping request message", "[Message]")
+{
+    const chat::messages::Ping message;
 
-        THEN("The message type is `Request`")
-        {
-            CHECK(message.Message::getType() ==
-                  chat::messages::Message::Type::Request);
-        }
+    chat::common::OutputByteStream out;
+    message.serialize(out);
+    const auto& serialized = out.getData();
 
-        AND_THEN("The request type is `Ping`")
-        {
-            CHECK(message.getType() == chat::messages::Request::Type::Ping);
-        }
+    chat::common::InputByteStream in{
+        chat::common::ByteSpan{serialized.data(), serialized.size()}};
+    chat::messages::Ping deserialized;
+    REQUIRE(deserialized.deserialize(in));
+}
 
-        WHEN("The message is serialized")
-        {
-            chat::common::OutputByteStream out;
-            message.serialize(out);
-            const auto& serialized = out.getData();
+TEST_CASE("Creating a pong response message", "[Message]")
+{
+    const chat::messages::Pong message;
+    REQUIRE(message.getMessageType() ==
+            chat::messages::Message::Type::Response);
+    REQUIRE(message.getResponseType() == chat::messages::Response::Type::Pong);
+}
 
-            AND_WHEN("The message is deserialized")
-            {
-                chat::common::InputByteStream in{chat::common::ByteSpan{
-                    serialized.data(), serialized.size()}};
-                chat::messages::Ping deserialized;
-                CHECK(deserialized.deserialize(in));
+TEST_CASE("Serializing and deserializing a pong response message", "[Message]")
+{
+    const chat::messages::Pong message;
 
-                THEN(
-                    "The deserialized message is the same as the original "
-                    "message")
-                {
-                    // Message does not contain data to check
-                }
-            }
-        }
-    }
+    chat::common::OutputByteStream out;
+    message.serialize(out);
+    const auto& serialized = out.getData();
 
-    GIVEN("A pong response message")
-    {
-        const chat::messages::Pong message;
-
-        THEN("The message type is `Response`")
-        {
-            CHECK(message.Message::getType() ==
-                  chat::messages::Message::Type::Response);
-        }
-
-        AND_THEN("The request type is `Pong`")
-        {
-            CHECK(message.getType() == chat::messages::Response::Type::Pong);
-        }
-
-        WHEN("The message is serialized")
-        {
-            chat::common::OutputByteStream out;
-            message.serialize(out);
-            const auto& serialized = out.getData();
-
-            AND_WHEN("The message is deserialized")
-            {
-                chat::common::InputByteStream in{chat::common::ByteSpan{
-                    serialized.data(), serialized.size()}};
-                chat::messages::Pong deserialized;
-                CHECK(deserialized.deserialize(in));
-
-                THEN(
-                    "The deserialized message is the same as the original "
-                    "message")
-                {
-                    // Message does not contain data to check
-                }
-            }
-        }
-    }
+    chat::common::InputByteStream in{
+        chat::common::ByteSpan{serialized.data(), serialized.size()}};
+    chat::messages::Pong deserialized;
+    REQUIRE(deserialized.deserialize(in));
 }

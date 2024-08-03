@@ -8,7 +8,7 @@ Response::Response(Type type)
     m_type{type}
 {}
 
-Response::Type Response::getType() const
+Response::Type Response::getResponseType() const
 {
     return m_type;
 }

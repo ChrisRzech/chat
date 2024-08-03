@@ -23,33 +23,15 @@ TEMPLATE_TEST_CASE("Converting to and from network byte order", "[byte order]",
         return bytes;
     };
 
-    GIVEN("An integral value")
-    {
-        using Integral = TestType;
-        constexpr Integral value = 42;
-        constexpr auto expectedNetworkBytes = getExpectedNetworkBytes(value);
+    using Integral = TestType;
+    constexpr Integral value = 42;
+    constexpr auto expectedNetworkBytes = getExpectedNetworkBytes(value);
 
-        WHEN("The value is converted to network byte order")
-        {
-            constexpr auto networkBytes =
-                chat::common::utility::toNetworkByteOrder(value);
+    constexpr auto networkBytes =
+        chat::common::utility::toNetworkByteOrder(value);
+    REQUIRE(networkBytes == expectedNetworkBytes);
 
-            THEN("The result matches the expected network byte order")
-            {
-                CHECK(networkBytes == expectedNetworkBytes);
-            }
-
-            WHEN("The value is reconstructed to host byte order")
-            {
-                constexpr auto reconstructedValue =
-                    chat::common::utility::toHostByteOrder<Integral>(
-                        networkBytes);
-
-                THEN("The result matches the initial value")
-                {
-                    CHECK(reconstructedValue == value);
-                }
-            }
-        }
-    }
+    constexpr auto reconstructedValue =
+        chat::common::utility::toHostByteOrder<Integral>(networkBytes);
+    REQUIRE(reconstructedValue == value);
 }

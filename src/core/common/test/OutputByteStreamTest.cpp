@@ -8,183 +8,108 @@
 #include <array>
 #include <cstddef>
 
-SCENARIO("Writing data into an output byte stream", "[OutputByteStream]")
+namespace
 {
-    GIVEN("An output byte stream")
-    {
-        chat::common::OutputByteStream stream;
-
-        AND_GIVEN("Data")
-        {
-            constexpr std::size_t DATA_SIZE = 256;
-            std::array<std::byte, DATA_SIZE> data = {};
-            std::generate(data.begin(), data.end(), [i = 0]() mutable {
-                return static_cast<std::byte>(i++);
-            });
-            const chat::common::ByteSpan bytes{data.data(), data.size()};
-
-            WHEN("The data is written to the stream")
-            {
-                stream.write(bytes);
-
-                THEN("The stream contains the data")
-                {
-                    REQUIRE(stream.getData().size() == data.size());
-                    CHECK(std::equal(stream.getData().begin(),
-                                     stream.getData().end(), data.begin()));
-                }
-            }
-        }
+constexpr auto createBytes()
+{
+    constexpr std::size_t size = 256;
+    std::array<std::byte, size> bytes = {};
+    int i = 0;
+    for(auto& byte : bytes) {
+        byte = static_cast<std::byte>(i++);
     }
+    return bytes;
 }
 
-SCENARIO("Inserting a byte array into an output byte stream",
-         "[OutputByteStream]")
+template<std::size_t size>
+constexpr auto createSizedBytes(const std::array<std::byte, size>& bytes)
 {
-    GIVEN("An output byte stream")
-    {
-        chat::common::OutputByteStream stream;
-
-        AND_GIVEN("A byte array")
-        {
-            constexpr std::size_t DATA_SIZE = 256;
-            chat::common::ByteArray<DATA_SIZE> data;
-            std::generate(data.begin(), data.end(), [i = 0]() mutable {
-                return static_cast<std::byte>(i++);
-            });
-
-            WHEN("The byte array is written to the stream")
-            {
-                stream << data;
-
-                THEN("The stream contains the data of the byte array")
-                {
-                    REQUIRE(stream.getData().size() == data.size());
-                    CHECK(std::equal(stream.getData().begin(),
-                                     stream.getData().end(), data.begin()));
-                }
-            }
+    auto copy = [](auto begin, auto end, auto result) {
+        for(auto curr = begin; curr != end; curr++) {
+            *result = *curr;
+            result++;
         }
-    }
+        return result;
+    };
+
+    std::array<std::byte, sizeof(std::uint32_t) + size> sizedBytes = {};
+    constexpr auto sizeBytes =
+        chat::common::utility::toNetworkByteOrder<std::uint32_t>(size);
+    auto end = copy(sizeBytes.begin(), sizeBytes.end(), sizedBytes.begin());
+    copy(bytes.begin(), bytes.end(), end);
+    return sizedBytes;
+}
 }
 
-TEMPLATE_TEST_CASE("Inserting an integral into an output byte stream",
-                   "[OutputByteStream]", std::int8_t, std::uint8_t,
-                   std::int16_t, std::uint16_t, std::int32_t, std::uint32_t,
-                   std::int64_t, std::uint64_t)
+TEST_CASE("Stream is initially empty", "[OutputByteStream]")
 {
-    GIVEN("An output byte stream")
-    {
-        chat::common::OutputByteStream stream;
-
-        AND_GIVEN("An integral")
-        {
-            using Integral = TestType;
-            constexpr Integral value = 42;
-
-            WHEN("The integral is written to the stream")
-            {
-                stream << value;
-
-                THEN("The stream contains the integral in network byte order")
-                {
-                    constexpr auto expectedData =
-                        chat::common::utility::toNetworkByteOrder(value);
-
-                    REQUIRE(stream.getData().size() == expectedData.size());
-                    CHECK(std::equal(stream.getData().begin(),
-                                     stream.getData().end(),
-                                     expectedData.begin()));
-                }
-            }
-        }
-    }
+    const chat::common::OutputByteStream stream;
+    REQUIRE(stream.getData().empty());
 }
 
-SCENARIO("Inserting a byte span into an output byte stream",
-         "[OutputByteStream]")
+TEST_CASE("Writing into a stream", "[OutputByteStream]")
 {
-    GIVEN("An output byte stream")
-    {
-        chat::common::OutputByteStream stream;
+    constexpr auto bytes = createBytes();
+    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
 
-        AND_GIVEN("Data and byte span of the data")
-        {
-            constexpr std::size_t DATA_SIZE = 256;
-            std::array<std::byte, DATA_SIZE> data = {};
-            std::generate(data.begin(), data.end(), [i = 0]() mutable {
-                return static_cast<std::byte>(i++);
-            });
-            const chat::common::ByteSpan span{data.data(), data.size()};
-
-            WHEN("The byte span is written to the stream")
-            {
-                stream << span;
-
-                THEN(
-                    "The stream contains the size of the byte span and data of "
-                    "the byte span")
-                {
-                    std::array<std::byte, sizeof(std::uint32_t) + DATA_SIZE>
-                        expectedData = {};
-                    constexpr auto sizeBytes =
-                        chat::common::utility::toNetworkByteOrder<
-                            std::uint32_t>(DATA_SIZE);
-                    auto expectedDataEnd =
-                        std::copy(sizeBytes.begin(), sizeBytes.end(),
-                                  expectedData.begin());
-                    std::copy(data.begin(), data.end(), expectedDataEnd);
-
-                    REQUIRE(stream.getData().size() == expectedData.size());
-                    CHECK(std::equal(stream.getData().begin(),
-                                     stream.getData().end(),
-                                     expectedData.begin()));
-                }
-            }
-        }
-    }
+    chat::common::OutputByteStream stream;
+    stream.write(span);
+    REQUIRE(stream.getData().size() == bytes.size());
+    REQUIRE(std::equal(stream.getData().begin(), stream.getData().end(),
+                       bytes.begin()));
 }
 
-SCENARIO("Inserting a byte string into an output byte stream",
-         "[OutputByteStream]")
+TEST_CASE("Writing a byte array into a stream", "[OutputByteStream]")
 {
-    GIVEN("An output byte stream")
-    {
-        chat::common::OutputByteStream stream;
+    constexpr auto bytes = createBytes();
 
-        AND_GIVEN("A byte string")
-        {
-            constexpr std::size_t DATA_SIZE = 256;
-            chat::common::ByteString data;
-            data.resize(DATA_SIZE);
-            std::generate(data.begin(), data.end(), [i = 0]() mutable {
-                return static_cast<std::byte>(i++);
-            });
+    chat::common::OutputByteStream stream;
+    stream << bytes;
+    REQUIRE(stream.getData().size() == bytes.size());
+    REQUIRE(std::equal(stream.getData().begin(), stream.getData().end(),
+                       bytes.begin()));
+}
 
-            WHEN("The byte string is written to the stream")
-            {
-                stream << data;
+TEMPLATE_TEST_CASE("Writing an integral into a stream", "[OutputByteStream]",
+                   std::int8_t, std::uint8_t, std::int16_t, std::uint16_t,
+                   std::int32_t, std::uint32_t, std::int64_t, std::uint64_t)
+{
+    using Integral = TestType;
+    constexpr Integral value = 42;
 
-                THEN(
-                    "The stream contains the size of the byte string and data "
-                    "of the byte string")
-                {
-                    std::array<std::byte, sizeof(std::uint32_t) + DATA_SIZE>
-                        expectedData = {};
-                    constexpr auto sizeBytes =
-                        chat::common::utility::toNetworkByteOrder<
-                            std::uint32_t>(DATA_SIZE);
-                    auto expectedDataEnd =
-                        std::copy(sizeBytes.begin(), sizeBytes.end(),
-                                  expectedData.begin());
-                    std::copy(data.begin(), data.end(), expectedDataEnd);
+    chat::common::OutputByteStream stream;
+    stream << value;
 
-                    REQUIRE(stream.getData().size() == expectedData.size());
-                    CHECK(std::equal(stream.getData().begin(),
-                                     stream.getData().end(),
-                                     expectedData.begin()));
-                }
-            }
-        }
-    }
+    constexpr auto expected = chat::common::utility::toNetworkByteOrder(value);
+    REQUIRE(stream.getData().size() == expected.size());
+    REQUIRE(std::equal(stream.getData().begin(), stream.getData().end(),
+                       expected.begin()));
+}
+
+TEST_CASE("Writing a byte span into a stream", "[OutputByteStream]")
+{
+    constexpr auto bytes = createBytes();
+    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
+
+    chat::common::OutputByteStream stream;
+    stream << span;
+
+    constexpr auto expected = createSizedBytes(bytes);
+    REQUIRE(stream.getData().size() == expected.size());
+    REQUIRE(std::equal(stream.getData().begin(), stream.getData().end(),
+                       expected.begin()));
+}
+
+TEST_CASE("Writing a byte string into a stream", "[OutputByteStream]")
+{
+    constexpr auto bytes = createBytes();
+    const chat::common::ByteString byteString{bytes.begin(), bytes.end()};
+
+    chat::common::OutputByteStream stream;
+    stream << byteString;
+
+    constexpr auto expected = createSizedBytes(bytes);
+    REQUIRE(stream.getData().size() == expected.size());
+    REQUIRE(std::equal(stream.getData().begin(), stream.getData().end(),
+                       expected.begin()));
 }

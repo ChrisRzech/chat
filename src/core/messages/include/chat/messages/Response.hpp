@@ -53,7 +53,7 @@ public:
      *
      * @return The type of the response.
      */
-    [[nodiscard]] Type getType() const;
+    [[nodiscard]] Type getResponseType() const;
 
     /**
      * @brief Serialize the message into a stream.

@@ -7,7 +7,7 @@ Message::Message(Type type)
   : m_type{type}
 {}
 
-Message::Type Message::getType() const
+Message::Type Message::getMessageType() const
 {
     return m_type;
 }
