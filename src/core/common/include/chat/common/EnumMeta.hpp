@@ -61,7 +61,7 @@ public:
     /**
      * @brief Construct a string.
      */
-    constexpr ConstexprString(std::string_view name)
+    constexpr explicit ConstexprString(std::string_view name)
       : data{}
     {
         for(std::size_t i = 0; i < size; i++) {
@@ -84,7 +84,7 @@ public:
      *
      * @return A view of the string.
      */
-    constexpr std::string_view toStringView() const
+    [[nodiscard]] constexpr std::string_view toStringView() const
     {
         return std::string_view{data.data(), size};
     }
@@ -222,10 +222,13 @@ constexpr auto createSequenceFromZero()
  *
  * @tparam values The values of the sequence.
  *
+ * @param sequence The sequence.
+ *
  * @return The sequence with the values offsetted.
  */
 template<typename Int, Int offset, Int... values>
-constexpr auto offsetBy(std::integer_sequence<Int, values...>)
+constexpr auto offsetBy(
+    [[maybe_unused]] std::integer_sequence<Int, values...> sequence)
 {
     return std::integer_sequence<Int, values + offset...>{};
 }
@@ -239,10 +242,13 @@ constexpr auto offsetBy(std::integer_sequence<Int, values...>)
  *
  * @tparam values The values of the sequence.
  *
+ * @param sequence The sequence.
+ *
  * @return The sequence with the value appended.
  */
 template<typename Int, Int value, Int... values>
-constexpr auto append(std::integer_sequence<Int, values...>)
+constexpr auto append(
+    [[maybe_unused]] std::integer_sequence<Int, values...> sequence)
 {
     return std::integer_sequence<Int, values..., value>{};
 }
@@ -256,10 +262,13 @@ constexpr auto append(std::integer_sequence<Int, values...>)
  *
  * @tparam values The values of the sequence.
  *
+ * @param sequence The sequence.
+ *
  * @return The sequence with casted values.
  */
 template<typename To, typename From, From... values>
-constexpr auto castTo(std::integer_sequence<From, values...>)
+constexpr auto castTo(
+    [[maybe_unused]] std::integer_sequence<From, values...> sequence)
 {
     return std::integer_sequence<To, values...>{};
 }
@@ -314,11 +323,14 @@ constexpr auto countValidEnumValues(
  *
  * @tparam values The sequence of values to check for.
  *
+ * @param sequence The sequence.
+ *
  * @return An array of valid enum values.
  */
 template<typename Enum, std::underlying_type_t<Enum>... values>
-constexpr auto getValuesHelper(
-    std::integer_sequence<std::underlying_type_t<Enum>, values...>)
+constexpr auto getValuesHelper([[maybe_unused]] std::integer_sequence<
+                               std::underlying_type_t<Enum>, values...>
+                                   sequence)
 {
     constexpr auto enumValues =
         std::array{std::make_pair(values, isValid<Enum, values>())...};
@@ -326,7 +338,7 @@ constexpr auto getValuesHelper(
     std::size_t index = 0;
     for(const auto& [value, isValid] : enumValues) {
         if(isValid) {
-            validEnumValues[index] = static_cast<Enum>(value);
+            validEnumValues.at(index) = static_cast<Enum>(value);
             index++;
         }
     }
@@ -363,10 +375,13 @@ inline constexpr auto values = detail::getValues<Enum>();
  *
  * @tparam indexes The sequence of indexes.
  *
+ * @param sequence The sequence.
+ *
  * @return An array mapping of enum values to their name.
  */
 template<typename Enum, std::size_t... indexes>
-constexpr auto getNamesHelper(std::index_sequence<indexes...>)
+constexpr auto getNamesHelper(
+    [[maybe_unused]] std::index_sequence<indexes...> sequence)
 {
     return std::array{
         std::make_pair(values<Enum>.at(indexes),
