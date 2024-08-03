@@ -102,6 +102,25 @@ public:
      */
     [[nodiscard]] ByteSpan subspan(std::size_t offset, std::size_t size) const;
 
+    /**
+     * @brief Check if this span and another span contains the same bytes.
+     *
+     * @param other Another span to compare this one to.
+     *
+     * @return True if both spans contains the same bytes; otherwise, false.
+     */
+    [[nodiscard]] bool operator==(const ByteSpan& other) const;
+
+    /**
+     * @brief Check if this span and another span do not contain the same
+     * bytes.
+     *
+     * @param other Another span to compare this one to.
+     *
+     * @return True if both spans contains the same bytes; otherwise, false.
+     */
+    [[nodiscard]] bool operator!=(const ByteSpan& other) const;
+
 private:
     const std::byte* m_data;
     std::size_t m_size;

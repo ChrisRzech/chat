@@ -1,5 +1,7 @@
 #include "chat/common/ByteSpan.hpp"
 
+#include <algorithm>
+
 namespace chat::common
 {
 
@@ -50,6 +52,17 @@ ByteSpan ByteSpan::subspan(std::size_t offset, std::size_t size) const
     // arithmetic. However, to do so, pointer arithmetic must be used.
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return ByteSpan{m_data + offset, size};
+}
+
+bool ByteSpan::operator==(const ByteSpan& other) const
+{
+    return m_size == other.m_size ? std::equal(begin(), end(), other.begin())
+                                  : false;
+}
+
+bool ByteSpan::operator!=(const ByteSpan& other) const
+{
+    return !operator==(other);
 }
 
 }
