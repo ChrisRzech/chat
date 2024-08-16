@@ -26,9 +26,7 @@ void SessionManager::update()
         for(auto& session : m_sessions) {
             if(!session.isBeingHandled() && !session.isZombie() &&
                m_selector.isReady(session.getSocket())) {
-                // The selector considers a socket "ready" if a socket is
-                // disconnected (i.e. receiving data would indicate socket
-                // is disconnected)
+                // A disconnected socket is also considered ready.
 
                 // This thread must set the session as being handled. If
                 // done within the thread pool job, this thread might create
