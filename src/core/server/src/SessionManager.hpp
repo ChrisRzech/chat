@@ -52,7 +52,7 @@ public:
     void update();
 
 private:
-    void listen();
+    void accept();
 
     void removeZombies();
 

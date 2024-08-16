@@ -20,7 +20,7 @@ void SessionManager::update()
     constexpr sf::Int32 SOCKET_READY_TIMEOUT{250};
     if(m_selector.wait(sf::milliseconds(SOCKET_READY_TIMEOUT))) {
         if(m_selector.isReady(m_listener)) {
-            listen();
+            accept();
         }
 
         for(auto& session : m_sessions) {
@@ -45,7 +45,7 @@ void SessionManager::update()
     removeZombies();
 }
 
-void SessionManager::listen()
+void SessionManager::accept()
 {
     auto socket = std::make_unique<sf::TcpSocket>();
     switch(m_listener.accept(*socket)) {
