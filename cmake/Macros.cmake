@@ -70,4 +70,6 @@ macro(chat_add_test test_name)
     #Use Catch2 library
     find_package(Catch2 3 REQUIRED)
     target_link_libraries(${test_name} PRIVATE Catch2::Catch2WithMain)
+    include(Catch) # For `catch_discover_tests()`
+    catch_discover_tests(${test_name})
 endmacro()

@@ -24,4 +24,8 @@ message(STATUS "CHAT_ENABLE_LSAN: '${CHAT_ENABLE_LSAN}'")
 
 project(chat LANGUAGES CXX)
 
+# Include CTest at the top level directory to enable running the `ctest` command
+# at the top level of the build directory
+include(CTest)
+
 add_subdirectory(src)
