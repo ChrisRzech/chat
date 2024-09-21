@@ -9,7 +9,8 @@ namespace chat::server
 
 Server::Impl::Impl(std::uint16_t port, int maxThreadCount)
   : m_state{},
-    m_sessionManager{port, maxThreadCount}
+    m_listener{port},
+    m_sessionManager{maxThreadCount}
 {
     // There needs to be at least 2 threads, one for the main server thread and
     // one for handling the client requests
@@ -28,6 +29,11 @@ void Server::Impl::run()
     if(m_state.to(StateManager::State::Running)) {
         LOG_INFO << "Running";
         while(m_state.get() == StateManager::State::Running) {
+            auto socket = m_listener.accept();
+            if(socket.has_value()) {
+                m_sessionManager.add(std::move(socket.value()));
+            }
+
             m_sessionManager.update();
         }
 

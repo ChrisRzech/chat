@@ -6,6 +6,7 @@ chat_add_library(${LIBRARY_NAME})
 
 target_sources(${LIBRARY_NAME}
     PRIVATE
+        ${SOURCE_PATH}/Listener.cpp
         ${SOURCE_PATH}/RequestHandler.cpp
         ${SOURCE_PATH}/Server.cpp
         ${SOURCE_PATH}/ServerImpl.cpp

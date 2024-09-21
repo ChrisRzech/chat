@@ -5,24 +5,22 @@
 namespace chat::server
 {
 
-SessionManager::SessionManager(std::uint16_t port, int maxThreadCount)
+SessionManager::SessionManager(int maxThreadCount)
   : m_threadPool{maxThreadCount - 1},
-    m_listener{},
     m_selector{},
     m_sessions{}
+{}
+
+void SessionManager::add(std::unique_ptr<sf::TcpSocket> socket)
 {
-    m_listener.listen(port);
-    m_selector.add(m_listener);
+    m_selector.add(*socket);
+    m_sessions.emplace_back(std::move(socket));
 }
 
 void SessionManager::update()
 {
     constexpr sf::Int32 SOCKET_READY_TIMEOUT{250};
     if(m_selector.wait(sf::milliseconds(SOCKET_READY_TIMEOUT))) {
-        if(m_selector.isReady(m_listener)) {
-            accept();
-        }
-
         for(auto& session : m_sessions) {
             if(!session.isBeingHandled() && !session.isZombie() &&
                m_selector.isReady(session.getSocket())) {
@@ -41,34 +39,6 @@ void SessionManager::update()
     }
 
     removeZombies();
-}
-
-void SessionManager::accept()
-{
-    auto socket = std::make_unique<sf::TcpSocket>();
-    switch(m_listener.accept(*socket)) {
-    case sf::Socket::Status::Done:
-        LOG_INFO << "Session accepted";
-        m_selector.add(*socket);
-        m_sessions.emplace_back(std::move(socket));
-        break;
-
-    case sf::Socket::Status::NotReady:
-        LOG_WARN << "Failed to accept socket: unexpected not ready";
-        break;
-
-    case sf::Socket::Status::Partial:
-        LOG_WARN << "Failed to accept socket: unexpected partial";
-        break;
-
-    case sf::Socket::Status::Disconnected:
-        LOG_WARN << "Failed to accept socket: unexpected disconnected";
-        break;
-
-    case sf::Socket::Status::Error:
-        LOG_WARN << "An error occurred while trying to accept socket";
-        break;
-    }
 }
 
 void SessionManager::removeZombies()

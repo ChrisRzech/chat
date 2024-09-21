@@ -5,7 +5,6 @@
 #include "chat/common/ThreadPool.hpp"
 
 #include <SFML/Network/SocketSelector.hpp>
-#include <SFML/Network/TcpListener.hpp>
 
 #include <cstdint>
 #include <list>
@@ -22,11 +21,9 @@ public:
     /**
      * @brief Construct a session manager.
      *
-     * @param port The port to listen on.
-     *
      * @param maxThreadCount The number of threads to use for managing sessions.
      */
-    SessionManager(std::uint16_t port, int maxThreadCount);
+    SessionManager(int maxThreadCount);
 
     /**
      * @brief Copy operations are disabled.
@@ -49,6 +46,13 @@ public:
      */
     ~SessionManager() = default;
 
+    /**
+     * @brief Add a new session.
+     *
+     * @param socket The socket for the session.
+     */
+    void add(std::unique_ptr<sf::TcpSocket> socket);
+
     void update();
 
 private:
@@ -57,7 +61,6 @@ private:
     void removeZombies();
 
     common::ThreadPool m_threadPool;
-    sf::TcpListener m_listener;
     sf::SocketSelector m_selector;
     std::list<Session> m_sessions;
 };

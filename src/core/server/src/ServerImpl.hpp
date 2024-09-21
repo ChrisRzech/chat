@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Listener.hpp"
 #include "SessionManager.hpp"
 #include "StateManager.hpp"
 
@@ -62,6 +63,7 @@ public:
 
 private:
     StateManager m_state;
+    Listener m_listener;
     SessionManager m_sessionManager;
 };
 
