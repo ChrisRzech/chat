@@ -12,7 +12,6 @@ target_sources(${LIBRARY_NAME}
         ${SOURCE_PATH}/ServerImpl.cpp
         ${SOURCE_PATH}/Session.cpp
         ${SOURCE_PATH}/SessionManager.cpp
-        ${SOURCE_PATH}/StateManager.cpp
 )
 
 target_include_directories(${LIBRARY_NAME}

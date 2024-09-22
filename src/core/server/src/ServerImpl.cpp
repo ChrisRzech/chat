@@ -8,7 +8,7 @@ namespace chat::server
 {
 
 Server::Impl::Impl(std::uint16_t port, int maxThreadCount)
-  : m_state{},
+  : m_state{ServerState::Stopped, getServerStateTransitions()},
     m_listener{port},
     m_sessionManager{maxThreadCount}
 {
@@ -26,9 +26,9 @@ Server::Impl::~Impl()
 
 void Server::Impl::run()
 {
-    if(m_state.to(StateManager::State::Running)) {
+    if(m_state.to(ServerState::Running)) {
         LOG_INFO << "Running";
-        while(m_state.get() == StateManager::State::Running) {
+        while(m_state.get() == ServerState::Running) {
             auto socket = m_listener.accept();
             if(socket.has_value()) {
                 m_sessionManager.add(std::move(socket.value()));
@@ -37,7 +37,7 @@ void Server::Impl::run()
             m_sessionManager.update();
         }
 
-        if(m_state.to(StateManager::State::Stopped)) {
+        if(m_state.to(ServerState::Stopped)) {
             LOG_INFO << "Stopped";
         }
     }
@@ -45,9 +45,9 @@ void Server::Impl::run()
 
 void Server::Impl::stop()
 {
-    if(m_state.to(StateManager::State::Stopping)) {
+    if(m_state.to(ServerState::Stopping)) {
         LOG_INFO << "Stopping";
-        m_state.waitUntil(StateManager::State::Stopped);
+        m_state.waitUntil(ServerState::Stopped);
     }
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Listener.hpp"
+#include "ServerState.hpp"
 #include "SessionManager.hpp"
 #include "StateManager.hpp"
 
@@ -62,7 +63,7 @@ public:
     void stop();
 
 private:
-    StateManager m_state;
+    StateManager<ServerState> m_state;
     Listener m_listener;
     SessionManager m_sessionManager;
 };

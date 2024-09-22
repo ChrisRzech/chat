@@ -3,30 +3,31 @@
 #include "chat/common/SynchronizedObject.hpp"
 
 #include <condition_variable>
+#include <map>
+#include <set>
 
 namespace chat::server
 {
 
 /**
- * @brief Manager for the server's state.
+ * @brief A state manager.
+ *
+ * @details This is thread-safe.
  */
+template<typename T>
 class StateManager
 {
 public:
-    /**
-     * @brief The possible states.
-     */
-    enum class State
-    {
-        Stopped,
-        Running,
-        Stopping
-    };
+    using Transitions = std::map<T, std::set<T>>;
 
     /**
      * @brief Construct a manager.
      */
-    StateManager();
+    StateManager(T initial, Transitions transitions)
+      : m_state{initial},
+        m_transitions{std::move(transitions)},
+        m_condvar{}
+    {}
 
     /**
      * @brief Copy operations are disabled.
@@ -54,7 +55,11 @@ public:
      *
      * @return The current state.
      */
-    State get() const;
+    T get() const
+    {
+        auto locked = m_state.lock();
+        return locked.get();
+    }
 
     /**
      * @brief Transition to the provided state.
@@ -64,7 +69,20 @@ public:
      * @return True if the the current state is able to transition; otherwise,
      * false.
      */
-    bool to(State value);
+    bool to(T value)
+    {
+        bool success = false;
+
+        auto locked = m_state.lock();
+        auto it = m_transitions.find(locked.get());
+        if(it != m_transitions.end() && it->second.count(value) == 1) {
+            locked.get() = value;
+            m_condvar.notify_one();
+            success = true;
+        }
+
+        return success;
+    }
 
     /**
      * @brief Block until the current state has transitioned to the provided
@@ -72,10 +90,15 @@ public:
      *
      * @param value The provided state.
      */
-    void waitUntil(State value);
+    void waitUntil(T value)
+    {
+        auto locked = m_state.lock();
+        m_condvar.wait(locked.getLock(), [&] { return locked.get() == value; });
+    }
 
 private:
-    common::SynchronizedObject<State> m_state;
+    common::SynchronizedObject<T> m_state;
+    Transitions m_transitions;
     std::condition_variable m_condvar;
 };
 
