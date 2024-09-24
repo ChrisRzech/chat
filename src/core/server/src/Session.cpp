@@ -82,7 +82,7 @@ void Session::handle()
             response = std::make_optional(handler.handle(*request.value()));
         }
     } catch(const std::exception& exception) {
-        LOG_ERROR << exception.what();
+        LOG_ERROR << "Exception caught: " << exception.what();
         response.reset();
     } catch(...) {
         LOG_ERROR << "Unknown exception!";

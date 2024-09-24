@@ -13,7 +13,7 @@ int main()
         chat::server::Server server(PORT, MAX_THREAD_COUNT);
         server.run();
     } catch(const std::exception& exception) {
-        LOG_FATAL << exception.what();
+        LOG_FATAL << "Exception caught: " << exception.what();
         return 1;
     } catch(...) {
         LOG_FATAL << "Unknown exception!";

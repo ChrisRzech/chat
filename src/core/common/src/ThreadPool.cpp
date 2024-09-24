@@ -96,7 +96,7 @@ void ThreadPool::threadLoop()
         try {
             job();
         } catch(const std::exception& exception) {
-            LOG_ERROR << exception.what();
+            LOG_ERROR << "Exception caught: " << exception.what();
         } catch(...) {
             LOG_ERROR << "Unknown exception!";
         }
