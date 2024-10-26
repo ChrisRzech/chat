@@ -3,10 +3,10 @@
 #include "Listener.hpp"
 #include "ServerState.hpp"
 #include "SessionManager.hpp"
-#include "StateManager.hpp"
 
 #include "chat/server/Server.hpp"
 
+#include <atomic>
 #include <cstdint>
 
 namespace chat::server
@@ -46,7 +46,7 @@ public:
     /**
      * @brief Destroy the server.
      */
-    ~Impl();
+    ~Impl() = default;
 
     /**
      * @brief Run the server.
@@ -58,12 +58,22 @@ public:
     /**
      * @brief Stop the server.
      *
-     * @details This blocks until the server has stopped.
+     * @details Notify the server's running thread to stop running.
      */
     void stop();
 
 private:
-    StateManager<ServerState> m_state;
+    /**
+     * @brief The states of the server.
+     */
+    enum class State
+    {
+        Running,
+        Stopping,
+        Stopped
+    };
+
+    std::atomic<State> m_state;
     Listener m_listener;
     SessionManager m_sessionManager;
 };

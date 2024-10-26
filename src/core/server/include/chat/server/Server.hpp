@@ -55,7 +55,7 @@ public:
     /**
      * @brief Stop the server.
      *
-     * @details This blocks until the server has stopped.
+     * @details Notify the server's running thread to stop running.
      */
     void stop();
 
