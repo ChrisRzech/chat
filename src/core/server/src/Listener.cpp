@@ -18,7 +18,8 @@ std::optional<std::unique_ptr<sf::TcpSocket>> Listener::accept()
     auto socket = std::make_unique<sf::TcpSocket>();
     switch(m_listener.accept(*socket)) {
     case sf::Socket::Status::Done:
-        LOG_INFO << "Socket accepted";
+        LOG_INFO << "Client connected from '" << socket->getRemoteAddress()
+                 << "'";
         result.emplace(std::move(socket));
         break;
 
