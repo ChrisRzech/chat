@@ -64,13 +64,24 @@ public:
 private:
     /**
      * @brief The states of the server.
+     *
+     * @details In the @c Initializing state, the server performs operations
+     * needed before going online.
+     *
+     * In the @c Online state, the server accepts incoming connections and
+     * processes client requests.
+     *
+     * In the @c Shutdown state, the server performs operations needed before
+     * going offline.
+     *
+     * to the @c Offline state, the server can't accept incoming connections.
      */
     enum class State
     {
         Initializing,
-        Running,
-        Stopping,
-        Stopped
+        Online,
+        Shutdown,
+        Offline
     };
 
     /**
@@ -78,12 +89,12 @@ private:
      *
      * @return If initialization is successful, true; otherwise, false.
      */
-    [[nodiscard]] bool init();
+    [[nodiscard]] bool initialize();
 
     /**
-     * @brief Stopping the server.
+     * @brief Shutdown the server.
      */
-    void stopping();
+    void shutdown();
 
     std::uint16_t m_port;
     std::atomic<State> m_state;

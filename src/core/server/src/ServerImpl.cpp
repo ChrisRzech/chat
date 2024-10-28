@@ -8,7 +8,7 @@ namespace chat::server
 {
 Server::Impl::Impl(std::uint16_t port, int maxThreadCount)
   : m_port{port},
-    m_state{State::Stopped},
+    m_state{State::Offline},
     m_listener{},
     m_sessionManager{maxThreadCount}
 {
@@ -21,11 +21,11 @@ Server::Impl::Impl(std::uint16_t port, int maxThreadCount)
 
 void Server::Impl::run()
 {
-    if(init()) {
-        m_state = State::Running;
-        LOG_INFO << "Server running";
+    if(initialize()) {
+        m_state = State::Online;
+        LOG_INFO << "Server online";
 
-        while(m_state == State::Running) {
+        while(m_state == State::Online) {
             auto socket = m_listener.accept();
             if(socket.has_value()) {
                 m_sessionManager.add(std::move(socket.value()));
@@ -35,30 +35,30 @@ void Server::Impl::run()
         }
     }
 
-    stopping();
+    shutdown();
 
-    m_state = State::Stopped;
-    LOG_INFO << "Server stopped";
+    m_state = State::Offline;
+    LOG_INFO << "Server offline";
 }
 
 void Server::Impl::stop()
 {
-    if(m_state != State::Stopping && m_state != State::Stopped) {
-        m_state = State::Stopping;
+    if(m_state != State::Shutdown && m_state != State::Offline) {
+        m_state = State::Shutdown;
     }
 }
 
-bool Server::Impl::init()
+bool Server::Impl::initialize()
 {
     m_state = State::Initializing;
     LOG_INFO << "Server initializing";
     return m_listener.listen(m_port);
 }
 
-void Server::Impl::stopping()
+void Server::Impl::shutdown()
 {
-    m_state = State::Stopping;
-    LOG_INFO << "Server stopping";
+    m_state = State::Shutdown;
+    LOG_INFO << "Server shutting down";
     m_listener.close();
 }
 }
