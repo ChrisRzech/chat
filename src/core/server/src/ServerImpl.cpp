@@ -7,8 +7,9 @@
 namespace chat::server
 {
 Server::Impl::Impl(std::uint16_t port, int maxThreadCount)
-  : m_state{State::Stopped},
-    m_listener{port},
+  : m_port{port},
+    m_state{State::Stopped},
+    m_listener{},
     m_sessionManager{maxThreadCount}
 {
     // There needs to be at least 2 threads: one for the server loop and one for
@@ -20,17 +21,21 @@ Server::Impl::Impl(std::uint16_t port, int maxThreadCount)
 
 void Server::Impl::run()
 {
-    m_state = State::Running;
-    LOG_INFO << "Server running";
+    if(init()) {
+        m_state = State::Running;
+        LOG_INFO << "Server running";
 
-    while(m_state != State::Stopping) {
-        auto socket = m_listener.accept();
-        if(socket.has_value()) {
-            m_sessionManager.add(std::move(socket.value()));
+        while(m_state == State::Running) {
+            auto socket = m_listener.accept();
+            if(socket.has_value()) {
+                m_sessionManager.add(std::move(socket.value()));
+            }
+
+            m_sessionManager.update();
         }
-
-        m_sessionManager.update();
     }
+
+    stopping();
 
     m_state = State::Stopped;
     LOG_INFO << "Server stopped";
@@ -38,9 +43,22 @@ void Server::Impl::run()
 
 void Server::Impl::stop()
 {
-    if(m_state == State::Running) {
+    if(m_state != State::Stopping && m_state != State::Stopped) {
         m_state = State::Stopping;
-        LOG_INFO << "Server stopping";
     }
+}
+
+bool Server::Impl::init()
+{
+    m_state = State::Initializing;
+    LOG_INFO << "Server initializing";
+    return m_listener.listen(m_port);
+}
+
+void Server::Impl::stopping()
+{
+    m_state = State::Stopping;
+    LOG_INFO << "Server stopping";
+    m_listener.close();
 }
 }

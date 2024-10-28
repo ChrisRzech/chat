@@ -11,7 +11,6 @@
 
 namespace chat::server
 {
-
 /**
  * @brief Implementation for @c chat::server::Server.
  */
@@ -51,14 +50,14 @@ public:
     /**
      * @brief Run the server.
      *
-     * @details This blocks until the server is stopped.
+     * @details This blocks until the server is stopped. Use @c stop() to stop
+     * the server. Since this function blocks the current thread, @c stop() must
+     * be called on a separate thread.
      */
     void run();
 
     /**
-     * @brief Stop the server.
-     *
-     * @details Notify the server's running thread to stop running.
+     * @brief Notify the server to stop.
      */
     void stop();
 
@@ -68,14 +67,27 @@ private:
      */
     enum class State
     {
+        Initializing,
         Running,
         Stopping,
         Stopped
     };
 
+    /**
+     * @brief Initialize the server.
+     *
+     * @return If initialization is successful, true; otherwise, false.
+     */
+    [[nodiscard]] bool init();
+
+    /**
+     * @brief Stopping the server.
+     */
+    void stopping();
+
+    std::uint16_t m_port;
     std::atomic<State> m_state;
     Listener m_listener;
     SessionManager m_sessionManager;
 };
-
 }

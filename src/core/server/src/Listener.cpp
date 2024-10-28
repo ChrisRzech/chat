@@ -4,11 +4,44 @@
 
 namespace chat::server
 {
-Listener::Listener(std::uint16_t port)
+Listener::Listener()
   : m_listener{}
 {
     m_listener.setBlocking(false);
-    m_listener.listen(port);
+}
+
+bool Listener::listen(std::uint16_t port)
+{
+    bool successful = false;
+
+    switch(m_listener.listen(port)) {
+    case sf::Socket::Status::Done:
+        LOG_INFO << "Listening for connections on port '" << port << "'";
+        successful = true;
+        break;
+
+    case sf::Socket::Status::NotReady:
+        LOG_ERROR << "Failed to listen on port '" << port
+                  << "': unexpected not ready";
+        break;
+
+    case sf::Socket::Status::Partial:
+        LOG_ERROR << "Failed to listen on port '" << port
+                  << "': unexpected partial";
+        break;
+
+    case sf::Socket::Status::Disconnected:
+        LOG_ERROR << "Failed to listen on port '" << port
+                  << "': unexpected disconnected";
+        break;
+
+    case sf::Socket::Status::Error:
+        LOG_ERROR << "Failed to listen on port '" << port
+                  << "': unexpected error";
+        break;
+    }
+
+    return successful;
 }
 
 std::optional<std::unique_ptr<sf::TcpSocket>> Listener::accept()
@@ -18,7 +51,7 @@ std::optional<std::unique_ptr<sf::TcpSocket>> Listener::accept()
     auto socket = std::make_unique<sf::TcpSocket>();
     switch(m_listener.accept(*socket)) {
     case sf::Socket::Status::Done:
-        LOG_INFO << "Client connected from '" << socket->getRemoteAddress()
+        LOG_INFO << "Accepted connection from '" << socket->getRemoteAddress()
                  << "'";
         result.emplace(std::move(socket));
         break;
@@ -41,5 +74,10 @@ std::optional<std::unique_ptr<sf::TcpSocket>> Listener::accept()
     }
 
     return result;
+}
+
+void Listener::close()
+{
+    m_listener.close();
 }
 }

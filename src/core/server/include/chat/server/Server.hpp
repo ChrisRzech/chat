@@ -5,7 +5,6 @@
 
 namespace chat::server
 {
-
 /**
  * @brief Chat server.
  *
@@ -48,14 +47,14 @@ public:
     /**
      * @brief Run the server.
      *
-     * @details This blocks until the server is stopped.
+     * @details This blocks until the server is stopped. Use @c stop() to stop
+     * the server. Since this function blocks the current thread, @c stop() must
+     * be called on a separate thread.
      */
     void run();
 
     /**
-     * @brief Stop the server.
-     *
-     * @details Notify the server's running thread to stop running.
+     * @brief Notify the server to stop.
      */
     void stop();
 
@@ -63,5 +62,4 @@ private:
     class Impl;
     std::unique_ptr<Impl> m_impl;
 };
-
 }
