@@ -56,8 +56,6 @@ public:
     void update();
 
 private:
-    void accept();
-
     void removeZombies();
 
     common::ThreadPool m_threadPool;

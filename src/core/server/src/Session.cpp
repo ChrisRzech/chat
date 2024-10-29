@@ -19,7 +19,6 @@ Session::Session(std::unique_ptr<sf::TcpSocket> socket)
   : m_socket{std::move(socket)},
     m_beingHandled{false},
     m_connected{true},
-    m_failCount{0},
     m_lastUsageTime{std::chrono::steady_clock::now()}
 {
     // TODO A custom socket class should be made to allow custom features to it
@@ -57,12 +56,10 @@ void Session::setBeingHandled()
 
 bool Session::isZombie() const
 {
-    constexpr int MAX_FAIL_COUNT = 5;
     constexpr std::chrono::seconds MAX_IDLE_TIME{60};
     const auto now = std::chrono::steady_clock::now();
     auto lockedLastUsageTime = m_lastUsageTime.lock();
-    return !m_connected || m_failCount > MAX_FAIL_COUNT ||
-           now - lockedLastUsageTime.get() > MAX_IDLE_TIME;
+    return !m_connected || now - lockedLastUsageTime.get() > MAX_IDLE_TIME;
 }
 
 void Session::handle()
@@ -126,22 +123,18 @@ std::optional<sf::Packet> Session::receivePacket()
 
     case sf::Socket::Status::NotReady:
         LOG_WARN << "Failed to receive packet: unexpected not ready";
-        m_failCount++;
         break;
 
     case sf::Socket::Status::Partial:
         LOG_WARN << "Failed to receive packet: unexpected partial";
-        m_failCount++;
         break;
 
     case sf::Socket::Status::Disconnected:
         LOG_DEBUG << "Failed to receive packet: disconnected";
-        m_connected = false;
         break;
 
     case sf::Socket::Status::Error:
         LOG_WARN << "Failed to receive packet: unexpected error";
-        m_failCount++;
         break;
     }
 
@@ -157,12 +150,10 @@ void Session::sendPacket(sf::Packet& packet)
 
     case sf::Socket::Status::NotReady:
         LOG_WARN << "Failed to send packet: unexpected not ready";
-        m_failCount++;
         break;
 
     case sf::Socket::Status::Partial:
         LOG_WARN << "Failed to send packet: unexpected partial";
-        m_failCount++;
         break;
 
     case sf::Socket::Status::Disconnected:
@@ -172,7 +163,6 @@ void Session::sendPacket(sf::Packet& packet)
 
     case sf::Socket::Status::Error:
         LOG_WARN << "Failed to send packet: unexpected error";
-        m_failCount++;
         break;
     }
 }
