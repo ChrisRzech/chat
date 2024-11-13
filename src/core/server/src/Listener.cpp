@@ -16,7 +16,7 @@ bool Listener::listen(std::uint16_t port)
 
     switch(m_listener.listen(port)) {
     case sf::Socket::Status::Done:
-        LOG_INFO << "Listening for connections on port '" << port << "'";
+        LOG_INFO << "Listening for connections on '" << port << "'";
         successful = true;
         break;
 
