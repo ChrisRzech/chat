@@ -1,42 +1,53 @@
 #include "Session.hpp"
 
-#include "RequestHandler.hpp"
-
 #include "chat/common/Logging.hpp"
 
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
 #include "chat/messages/serialize.hpp"
 
-#include "chat/messages/request/Ping.hpp"
-
-#include "chat/messages/response/Pong.hpp"
-
 namespace chat::server
 {
+namespace
+{
+std::optional<std::unique_ptr<messages::Request>> deserializeRequest(
+    const sf::Packet& packet)
+{
+    std::optional<std::unique_ptr<messages::Request>> request;
+
+    const common::ByteSpan serialized{
+        static_cast<const std::byte*>(packet.getData()), packet.getDataSize()};
+    auto message = messages::deserialize(serialized);
+    if(message.has_value()) {
+        // The message is placed inside an `std::unique_ptr`. There is no
+        // standard library functionality to transfer ownership from a
+        // `std::unique_ptr` base type to a `std::unique_ptr` derived type.
+        // This must be done manually.
+        if(message.value()->getMessageType() ==
+           messages::Message::Type::Request) {
+            request = std::unique_ptr<messages::Request>(
+                dynamic_cast<messages::Request*>(message.value().release()));
+        } else {
+            LOG_WARN << "Received non-request message type";
+        }
+    }
+
+    return request;
+}
+}
 
 Session::Session(std::unique_ptr<sf::TcpSocket> socket)
-  : m_socket{std::move(socket)},
-    m_beingHandled{false},
-    m_connected{true},
-    m_lastUsageTime{std::chrono::steady_clock::now()}
+  : m_state{State::Receiving},
+    m_socket{std::move(socket)},
+    m_receivingPacket{},
+    m_sendingPacket{}
 {
-    // TODO A custom socket class should be made to allow custom features to it
-    // such as blocking non-blocking send/receive and secure communication. A
-    // blocking non-blocking send/receive means that the class' send and receive
-    // calls are blocking but don't internally use blocking functionality. This
-    // allows the use of timeouts and prevents potential deadlocks regarding
-    // blocking calls. For secure communication, using OpenSSL is recommended.
-    // This would require using third-party libraries which CMake would need to
-    // be configured to do so.
-    //
-    // However, SFML is being used for everything networking related. Splitting
-    // up the functionality among different libraries (i.e. this vs SFML) might
-    // cause confusion down the line. It's usually better to have the whole
-    // functionality come from a central place. While the solution above should
-    // be implemented, the implementation could also add wrappers for any
-    // networking classes (e.g. socket selector, packet, listener).
     m_socket->setBlocking(false);
+}
+
+bool Session::isDisconnected() const
+{
+    return m_state == State::Disconnected;
 }
 
 sf::TcpSocket& Session::getSocket()
@@ -44,163 +55,78 @@ sf::TcpSocket& Session::getSocket()
     return *m_socket;
 }
 
-bool Session::isBeingHandled() const
-{
-    return m_beingHandled;
-}
-
-void Session::setBeingHandled()
-{
-    m_beingHandled = true;
-}
-
-bool Session::isZombie() const
-{
-    constexpr std::chrono::seconds MAX_IDLE_TIME{60};
-    const auto now = std::chrono::steady_clock::now();
-    auto lockedLastUsageTime = m_lastUsageTime.lock();
-    return !m_connected || now - lockedLastUsageTime.get() > MAX_IDLE_TIME;
-}
-
-void Session::handle()
-{
-    LOG_DEBUG << "Handling session...";
-
-    {
-        auto lockedLastUsageTime = m_lastUsageTime.lock();
-        lockedLastUsageTime.get() = std::chrono::steady_clock::now();
-    }
-
-    std::optional<std::unique_ptr<messages::Response>> response;
-    try {
-        auto request = receiveRequest();
-        if(request.has_value()) {
-            RequestHandler handler;
-            response = std::make_optional(handler.handle(*request.value()));
-        }
-    } catch(const std::exception& exception) {
-        LOG_ERROR << "Exception caught: " << exception.what();
-        response.reset();
-    } catch(...) {
-        LOG_ERROR << "Unknown exception!";
-        response.reset();
-    }
-
-    // Socket can be disconnected when receiving a request
-    if(m_connected) {
-        if(!response.has_value()) {
-            // TODO Creating an error response. This should probably be done as
-            // part of the request handlers since errors might be request
-            // specific. Although, if none of the reuqest handlers returned a
-            // response, even an error response, this ensures that some response
-            // is at least sent back.
-            //
-            // There needs to be an overall thought of how errors should be
-            // communicated back to the client. Should there be a error code
-            // provided for a response? Should each derived response type define
-            // its own error codes (this might sound good)? The idea of using a
-            // single error code for all types is not a good idea since many of
-            // the values will not be relevant to the response.
-            // response =
-            // std::make_optional(std::make_unique<messages::Error>());
-        }
-        sendResponse(*response.value());
-    }
-
-    LOG_DEBUG << "Finished handling Session";
-    m_beingHandled = false;
-}
-
-std::optional<sf::Packet> Session::receivePacket()
-{
-    bool success = false;
-    sf::Packet packet;
-    switch(m_socket->receive(packet)) {
-    case sf::Socket::Status::Done:
-        LOG_DEBUG << "Packet received";
-        success = true;
-        break;
-
-    case sf::Socket::Status::NotReady:
-        LOG_WARN << "Failed to receive packet: unexpected not ready";
-        break;
-
-    case sf::Socket::Status::Partial:
-        LOG_WARN << "Failed to receive packet: unexpected partial";
-        break;
-
-    case sf::Socket::Status::Disconnected:
-        LOG_DEBUG << "Failed to receive packet: disconnected";
-        break;
-
-    case sf::Socket::Status::Error:
-        LOG_WARN << "Failed to receive packet: unexpected error";
-        break;
-    }
-
-    return success ? std::make_optional(packet) : std::nullopt;
-}
-
-void Session::sendPacket(sf::Packet& packet)
-{
-    switch(m_socket->send(packet)) {
-    case sf::Socket::Status::Done:
-        LOG_DEBUG << "Packet sent";
-        break;
-
-    case sf::Socket::Status::NotReady:
-        LOG_WARN << "Failed to send packet: unexpected not ready";
-        break;
-
-    case sf::Socket::Status::Partial:
-        LOG_WARN << "Failed to send packet: unexpected partial";
-        break;
-
-    case sf::Socket::Status::Disconnected:
-        LOG_DEBUG << "Failed to send packet: disconnected";
-        m_connected = false;
-        break;
-
-    case sf::Socket::Status::Error:
-        LOG_WARN << "Failed to send packet: unexpected error";
-        break;
-    }
-}
-
-std::optional<std::unique_ptr<messages::Request>> Session::receiveRequest()
+std::optional<std::unique_ptr<messages::Request>> Session::tryReceive()
 {
     std::optional<std::unique_ptr<messages::Request>> request;
-    auto packet = receivePacket();
-    if(packet.has_value()) {
-        const common::ByteSpan serialized{
-            static_cast<const std::byte*>(packet.value().getData()),
-            packet.value().getDataSize()};
-        auto message = messages::deserialize(serialized);
-        if(message.has_value()) {
-            // The message is placed inside an `std::unique_ptr`. There is no
-            // standard library functionality to transfer ownership from a
-            // `std::unique_ptr` base type to a `std::unique_ptr` derived type.
-            // This must be done manually.
-            if(message.value()->getMessageType() ==
-               messages::Message::Type::Request) {
-                request = std::make_optional(std::unique_ptr<messages::Request>(
-                    dynamic_cast<messages::Request*>(
-                        message.value().release())));
-            } else {
-                LOG_ERROR << "Received unexpected request type";
-            }
+
+    if(m_state == State::Receiving) {
+        switch(m_socket->receive(m_receivingPacket)) {
+        case sf::Socket::Status::Done:
+            LOG_DEBUG << "Received full packet";
+            m_state = State::Handling;
+            request = deserializeRequest(m_receivingPacket);
+            m_receivingPacket.clear();
+            break;
+
+        case sf::Socket::Status::NotReady:
+            LOG_WARN << "Failed to receive packet: unexpected not ready";
+            break;
+
+        case sf::Socket::Status::Partial:
+            LOG_DEBUG << "Received partial packet";
+            break;
+
+        case sf::Socket::Status::Disconnected:
+            LOG_DEBUG << "Failed to receive packet: disconnected";
+            m_state = State::Disconnected;
+            break;
+
+        case sf::Socket::Status::Error:
+            LOG_WARN << "Failed to receive packet: unexpected error";
+            break;
         }
     }
 
     return request;
 }
 
-void Session::sendResponse(const messages::Response& response)
+void Session::setResponse(const messages::Response& response)
 {
-    auto serialized = messages::serialize(response);
-    sf::Packet packet;
-    packet.append(serialized.data(), serialized.size());
-    sendPacket(packet);
+    if(m_state == State::Handling) {
+        LOG_DEBUG << "Response set";
+        m_state = State::Sending;
+        auto serialized = messages::serialize(response);
+        m_sendingPacket.append(serialized.data(), serialized.size());
+    }
 }
 
+void Session::trySend()
+{
+    if(m_state == State::Sending) {
+        switch(m_socket->send(m_sendingPacket)) {
+        case sf::Socket::Status::Done:
+            LOG_DEBUG << "Sent full packet";
+            m_state = State::Receiving;
+            m_sendingPacket.clear();
+            break;
+
+        case sf::Socket::Status::NotReady:
+            LOG_WARN << "Failed to send packet: unexpected not ready";
+            break;
+
+        case sf::Socket::Status::Partial:
+            LOG_DEBUG << "Sent partial packet";
+            break;
+
+        case sf::Socket::Status::Disconnected:
+            LOG_DEBUG << "Failed to send packet: disconnected";
+            m_state = State::Disconnected;
+            break;
+
+        case sf::Socket::Status::Error:
+            LOG_WARN << "Failed to send packet: unexpected error";
+            break;
+        }
+    }
+}
 }
