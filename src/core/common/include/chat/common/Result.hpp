@@ -1,27 +1,30 @@
 #pragma once
 
+#include <cstddef>
 #include <optional>
+#include <utility>
+#include <variant>
 
 namespace chat::common
 {
-
 /**
- * @brief A strong type to represent an error when constructing a @c Result.
+ * @brief A strong type to represent an error when used on @c Result.
  *
- * @tparam T The type of the value.
+ * @tparam T The type of the error.
  */
 template<typename T>
 struct Error
 {
     /**
-     * @brief Construct an error with a value.
+     * @brief Construct an @c Error.
      *
-     * @tparam T The type of the value.
+     * @tparam Args The types to construct the value with.
      *
-     * @param value The value.
+     * @param args The values to construct the value with.
      */
-    explicit Error(T value)
-      : value{std::move(value)}
+    template<typename... Args>
+    explicit Error(Args&&... args)
+      : value{std::forward<Args>(args)...}
     {}
 
     /**
@@ -41,7 +44,7 @@ struct Error
     /** @} */
 
     /**
-     * @brief Destroy the error.
+     * @brief Destroy the @c Error.
      */
     ~Error() = default;
 
@@ -49,52 +52,61 @@ struct Error
 };
 
 /**
- * @brief A type that holds either a success value or an error value.
+ * @brief Deduction guide to deduce the template parameter of @c Error for when
+ * a single argument is provided to the constructor of @c Error.
+ */
+template<typename T>
+Error(T) -> Error<T>;
+
+/**
+ * @brief A class that represents either a result value or an error value.
  *
- * @details A common use case is to allow a function to return a success value
- * or an error value. The type of the success value is the type expected to be
- * returned when the function is performed successfully. The type of the error
- * value is the type that indicates why a success value is not returned, which
- * is usually simply an integral type but not required to be.
+ * @details The @c Result class can either represent a result value or an error
+ * value. It allows functions to indicate to callers whether it succeeded in its
+ * operation or not. If the function does not fail, a result value is returned;
+ * otherwise, an error is returned.
  *
- * To make a result hold a success value, simply use the appropriate constructor
- * or assignment operator. To make a result hold an error value, the error value
- * should be placed in an @c Error before being passed to the appropriate
- * constructor or assignment operator.
+ * To store a result value, simply use a constructor or assignment operator. To
+ * store an error value, an @c Error must be filled with the value before being
+ * passed to a constructor or assignment operator.
  *
  * Requiring the explicit use of @c Error prevents mistaking whether a result
- * holds a success value or an error value. In addition, this also allows the
- * success and error types to be the same.
+ * value or error value is being stored.
  *
  * If the error type is `void` or is not provided, a partial template
  * specialization of @c Result is used.
  *
- * @tparam S The type of the success value.
+ * @tparam T The type of the result value.
  *
  * @tparam E The type of the error value. Defaults to `void`.
  */
-template<typename S, typename E = void>
+template<typename T, typename E = void>
 class Result
 {
+private:
+    static constexpr std::size_t resultIndex = 0;
+    static constexpr std::size_t errorIndex = 1;
+
 public:
     /**
-     * @brief Construct a result that holds a success value.
+     * @brief Construct a @c Result that holds a result value.
      *
-     * @param value The value.
+     * @tparam Args The types to construct the result value with.
+     *
+     * @param args The values to construct the result value with.
      */
-    explicit Result(S value)
-      : m_success{std::move(value)},
-        m_error{}
+    template<typename... Args>
+    explicit Result(Args&&... args)
+      : m_value{std::in_place_index<resultIndex>, std::forward<Args>(args)...}
     {}
 
     /**
-     * @brief Construct a result that holds an error value.
+     * @brief Construct a @c Result that holds an error value.
      *
-     * @param value The value.
+     * @param error An @c Error that holds the error value to store.
      */
-    explicit Result(Error<E> value)
-      : m_success{},
-        m_error{std::move(value.value)}
+    explicit Result(Error<E> error)
+      : m_value{std::in_place_index<errorIndex>, std::move(error.value)}
     {}
 
     /**
@@ -114,74 +126,83 @@ public:
     /** @} */
 
     /**
-     * @brief Destroy the result.
+     * @brief Destroy the @c Result.
      */
     ~Result() = default;
 
     /**
-     * @brief Assign a new success value.
+     * @brief Store a new result value.
      *
-     * @details If a success value already exists, it is replaced with the new
-     * success value. If an error value already exists, it is destroyed and the
-     * new success value is held.
+     * @details The current value is destroyed, and the new result value is
+     * stored.
      *
-     * @param value The value.
+     * @tparam Arg The type to construct the new result value with.
+     *
+     * @param arg The value to construct the new result value with.
      *
      * @return This object.
      */
-    Result& operator=(S value)
+    template<typename Arg>
+    Result& operator=(Arg&& arg)
     {
-        m_success = std::move(value);
-        m_error.reset();
+        m_value.template emplace<resultIndex>(std::forward<Arg>(arg));
         return *this;
     }
 
     /**
-     * @brief Assign a new error value.
+     * @brief Store a new error value.
      *
-     * @details If a success value already exists, it is destroyed and the new
-     * error value is held. If an error value already exists, it is replaced
-     * with the new error value.
+     * @details The current value is destroyed, and the new error value is
+     * stored.
      *
-     * @param value The value.
+     * @param error An @c Error that holds the new error value.
      *
      * @return This object.
      */
-    Result& operator=(Error<E> value)
+    Result& operator=(Error<E> error)
     {
-        m_success.reset();
-        m_error = std::move(value.value);
+        m_value.template emplace<errorIndex>(std::move(error.value));
         return *this;
     }
 
     /**
-     * @brief Check if a success value is held.
+     * @brief Check if a result value is held.
      *
-     * @return True if a success value is held; otherwise, false.
+     * @return True if a result value is held; otherwise, false.
      */
-    [[nodiscard]] bool isSuccess() const
+    [[nodiscard]] bool hasValue() const
     {
-        return m_success.has_value();
+        return m_value.index() == resultIndex;
     }
 
     /**
-     * @brief Get the success value.
+     * @brief Get the result value.
      *
-     * @return The success value.
+     * @return The result value.
      */
-    [[nodiscard]] S& getSuccessValue()
+    [[nodiscard]] T& getValue() &
     {
-        return m_success.value();
+        return std::get<resultIndex>(m_value);
     }
 
     /**
-     * @brief Get the success value.
+     * @brief Get the result value.
      *
-     * @return The success value.
+     * @return The result value.
      */
-    [[nodiscard]] const S& getSuccessValue() const
+    [[nodiscard]] const T& getValue() const&
     {
-        return m_success.value();
+        return std::get<resultIndex>(m_value);
+    }
+
+    /**
+     * @brief Get the result value.
+     *
+     * @return The result value.
+     */
+    [[nodiscard]] T&& getValue() &&
+    {
+        return std::move(std::get<resultIndex>(m_value));
     }
 
     /**
@@ -189,9 +210,9 @@ public:
      *
      * @return The error value.
      */
-    [[nodiscard]] E& getErrorValue()
+    [[nodiscard]] E& getError() &
     {
-        return m_error.value();
+        return std::get<errorIndex>(m_value);
     }
 
     /**
@@ -199,41 +220,54 @@ public:
      *
      * @return The error value.
      */
-    [[nodiscard]] const E& getErrorValue() const
+    [[nodiscard]] const E& getError() const&
     {
-        return m_error.value();
+        return std::get<errorIndex>(m_value);
+    }
+
+    /**
+     * @brief Get the error value.
+     *
+     * @return The error value.
+     */
+    [[nodiscard]] E&& getError() &&
+    {
+        return std::move(std::get<errorIndex>(m_value));
     }
 
 private:
-    std::optional<S> m_success;
-    std::optional<E> m_error;
+    std::variant<T, E> m_value;
 };
 
 /**
- * @brief A type that holds a success value or no success value.
+ * @brief A class that represents either a result value or an error value.
  *
  * @details This is a partial template specialization of @c Result where the
- * error value does not exist and instead can only indicate that a success value
- * exists or not. This essentially acts as an @c std::optional.
+ * error type does not exist and instead can only indicate that a result value
+ * exists or not. This form of @c Result essentially acts as an
+ * @c std::optional.
  *
- * @tparam S The type of the success value.
+ * @tparam T The type of the result value.
  */
-template<typename S>
-class Result<S, void>
+template<typename T>
+class Result<T, void>
 {
 public:
     /**
-     * @brief Construct a result that holds no success value.
+     * @brief Construct a @c Result that does not hold a result value.
      */
     Result() = default;
 
     /**
-     * @brief Construct a result that holds a success value.
+     * @brief Construct a @c Result that holds a result value.
      *
-     * @param value The value.
+     * @tparam Args The types to construct the result value with.
+     *
+     * @param args The values to construct the result value with.
      */
-    explicit Result(S value)
-      : m_success{std::move(value)}
+    template<typename... Args>
+    explicit Result(Args&&... args)
+      : m_value{std::forward<Args>(args)...}
     {}
 
     /**
@@ -253,59 +287,70 @@ public:
     /** @} */
 
     /**
-     * @brief Destroy the result.
+     * @brief Destroy the @c Result.
      */
     ~Result() = default;
 
     /**
-     * @brief Assign a new success value.
+     * @brief Store a new result value.
      *
-     * @details If a success value already exists, it is replaced with the new
-     * success value. If a success value does not exist, the new success value
-     * is held.
+     * @details The current value is destroyed, and the new result value is
+     * stored.
      *
-     * @param value The value.
+     * @tparam Arg The type to construct the new result value with.
+     *
+     * @param arg The value to construct the new result value with.
      *
      * @return This object.
      */
-    Result& operator=(S value)
+    template<typename Arg>
+    Result& operator=(Arg&& arg)
     {
-        m_success = std::move(value);
+        m_value = std::forward<Arg>(arg);
         return *this;
     }
 
     /**
-     * @brief Check if a success value is held.
+     * @brief Check if a result value is held.
      *
-     * @return True if a success value is held; otherwise, false.
+     * @return True if a result value is held; otherwise, false.
      */
-    [[nodiscard]] bool isSuccess() const
+    [[nodiscard]] bool hasValue() const
     {
-        return m_success.has_value();
+        return m_value.has_value();
     }
 
     /**
-     * @brief Get the success value.
+     * @brief Get the result value.
      *
-     * @return The success value.
+     * @return The result value.
      */
-    [[nodiscard]] S& getSuccessValue()
+    [[nodiscard]] T& getValue() &
     {
-        return m_success.value();
+        return m_value.value();
     }
 
     /**
-     * @brief Get the success value.
+     * @brief Get the result value.
      *
-     * @return The success value.
+     * @return The result value.
      */
-    [[nodiscard]] const S& getSuccessValue() const
+    [[nodiscard]] const T& getValue() const&
     {
-        return m_success.value();
+        return m_value.value();
+    }
+
+    /**
+     * @brief Get the result value.
+     *
+     * @return The result value.
+     */
+    [[nodiscard]] T&& getValue() &&
+    {
+        return std::move(m_value.value());
     }
 
 private:
-    std::optional<S> m_success;
+    std::optional<T> m_value;
 };
-
 }
