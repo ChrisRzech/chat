@@ -23,7 +23,7 @@ public:
      *
      * @param maxThreadCount The number of threads to use for managing sessions.
      */
-    SessionManager(int maxThreadCount);
+    explicit SessionManager(int maxThreadCount);
 
     /**
      * @brief Copy operations are disabled.
