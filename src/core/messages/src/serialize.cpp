@@ -3,8 +3,6 @@
 #include "chat/common/InputByteStream.hpp"
 #include "chat/common/OutputByteStream.hpp"
 
-#include "chat/messages/Close.hpp"
-#include "chat/messages/Message.hpp"
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
 
@@ -12,102 +10,79 @@
 
 #include "chat/messages/response/Pong.hpp"
 
-#include <functional>
-#include <mutex>
-#include <unordered_map>
-
 namespace chat::messages
 {
-
 namespace
 {
-
-template<typename KeyType, typename BaseType>
-using Factory =
-    std::unordered_map<KeyType, std::function<std::unique_ptr<BaseType>()>>;
-using RequestFactory = Factory<Request::Type, Request>;
-using ResponseFactory = Factory<Response::Type, Response>;
-
-template<typename T>
-std::unique_ptr<T> create()
+std::unique_ptr<Request> createRequest(Request::Type type)
 {
-    return std::make_unique<T>();
-}
-
-const RequestFactory& getRequestFactory()
-{
-    // Using `thread_local` here instead of just `static` removes the
-    // requirement of needing to use synchronization mechanisms
-    thread_local const RequestFactory factory = {
-        {Request::Type::Ping, create<Ping>}};
-    return factory;
-}
-
-const ResponseFactory& getResponseFactory()
-{
-    // Using `thread_local` here instead of just `static` removes the
-    // requirement of needing to use synchronization mechanisms
-    thread_local const ResponseFactory factory = {
-        {Response::Type::Pong, create<Pong>}};
-    return factory;
-}
-
-template<typename KeyType, typename BaseType>
-std::optional<std::unique_ptr<Message>> createMessage(
-    const Factory<KeyType, BaseType>& factory, common::InputByteStream& stream)
-{
-    std::underlying_type_t<KeyType> typeValue;
-    if(!(stream >> typeValue)) {
-        return std::nullopt;
+    std::unique_ptr<Request> request;
+    switch(type) {
+    case Request::Type::Ping:
+        request = std::make_unique<Ping>();
+        break;
     }
-    auto type = static_cast<KeyType>(typeValue);
-
-    if(factory.count(type) != 1) {
-        return std::nullopt;
-    }
-
-    return std::make_optional(factory.at(type)());
+    return request;
 }
 
-}
-
-common::ByteString serialize(const Message& message)
+std::unique_ptr<Response> createResponse(Response::Type type)
 {
-    common::OutputByteStream stream;
-    message.serialize(stream);
-    return stream.getData();
+    std::unique_ptr<Response> response;
+    switch(type) {
+    case Response::Type::Pong:
+        response = std::make_unique<Pong>();
+        break;
+    }
+    return response;
 }
 
-std::optional<std::unique_ptr<Message>> deserialize(
-    const common::ByteSpan& bytes)
+template<typename Message, typename Factory>
+std::optional<std::unique_ptr<Message>> deserializeMessage(
+    const common::ByteSpan& bytes, const Factory& factory)
 {
     common::InputByteStream stream{bytes};
 
-    std::underlying_type_t<Message::Type> messageTypeValue{};
-    if(!(stream >> messageTypeValue)) {
-        return std::nullopt;
+    std::underlying_type_t<typename Message::Type> typeValue{};
+    if(!(stream >> typeValue)) {
+        return {};
     }
 
-    std::optional<std::unique_ptr<Message>> message;
-    switch(static_cast<Message::Type>(messageTypeValue)) {
-    case Message::Type::Close:
-        message = std::make_optional(std::make_unique<Close>());
-        break;
-
-    case Message::Type::Request:
-        message = createMessage(getRequestFactory(), stream);
-        break;
-
-    case Message::Type::Response:
-        message = createMessage(getResponseFactory(), stream);
-        break;
+    auto message = factory(static_cast<typename Message::Type>(typeValue));
+    if(message == nullptr) {
+        return {};
     }
 
-    if(!message.has_value() || !message.value()->deserialize(stream)) {
-        return std::nullopt;
+    if(!message->deserialize(stream)) {
+        return {};
     }
 
     return message;
 }
+}
 
+common::ByteString serialize(const Request& request)
+{
+    common::OutputByteStream stream;
+    request.serialize(stream);
+    return stream.getData();
+}
+
+common::ByteString serialize(const Response& response)
+{
+    common::OutputByteStream stream;
+    response.serialize(stream);
+    return stream.getData();
+}
+
+std::optional<std::unique_ptr<Request>> deserializeRequest(
+    const common::ByteSpan& bytes)
+{
+    return deserializeMessage<Request>(bytes, createRequest);
+}
+
+std::optional<std::unique_ptr<Response>> deserializeResponse(
+    const common::ByteSpan& bytes)
+{
+    return deserializeMessage<Response>(bytes, createResponse);
+}
 }

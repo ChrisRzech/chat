@@ -13,26 +13,9 @@ namespace
 std::optional<std::unique_ptr<messages::Request>> deserializeRequest(
     const sf::Packet& packet)
 {
-    std::optional<std::unique_ptr<messages::Request>> request;
-
     const common::ByteSpan serialized{
         static_cast<const std::byte*>(packet.getData()), packet.getDataSize()};
-    auto message = messages::deserialize(serialized);
-    if(message.has_value()) {
-        // The message is placed inside an `std::unique_ptr`. There is no
-        // standard library functionality to transfer ownership from a
-        // `std::unique_ptr` base type to a `std::unique_ptr` derived type.
-        // This must be done manually.
-        if(message.value()->getMessageType() ==
-           messages::Message::Type::Request) {
-            request = std::unique_ptr<messages::Request>(
-                dynamic_cast<messages::Request*>(message.value().release()));
-        } else {
-            LOG_WARN << "Received non-request message type";
-        }
-    }
-
-    return request;
+    return messages::deserializeRequest(serialized);
 }
 }
 

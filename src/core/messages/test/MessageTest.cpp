@@ -1,47 +1,24 @@
 #include "chat/common/InputByteStream.hpp"
 #include "chat/common/OutputByteStream.hpp"
 
-#include "chat/messages/Close.hpp"
-
 #include "chat/messages/request/Ping.hpp"
 
 #include "chat/messages/response/Pong.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("Creating a close message", "[Message]")
+TEST_CASE("Creating a ping request", "[Message]")
 {
-    const chat::messages::Close message;
-    REQUIRE(message.getMessageType() == chat::messages::Message::Type::Close);
+    const chat::messages::Ping request;
+    REQUIRE(request.getType() == chat::messages::Request::Type::Ping);
 }
 
-TEST_CASE("Serializing and deserializing a close message", "[Message]")
+TEST_CASE("Serializing and deserializing a ping request", "[Message]")
 {
-    const chat::messages::Close message;
+    const chat::messages::Ping request;
 
     chat::common::OutputByteStream out;
-    message.serialize(out);
-    const auto& serialized = out.getData();
-
-    chat::common::InputByteStream in{
-        chat::common::ByteSpan{serialized.data(), serialized.size()}};
-    chat::messages::Close deserialized;
-    REQUIRE(deserialized.deserialize(in));
-}
-
-TEST_CASE("Creating a ping request message", "[Message]")
-{
-    const chat::messages::Ping message;
-    REQUIRE(message.getMessageType() == chat::messages::Message::Type::Request);
-    REQUIRE(message.getRequestType() == chat::messages::Request::Type::Ping);
-}
-
-TEST_CASE("Serializing and deserializing a ping request message", "[Message]")
-{
-    const chat::messages::Ping message;
-
-    chat::common::OutputByteStream out;
-    message.serialize(out);
+    request.serialize(out);
     const auto& serialized = out.getData();
 
     chat::common::InputByteStream in{
@@ -50,20 +27,18 @@ TEST_CASE("Serializing and deserializing a ping request message", "[Message]")
     REQUIRE(deserialized.deserialize(in));
 }
 
-TEST_CASE("Creating a pong response message", "[Message]")
+TEST_CASE("Creating a pong response", "[Message]")
 {
-    const chat::messages::Pong message;
-    REQUIRE(message.getMessageType() ==
-            chat::messages::Message::Type::Response);
-    REQUIRE(message.getResponseType() == chat::messages::Response::Type::Pong);
+    const chat::messages::Pong response;
+    REQUIRE(response.getType() == chat::messages::Response::Type::Pong);
 }
 
-TEST_CASE("Serializing and deserializing a pong response message", "[Message]")
+TEST_CASE("Serializing and deserializing a pong response", "[Message]")
 {
-    const chat::messages::Pong message;
+    const chat::messages::Pong response;
 
     chat::common::OutputByteStream out;
-    message.serialize(out);
+    response.serialize(out);
     const auto& serialized = out.getData();
 
     chat::common::InputByteStream in{

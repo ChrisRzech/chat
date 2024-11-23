@@ -41,7 +41,8 @@ public:
         std::optional<std::chrono::milliseconds> result;
         auto start = std::chrono::system_clock::now();
         if(sendRequest(messages::Ping{})) {
-            if(receiveResponse<messages::Pong>().has_value()) {
+            if(receiveResponse<messages::Pong, messages::Response::Type::Pong>()
+                   .has_value()) {
                 auto end = std::chrono::system_clock::now();
                 result = std::make_optional(
                     std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -182,8 +183,9 @@ private:
         return success;
     }
 
-    template<typename ResponseType>
-    [[nodiscard]] std::optional<std::unique_ptr<ResponseType>> receiveResponse()
+    template<typename ResponseType, messages::Response::Type type>
+    [[nodiscard]] std::optional<std::unique_ptr<messages::Response>>
+    receiveResponse()
     {
         static_assert(std::is_base_of_v<messages::Response, ResponseType>,
                       "Response is not a base of ResponseType");
@@ -195,14 +197,13 @@ private:
             const common::ByteSpan serialized{
                 static_cast<const std::byte*>(packet.value().getData()),
                 packet.value().getDataSize()};
-            if(auto message = messages::deserialize(serialized);
+            if(auto message = messages::deserializeResponse(serialized);
                message.has_value()) {
                 // The message is placed inside an `std::unique_ptr`. There is
                 // no standard library functionality to transfer ownership from
                 // a `std::unique_ptr` base type to a `std::unique_ptr` derived
                 // type. This must be done manually.
-                if(message.value()->getMessageType() ==
-                   messages::Message::Type::Response) {
+                if(message.value()->getType() == type) {
                     response = std::make_optional(std::unique_ptr<ResponseType>(
                         dynamic_cast<ResponseType*>(
                             message.value().release())));

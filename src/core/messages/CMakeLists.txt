@@ -8,8 +8,6 @@ chat_add_library(${LIBRARY_NAME})
 
 target_sources(${LIBRARY_NAME}
     PRIVATE
-        ${SOURCE_PATH}/Close.cpp
-        ${SOURCE_PATH}/Message.cpp
         ${SOURCE_PATH}/Request.cpp
         ${SOURCE_PATH}/Response.cpp
         ${SOURCE_PATH}/serialize.cpp

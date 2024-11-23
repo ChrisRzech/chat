@@ -3,25 +3,36 @@
 #include "chat/common/InputByteStream.hpp"
 #include "chat/common/OutputByteStream.hpp"
 
-#include "chat/messages/Message.hpp"
-
 #include <cstdint>
 
 namespace chat::messages
 {
-
 /**
- * @brief A request message.
+ * @brief A message sent from a client to a server.
  *
- * @details A request is sent from the client to the server when the client
- * wants the server to perform an operation. The client should expect a
- * @c Response from the server for each request sent.
+ * @details The @c Request class is a message that is sent from a client to a
+ * server. It indicates that the client wants the server to perform an
+ * operation.
+ *
+ * A @c Request must be serialized into bytes before being sent. When received,
+ * the receiver should deserialize the bytes back into a @c Request. Using
+ * @c deserialize() on its own has some complications as the correct derived
+ * message type must be created before @c deserialize() can be used. Instead,
+ * @c chat::messages::deserializeRequest() should be used to deserialize the
+ * bytes and create a @c Request.
+ *
+ * @c Request is an abstract base class for other classes to derive from.
+ * A class that derives from @c Request corresponds to a specific operation.
+ * When a new derived class is created, a unique value should be added to
+ * @c Type.
  */
-class Request : public Message
+class Request
 {
 public:
     /**
      * @brief The type of a request.
+     *
+     * @details Each value corresponds to a derived type of @c Request.
      */
     enum class Type : std::uint32_t
     {
@@ -45,27 +56,36 @@ public:
     /** @} */
 
     /**
-     * @brief Destroy the request.
+     * @brief Destroy the @c Request.
      */
-    ~Request() override = default;
+    virtual ~Request() = default;
 
     /**
      * @brief Get the type of the request.
      *
      * @return The type of the request.
      */
-    [[nodiscard]] Type getRequestType() const;
+    [[nodiscard]] Type getType() const;
 
     /**
-     * @brief Serialize the message into a stream.
+     * @brief Serialize into a stream.
      *
-     * @param stream The stream to serialize the message into.
+     * @param stream The stream to serialize into.
      */
-    void serialize(common::OutputByteStream& stream) const override;
+    virtual void serialize(common::OutputByteStream& stream) const;
+
+    /**
+     * @brief Deserialize from a stream.
+     *
+     * @param stream The stream to deserialize from.
+     *
+     * @return True if successfully deserialized; otherwise, false.
+     */
+    [[nodiscard]] virtual bool deserialize(common::InputByteStream& stream) = 0;
 
 protected:
     /**
-     * @brief Construct a request.
+     * @brief Construct a @c Request.
      *
      * @param type The type of the request.
      */
@@ -74,5 +94,4 @@ protected:
 private:
     Type m_type;
 };
-
 }
