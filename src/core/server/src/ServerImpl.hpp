@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Listener.hpp"
-#include "ServerState.hpp"
 #include "SessionManager.hpp"
 
 #include "chat/server/Server.hpp"
