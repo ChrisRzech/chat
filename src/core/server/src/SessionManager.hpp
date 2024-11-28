@@ -84,6 +84,16 @@ private:
      */
     void tryRemoves();
 
+    /**
+     * @brief Handle the request from a session.
+     *
+     * @param session The session.
+
+     * @param request The request to handle.
+     */
+    void handleRequest(Session& session,
+                       std::unique_ptr<messages::Request> request);
+
     common::ThreadPool m_threadPool;
     RequestHandler m_requestHandler;
     sf::SocketSelector m_selector;

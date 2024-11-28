@@ -44,26 +44,7 @@ void SessionManager::tryReceives()
             if(m_selector.isReady(session.getSocket())) {
                 auto request = session.tryReceive();
                 if(request.has_value()) {
-                    // The thread is going to process the request. The lambda
-                    // that runs in the thread must take ownership of the
-                    // request to do this safely.
-                    //
-                    // However, it is not as simple as moving the
-                    // `std::unique_ptr` into the lambda's capture list.
-                    // `std::function` requires the callable object to be
-                    // copyable. Since `std::unique_ptr` is not copyable, the
-                    // lambda won't be copyable.
-                    //
-                    // The workaround is to convert the `std::unique_ptr` into
-                    // an `std::shared_ptr` which the lambda can capture it by
-                    // value.
-                    m_threadPool.queue(
-                        [this, &session,
-                         request = std::shared_ptr<messages::Request>{
-                             std::move(request.value())}] {
-                            auto response = m_requestHandler.handle(*request);
-                            session.setResponse(*response);
-                        });
+                    handleRequest(session, std::move(request.value()));
                 }
             }
         }
@@ -90,5 +71,25 @@ void SessionManager::tryRemoves()
             it++;
         }
     }
+}
+
+void SessionManager::handleRequest(Session& session,
+                                   std::unique_ptr<messages::Request> request)
+{
+    // The thread is going to process the request. The lambda that runs in the
+    // thread must take ownership of the request to do this safely.
+    //
+    // However, it is not as simple as moving the `std::unique_ptr` into the
+    // lambda's capture list. `std::function` requires the callable object to be
+    // copyable. Since `std::unique_ptr` is not copyable, the lambda won't be
+    // copyable.
+    //
+    // The workaround is to convert the `std::unique_ptr` into an
+    // `std::shared_ptr` which the lambda can capture it by value.
+    m_threadPool.queue(
+        [this, &session, request = std::shared_ptr{std::move(request)}] {
+            auto response = m_requestHandler.handle(*request);
+            session.setResponse(*response);
+        });
 }
 }
