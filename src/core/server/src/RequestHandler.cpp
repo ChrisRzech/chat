@@ -11,11 +11,23 @@
 
 namespace chat::server
 {
-
 std::unique_ptr<messages::Response> RequestHandler::handle(
     const messages::Request& request)
 {
     LOG_DEBUG << "Handling request...";
+
+    // TODO Do not let exceptions escape this function. If an exception is
+    // caught here, an internal error response should be returned.
+
+    // TODO Add a "malformed request" request type and a "malformed request"
+    // response type. If the server is unable to understand the client's
+    // request, a "malformed request" request type should by provided to this
+    // function. If so, this function should return a "malfored request"
+    // response.
+    //
+    // It is debatable whether there should be a "malformed request" request
+    // type at all if it is known what the response is going to be. However,
+    // having this function create all responses simplifies the design.
 
     std::unique_ptr<messages::Response> response;
     switch(request.getType()) {
@@ -33,5 +45,4 @@ std::unique_ptr<messages::Response> RequestHandler::handlePing(
 {
     return std::make_unique<messages::Pong>();
 }
-
 }
