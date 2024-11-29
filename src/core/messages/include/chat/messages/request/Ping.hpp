@@ -20,27 +20,6 @@ public:
     Ping();
 
     /**
-     * @brief Copy operations are disabled.
-     * @{
-     */
-    Ping(const Ping& other) = delete;
-    Ping& operator=(const Ping& other) = delete;
-    /** @} */
-
-    /**
-     * @brief Move operations are disabled.
-     * @{
-     */
-    Ping(Ping&& other) = delete;
-    Ping& operator=(Ping&& other) = delete;
-    /** @} */
-
-    /**
-     * @brief Destroy the ping request.
-     */
-    ~Ping() override = default;
-
-    /**
      * @brief Serialize the message into a stream.
      *
      * @param stream The stream to serialize the message into.
