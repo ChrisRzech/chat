@@ -20,27 +20,6 @@ public:
     Pong();
 
     /**
-     * @brief Copy operations are disabled.
-     * @{
-     */
-    Pong(const Pong& other) = delete;
-    Pong& operator=(const Pong& other) = delete;
-    /** @} */
-
-    /**
-     * @brief Move operations are disabled.
-     * @{
-     */
-    Pong(Pong&& other) = delete;
-    Pong& operator=(Pong&& other) = delete;
-    /** @} */
-
-    /**
-     * @brief Destroy the pong response.
-     */
-    ~Pong() override = default;
-
-    /**
      * @brief Serialize the message into a stream.
      *
      * @param stream The stream to serialize the message into.
