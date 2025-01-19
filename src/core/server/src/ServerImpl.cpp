@@ -1,12 +1,13 @@
 #include "ServerImpl.hpp"
 
 #include "chat/common/Logging.hpp"
+#include "chat/common/utility.hpp"
 
 #include <stdexcept>
 
 namespace chat::server
 {
-Server::Impl::Impl(std::uint16_t port, int maxThreadCount)
+Server::Impl::Impl(common::Port port, int maxThreadCount)
   : m_port{port},
     m_state{State::Offline},
     m_listener{},
@@ -52,7 +53,7 @@ bool Server::Impl::initialize()
 {
     m_state = State::Initializing;
     LOG_INFO << "Server initializing";
-    return m_listener.listen(m_port);
+    return m_listener.listen(common::utility::toUnderlying(m_port));
 }
 
 void Server::Impl::shutdown()

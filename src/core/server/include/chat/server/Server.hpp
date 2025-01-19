@@ -1,5 +1,7 @@
 #pragma once
 
+#include "chat/common/Port.hpp"
+
 #include <cstdint>
 #include <memory>
 
@@ -21,7 +23,7 @@ public:
      *
      * @param maxThreadCount The number of threads for the server to use.
      */
-    Server(std::uint16_t port, int maxThreadCount);
+    Server(common::Port port, int maxThreadCount);
 
     /**
      * @brief Copy operations are disabled.

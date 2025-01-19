@@ -8,7 +8,7 @@ int main()
         const auto logFilepath = "server.log";
         chat::common::Logging::enableLoggingToFile(logFilepath, true);
 
-        constexpr std::uint16_t PORT = 25565;
+        constexpr chat::common::Port PORT{25565};
         constexpr int MAX_THREAD_COUNT = 4;
         chat::server::Server server(PORT, MAX_THREAD_COUNT);
         server.run();

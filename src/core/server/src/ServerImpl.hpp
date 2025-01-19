@@ -3,6 +3,8 @@
 #include "Listener.hpp"
 #include "SessionManager.hpp"
 
+#include "chat/common/Port.hpp"
+
 #include "chat/server/Server.hpp"
 
 #include <atomic>
@@ -23,7 +25,7 @@ public:
      *
      * @param maxThreadCount The number of threads for the server to use.
      */
-    Impl(std::uint16_t port, int maxThreadCount);
+    Impl(common::Port port, int maxThreadCount);
 
     /**
      * @brief Copy operations are disabled.
@@ -95,7 +97,7 @@ private:
      */
     void shutdown();
 
-    std::uint16_t m_port;
+    common::Port m_port;
     std::atomic<State> m_state;
     Listener m_listener;
     SessionManager m_sessionManager;
