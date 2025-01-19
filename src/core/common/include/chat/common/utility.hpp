@@ -10,7 +10,6 @@
 
 namespace chat::common::utility
 {
-
 /**
  * @brief Converts the bytes of an integral value into a byte array that is in
  * network byte order.
@@ -103,4 +102,21 @@ constexpr T toHostByteOrder(const ByteArray<sizeof(T)>& bytes)
  */
 void hexdump(std::ostream& out, const ByteSpan& bytes);
 
+/**
+ * @brief Convert the value of an enum to its underlying type.
+ *
+ * @details This is equivalent to @c std::to_underlying() from the C++23
+ * standard.
+ *
+ * @tparam Enum The enum type.
+ *
+ * @param value The enum value to convert.
+ *
+ * @return The converted value of the enum to its underlying type.
+ */
+template<typename Enum>
+std::underlying_type_t<Enum> toUnderlying(Enum value)
+{
+    return static_cast<std::underlying_type_t<Enum>>(value);
+}
 }
