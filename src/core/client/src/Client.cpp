@@ -1,6 +1,7 @@
 #include "chat/client/Client.hpp"
 
 #include "chat/common/Logging.hpp"
+#include "chat/common/utility.hpp"
 
 #include "chat/messages/serialize.hpp"
 
@@ -18,7 +19,7 @@ namespace chat::client
 class Client::Impl
 {
 public:
-    Impl(const std::string& host, std::uint16_t port)
+    Impl(const std::string& host, common::Port port)
       : m_host{host},
         m_port{port},
         m_socket{},
@@ -64,7 +65,7 @@ private:
         // The `connect()` call will disconnect the socket before reconnecting,
         // assume it is disconnected
         m_connected = false;
-        switch(m_socket.connect(m_host, m_port)) {
+        switch(m_socket.connect(m_host, common::utility::toUnderlying(m_port))) {
         case sf::Socket::Status::Done:
             LOG_DEBUG << "Connected to host";
             m_connected = true;
@@ -234,12 +235,12 @@ private:
     }
 
     sf::IpAddress m_host;
-    std::uint16_t m_port;
+    common::Port m_port;
     sf::TcpSocket m_socket;
     bool m_connected;
 };
 
-Client::Client(const std::string& host, std::uint16_t port)
+Client::Client(const std::string& host, common::Port port)
   : m_impl{std::make_unique<Impl>(host, port)}
 {}
 

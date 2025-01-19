@@ -20,8 +20,9 @@ set(THREADS_PREFER_PTHREAD_FLAG true)
 find_package(Threads REQUIRED)
 
 target_link_libraries(${LIBRARY_NAME}
-    PRIVATE
+    PUBLIC
         chat::common
+    PRIVATE
         chat::messages
         sfml-network
         Threads::Threads

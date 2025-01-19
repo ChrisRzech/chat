@@ -8,7 +8,7 @@ int main()
         const auto logFilepath = "client.log";
         chat::common::Logging::enableLoggingToFile(logFilepath, true);
 
-        constexpr std::uint16_t PORT = 25565;
+        constexpr chat::common::Port PORT{25565};
         chat::client::Client client{"localhost", PORT};
         auto ping = client.ping();
         if(ping.has_value()) {

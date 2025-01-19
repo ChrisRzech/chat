@@ -1,5 +1,7 @@
 #pragma once
 
+#include "chat/common/Port.hpp"
+
 #include <chrono>
 #include <cstdint>
 #include <memory>
@@ -27,7 +29,7 @@ public:
      *
      * @param port The port that the chat server is bound to.
      */
-    Client(const std::string& host, std::uint16_t port);
+    Client(const std::string& host, common::Port port);
 
     /**
      * @brief Copy operations are disabled.
