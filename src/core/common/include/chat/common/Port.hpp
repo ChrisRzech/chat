@@ -9,5 +9,7 @@ namespace chat::common
  *
  * @details The values of a port number ranged from 0 to 65,535.
  */
-enum class Port : std::uint16_t {};
+enum class Port : std::uint16_t
+{
+};
 }

@@ -65,7 +65,8 @@ private:
         // The `connect()` call will disconnect the socket before reconnecting,
         // assume it is disconnected
         m_connected = false;
-        switch(m_socket.connect(m_host, common::utility::toUnderlying(m_port))) {
+        switch(
+            m_socket.connect(m_host, common::utility::toUnderlying(m_port))) {
         case sf::Socket::Status::Done:
             LOG_DEBUG << "Connected to host";
             m_connected = true;
