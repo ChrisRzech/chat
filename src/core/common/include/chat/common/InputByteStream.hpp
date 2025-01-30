@@ -83,6 +83,13 @@ public:
     [[nodiscard]] bool isEmpty() const;
 
     /**
+     * @brief Get the number of readable bytes from the stream.
+     *
+     * @return The number of readable bytes from the stream.
+     */
+    [[nodiscard]] std::size_t getReadableCount() const;
+
+    /**
      * @brief Check if the last read was successful.
      *
      * @details Equivalent to @c InputByteStream::isGood().

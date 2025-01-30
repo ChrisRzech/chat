@@ -159,3 +159,50 @@ TEST_CASE("Reading a byte string from a stream", "[InputByteStream]")
     const chat::common::ByteString expected{bytes.begin(), bytes.end()};
     REQUIRE(string == expected);
 }
+
+TEST_CASE("An empty InputByteStream has no readable bytes", "[InputByteStream]")
+{
+    const chat::common::ByteSpan span{nullptr, 0};
+    const chat::common::InputByteStream stream{span};
+    REQUIRE(stream.isEmpty());
+    REQUIRE(stream.getReadableCount() == 0);
+}
+
+TEST_CASE("A non-empty InputByteStream has readable bytes", "[InputByteStream]")
+{
+    constexpr auto bytes = createBytes();
+    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
+    const chat::common::InputByteStream stream{span};
+    REQUIRE(!stream.isEmpty());
+    REQUIRE(stream.getReadableCount() == bytes.size());
+}
+
+TEST_CASE(
+    "Reading from a non-empty InputByteStream changes the number of readable "
+    "bytes left",
+    "[InputByteStream]")
+{
+    constexpr auto bytes = createBytes();
+    constexpr auto readSize = bytes.size() - 1;
+    constexpr auto expectedReadableCount = bytes.size() - readSize;
+    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
+    chat::common::InputByteStream stream{span};
+    auto read = stream.read(readSize);
+    REQUIRE(read.has_value());
+    REQUIRE(stream.getReadableCount() == expectedReadableCount);
+}
+
+TEST_CASE(
+    "Failing to read from a non-empty InputByteStream does not change the "
+    "number of readable bytes left",
+    "[InputByteStream]")
+{
+    constexpr auto bytes = createBytes();
+    constexpr auto readSize = bytes.size() + 1;
+    constexpr auto expectedReadableCount = bytes.size();
+    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
+    chat::common::InputByteStream stream{span};
+    auto read = stream.read(readSize);
+    REQUIRE(!read.has_value());
+    REQUIRE(stream.getReadableCount() == expectedReadableCount);
+}

@@ -6,10 +6,8 @@
 
 namespace chat::common
 {
-
 namespace
 {
-
 template<typename T>
 InputByteStream& readIntegral(InputByteStream& in, T& value)
 {
@@ -20,7 +18,6 @@ InputByteStream& readIntegral(InputByteStream& in, T& value)
     }
     return in;
 }
-
 }
 
 InputByteStream::InputByteStream(ByteSpan buffer)
@@ -47,6 +44,11 @@ bool InputByteStream::isGood() const
 bool InputByteStream::isEmpty() const
 {
     return m_readIndex == m_buffer.getSize();
+}
+
+std::size_t InputByteStream::getReadableCount() const
+{
+    return m_buffer.getSize() - m_readIndex;
 }
 
 InputByteStream::operator bool() const
@@ -123,5 +125,4 @@ InputByteStream& operator>>(InputByteStream& in, ByteString& buffer)
     }
     return in;
 }
-
 }
