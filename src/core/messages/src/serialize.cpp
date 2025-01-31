@@ -36,14 +36,39 @@ std::unique_ptr<Response> createResponse(Response::Type type)
     return response;
 }
 
+template<typename Message>
+common::ByteString serializeMessage(const Message& message)
+{
+    common::OutputByteStream innerStream;
+    message.serialize(innerStream);
+    const auto inner = innerStream.getData();
+
+    common::OutputByteStream outerStream;
+    outerStream << inner;
+    const auto outer = outerStream.getData();
+    return outer;
+}
+
 template<typename Message, typename Factory>
 std::optional<std::unique_ptr<Message>> deserializeMessage(
     const common::ByteSpan& bytes, const Factory& factory)
 {
-    common::InputByteStream stream{bytes};
+    common::InputByteStream outerStream{bytes};
+
+    common::ByteString inner;
+    if(!(outerStream >> inner)) {
+        return {};
+    }
+
+    const common::ByteSpan innerSpan{inner.data(), inner.size()};
+    common::InputByteStream innerStream{innerSpan};
+
+    if(inner.size() != innerStream.getReadableCount()) {
+        return {};
+    }
 
     std::underlying_type_t<typename Message::Type> typeValue{};
-    if(!(stream >> typeValue)) {
+    if(!(innerStream >> typeValue)) {
         return {};
     }
 
@@ -52,7 +77,7 @@ std::optional<std::unique_ptr<Message>> deserializeMessage(
         return {};
     }
 
-    if(!message->deserialize(stream)) {
+    if(!message->deserialize(innerStream)) {
         return {};
     }
 
@@ -62,16 +87,12 @@ std::optional<std::unique_ptr<Message>> deserializeMessage(
 
 common::ByteString serialize(const Request& request)
 {
-    common::OutputByteStream stream;
-    request.serialize(stream);
-    return stream.getData();
+    return serializeMessage(request);
 }
 
 common::ByteString serialize(const Response& response)
 {
-    common::OutputByteStream stream;
-    response.serialize(stream);
-    return stream.getData();
+    return serializeMessage(response);
 }
 
 std::optional<std::unique_ptr<Request>> deserializeRequest(
