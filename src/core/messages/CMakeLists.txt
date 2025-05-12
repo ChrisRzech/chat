@@ -18,8 +18,7 @@ target_sources(${LIBRARY_NAME}
 
 target_include_directories(${LIBRARY_NAME}
     PUBLIC
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${HEADER_PATH}>
+        ${HEADER_PATH}
 )
 
 target_link_libraries(${LIBRARY_NAME}
