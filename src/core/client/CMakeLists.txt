@@ -26,5 +26,3 @@ target_link_libraries(${LIBRARY_NAME}
         sfml-network
         Threads::Threads
 )
-
-add_subdirectory(test)

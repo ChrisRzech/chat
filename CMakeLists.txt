@@ -29,3 +29,4 @@ project(chat LANGUAGES CXX)
 include(CTest)
 
 add_subdirectory(src)
+add_subdirectory(tests)

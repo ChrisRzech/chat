@@ -25,5 +25,3 @@ target_link_libraries(${LIBRARY_NAME}
     PUBLIC
         chat::common
 )
-
-add_subdirectory(test)
