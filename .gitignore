@@ -1,6 +1,6 @@
-#Ignore hidden files/directories, except .gitignore
+# Ignore hidden files/directories, except .gitignore
 .*/
 !/.gitignore
 
-#Support environments that put the build directory inside the source directory
+# Support environments that put the build directory inside the source directory
 /build
