@@ -3,4 +3,4 @@
 !/.gitignore
 
 #Support environments that put the build directory inside the source directory
-build
+/build
