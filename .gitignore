@@ -1,5 +1,8 @@
-# Ignore hidden files/directories, except .gitignore
-.*/
+# Ignore hidden files and directories
+.*
+# except the following files:
+!/.clang-format
+!/.clang-tidy
 !/.gitignore
 
 # Support environments that put the build directory inside the source directory
