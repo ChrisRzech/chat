@@ -10,5 +10,7 @@ target_sources(${TEST_NAME}
 
 target_link_libraries(${TEST_NAME} PRIVATE chat::server)
 
-#Add private includes and dependency libraries of the library being tested
+# The test needs to see headers that are defined in the `src` directory. This
+# directory is defined in `target_include_directories()`, which adds it to
+# `INCLUDE_DIRECTORIES` for the target.
 target_include_directories(${TEST_NAME} PRIVATE $<TARGET_PROPERTY:chat::server,INCLUDE_DIRECTORIES>)
