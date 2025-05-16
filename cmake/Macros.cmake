@@ -1,3 +1,10 @@
+# Create a CMake option
+# Usage: chat_option(<variable> <description> <default>)
+macro(chat_option variable description default)
+    option(${variable} ${description} ${default})
+    message(STATUS "${variable}: '${${variable}}'")
+endmacro()
+
 #Add compiler warning flags to target
 #Usage: chat_add_compiler_warnings(<target>)
 macro(chat_add_compiler_warnings target)
