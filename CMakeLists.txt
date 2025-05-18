@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-include(cmake/Macros.cmake)
+include(cmake/macros.cmake)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Project build type" FORCE)
