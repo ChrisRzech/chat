@@ -10,6 +10,7 @@ message(STATUS "CMAKE_BUILD_TYPE: '${CMAKE_BUILD_TYPE}'")
 project(chat LANGUAGES CXX)
 include(macros)
 include(options)
+include(dependencies)
 # Include CTest at the top level directory to enable running the `ctest` command
 # at the top level of the build directory
 include(CTest)
