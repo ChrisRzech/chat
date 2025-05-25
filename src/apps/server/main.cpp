@@ -2,15 +2,55 @@
 
 #include "chat/server/Server.hpp"
 
-int main()
+#include <filesystem>
+#include <optional>
+#include <string>
+#include <vector>
+
+struct Options
+{
+    std::optional<std::filesystem::path> logFilePath;
+    chat::common::Port port{25565};
+    std::size_t maxThreadCount = 2;
+};
+
+Options parseOptions(int argc, char* argv[])
+{
+    Options options;
+
+    const std::vector<std::string> args{argv, std::next(argv, argc)};
+    for(std::size_t i = 1; i < args.size(); i++) {
+        const auto& arg = args.at(i);
+        if(arg == "--log-file") {
+            options.logFilePath = args.at(i + 1);
+            i++;
+        } else if(arg == "--port") {
+            options.port = chat::common::Port{
+                static_cast<std::underlying_type_t<chat::common::Port>>(
+                    std::stoi(args.at(i + 1)))};
+            i++;
+        } else if(arg == "--max-thread-count") {
+            options.maxThreadCount = std::stoi(args.at(i + 1));
+            i++;
+        } else {
+            throw std::invalid_argument{"unexpected argument"};
+        }
+    }
+
+    return options;
+}
+
+int main(int argc, char* argv[])
 {
     try {
-        const auto logFilepath = "server.log";
-        chat::common::Logging::enableLoggingToFile(logFilepath, true);
+        auto options = parseOptions(argc, argv);
 
-        constexpr chat::common::Port PORT{25565};
-        constexpr int MAX_THREAD_COUNT = 4;
-        chat::server::Server server(PORT, MAX_THREAD_COUNT);
+        if(options.logFilePath.has_value()) {
+            chat::common::Logging::enableLoggingToFile(
+                options.logFilePath.value(), true);
+        }
+
+        chat::server::Server server(options.port, options.maxThreadCount);
         server.run();
     } catch(const std::exception& exception) {
         LOG_FATAL << "Exception caught: " << exception.what();
