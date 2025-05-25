@@ -7,7 +7,7 @@
 
 namespace chat::server
 {
-Server::Impl::Impl(common::Port port, int maxThreadCount)
+Server::Impl::Impl(common::Port port, std::size_t maxThreadCount)
   : m_port{port},
     m_state{State::Offline},
     m_listener{},

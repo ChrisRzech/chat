@@ -7,7 +7,7 @@
 namespace chat::common
 {
 
-ThreadPool::ThreadPool(int threadCount)
+ThreadPool::ThreadPool(std::size_t threadCount)
   : m_threadCount{threadCount},
     m_mutex{},
     m_stopping{false},
@@ -19,7 +19,7 @@ ThreadPool::ThreadPool(int threadCount)
     m_jobs{}
 {
     m_threads.reserve(m_threadCount);
-    for(int i = 0; i < m_threadCount; i++) {
+    for(std::size_t i = 0; i < m_threadCount; i++) {
         m_threads.emplace_back(&ThreadPool::threadLoop, this);
     }
 }

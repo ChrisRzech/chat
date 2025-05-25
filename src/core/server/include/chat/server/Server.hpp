@@ -2,7 +2,7 @@
 
 #include "chat/common/Port.hpp"
 
-#include <cstdint>
+#include <cstddef>
 #include <memory>
 
 namespace chat::server
@@ -23,7 +23,7 @@ public:
      *
      * @param maxThreadCount The number of threads for the server to use.
      */
-    Server(common::Port port, int maxThreadCount);
+    Server(common::Port port, std::size_t maxThreadCount);
 
     /**
      * @brief Copy operations are disabled.

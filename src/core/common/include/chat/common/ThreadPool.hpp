@@ -1,6 +1,7 @@
 #pragma once
 
 #include <condition_variable>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <mutex>
@@ -22,7 +23,7 @@ public:
      *
      * @param threadCount The number of threads the pool will have.
      */
-    explicit ThreadPool(int threadCount);
+    explicit ThreadPool(std::size_t threadCount);
 
     /**
      * @brief Copy operations are disabled.
@@ -84,11 +85,11 @@ private:
      */
     void threadLoop();
 
-    int m_threadCount;
+    std::size_t m_threadCount;
     std::mutex m_mutex;
     bool m_stopping;
     bool m_pause;
-    int m_idleCount;
+    std::size_t m_idleCount;
     std::condition_variable m_workCondvar;
     std::condition_variable m_idleCondvar;
     std::vector<std::thread> m_threads;
