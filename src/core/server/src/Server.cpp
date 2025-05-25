@@ -5,7 +5,7 @@
 namespace chat::server
 {
 
-Server::Server(common::Port port, int maxThreadCount)
+Server::Server(common::Port port, std::size_t maxThreadCount)
   : m_impl{std::make_unique<Impl>(port, maxThreadCount)}
 {}
 

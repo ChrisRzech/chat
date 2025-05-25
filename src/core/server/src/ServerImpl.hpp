@@ -1,11 +1,14 @@
 #pragma once
 
+#include "ConnectionManager.hpp"
 #include "Listener.hpp"
-#include "SessionManager.hpp"
 
 #include "chat/common/Port.hpp"
+#include "chat/common/ThreadPool.hpp"
 
 #include "chat/server/Server.hpp"
+
+#include <asio/io_context.hpp>
 
 #include <atomic>
 #include <cstddef>
@@ -28,27 +31,6 @@ public:
     Impl(common::Port port, std::size_t maxThreadCount);
 
     /**
-     * @brief Copy operations are disabled.
-     * @{
-     */
-    Impl(const Impl& other) = delete;
-    Impl& operator=(const Impl& other) = delete;
-    /** @} */
-
-    /**
-     * @brief Move operations are disabled.
-     * @{
-     */
-    Impl(Impl&& other) = delete;
-    Impl& operator=(Impl&& other) = delete;
-    /** @} */
-
-    /**
-     * @brief Destroy the server.
-     */
-    ~Impl() = default;
-
-    /**
      * @brief Run the server.
      *
      * @details This blocks until the server is stopped. Use @c stop() to stop
@@ -64,28 +46,6 @@ public:
 
 private:
     /**
-     * @brief The states of the server.
-     *
-     * @details In the @c Initializing state, the server performs operations
-     * needed before going online.
-     *
-     * In the @c Online state, the server accepts incoming connections and
-     * processes client requests.
-     *
-     * In the @c Shutdown state, the server performs operations needed before
-     * going offline.
-     *
-     * to the @c Offline state, the server can't accept incoming connections.
-     */
-    enum class State
-    {
-        Initializing,
-        Online,
-        Shutdown,
-        Offline
-    };
-
-    /**
      * @brief Initialize the server.
      *
      * @return If initialization is successful, true; otherwise, false.
@@ -97,9 +57,10 @@ private:
      */
     void shutdown();
 
-    common::Port m_port;
-    std::atomic<State> m_state;
+    std::atomic_bool m_running = false;
+    common::ThreadPool m_threadPool;
+    ConnectionManager m_connectionManager;
+    asio::io_context m_ioContext;
     Listener m_listener;
-    SessionManager m_sessionManager;
 };
 }

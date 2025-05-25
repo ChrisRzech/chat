@@ -7,59 +7,61 @@
 
 namespace chat::server
 {
-Server::Impl::Impl(common::Port port, std::size_t maxThreadCount)
-  : m_port{port},
-    m_state{State::Offline},
-    m_listener{},
-    m_sessionManager{maxThreadCount}
+namespace
 {
-    // There needs to be at least 2 threads: one for the server loop and one for
-    // handling client requests
+auto createListenerEndpoint(common::Port port)
+{
+    return asio::ip::tcp::endpoint{asio::ip::tcp::v4(),
+                                   common::utility::toUnderlying(port)};
+}
+}
+
+Server::Impl::Impl(common::Port port, std::size_t maxThreadCount)
+  : m_running{false},
+    m_threadPool{maxThreadCount},
+    m_connectionManager{m_threadPool},
+    m_ioContext{},
+    m_listener{m_ioContext, createListenerEndpoint(port), m_connectionManager}
+{
+    // There needs to be at least 2 threads. A thread is dedicated for socket
+    // I/O. The rest are for handling connections.
     if(maxThreadCount < 2) {
-        throw std::invalid_argument{"Max thread count cannot be less than 2"};
+        throw std::invalid_argument{
+            "unexpected max thread count, expected at least 2"};
     }
 }
 
 void Server::Impl::run()
 {
     if(initialize()) {
-        m_state = State::Online;
         LOG_INFO << "Server online";
-
-        while(m_state == State::Online) {
-            auto socket = m_listener.accept();
-            if(socket.has_value()) {
-                m_sessionManager.add(std::move(socket.value()));
-            }
-
-            m_sessionManager.update();
-        }
+        m_running = true;
+        m_ioContext.run();
     }
 
     shutdown();
-
-    m_state = State::Offline;
     LOG_INFO << "Server offline";
 }
 
 void Server::Impl::stop()
 {
-    if(m_state != State::Shutdown && m_state != State::Offline) {
-        m_state = State::Shutdown;
+    if(m_running) {
+        m_running = false;
+        m_ioContext.stop();
     }
 }
 
 bool Server::Impl::initialize()
 {
-    m_state = State::Initializing;
     LOG_INFO << "Server initializing";
-    return m_listener.listen(common::utility::toUnderlying(m_port));
+    m_listener.start();
+    return true;
 }
 
 void Server::Impl::shutdown()
 {
-    m_state = State::Shutdown;
     LOG_INFO << "Server shutting down";
-    m_listener.close();
+    m_listener.stop();
+    m_connectionManager.stopAll();
 }
 }

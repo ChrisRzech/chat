@@ -6,12 +6,12 @@ chat_add_library(${LIBRARY_NAME})
 
 target_sources(${LIBRARY_NAME}
     PRIVATE
+        ${SOURCE_PATH}/Connection.cpp
+        ${SOURCE_PATH}/ConnectionManager.cpp
         ${SOURCE_PATH}/Listener.cpp
         ${SOURCE_PATH}/RequestHandler.cpp
         ${SOURCE_PATH}/Server.cpp
         ${SOURCE_PATH}/ServerImpl.cpp
-        ${SOURCE_PATH}/Session.cpp
-        ${SOURCE_PATH}/SessionManager.cpp
 )
 
 target_include_directories(${LIBRARY_NAME}
@@ -23,8 +23,8 @@ target_include_directories(${LIBRARY_NAME}
 
 target_link_libraries(${LIBRARY_NAME}
     PRIVATE
+        Asio::Asio
         chat::common
         chat::messages
-        sfml-network
         Threads::Threads
 )

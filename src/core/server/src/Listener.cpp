@@ -4,80 +4,49 @@
 
 namespace chat::server
 {
-Listener::Listener()
-  : m_listener{}
+Listener::Listener(asio::io_context& ioContext,
+                   asio::ip::tcp::endpoint endpoint,
+                   ConnectionManager& connectionManager)
+  : m_ioContext{ioContext},
+    m_acceptor{ioContext, endpoint},
+    m_connectionManager{connectionManager}
+{}
+
+void Listener::start()
 {
-    m_listener.setBlocking(false);
+    LOG_INFO << "Listener (" << m_acceptor.local_endpoint()
+             << "): started listening";
+    startAccept();
 }
 
-bool Listener::listen(std::uint16_t port)
+void Listener::stop()
 {
-    bool successful = false;
+    LOG_INFO << "Listener (" << m_acceptor.local_endpoint()
+             << "): stopped listening";
+    m_acceptor.close();
+}
 
-    switch(m_listener.listen(port)) {
-    case sf::Socket::Status::Done:
-        LOG_INFO << "Listening for connections on '" << port << "'";
-        successful = true;
-        break;
+void Listener::startAccept()
+{
+    m_acceptor.listen();
+    m_acceptor.async_accept(
+        [this](asio::error_code ec, asio::ip::tcp::socket socket) {
+            acceptToken(ec, std::move(socket));
+        });
+}
 
-    case sf::Socket::Status::NotReady:
-        LOG_ERROR << "Failed to listen on port '" << port
-                  << "': unexpected not ready";
-        break;
-
-    case sf::Socket::Status::Partial:
-        LOG_ERROR << "Failed to listen on port '" << port
-                  << "': unexpected partial";
-        break;
-
-    case sf::Socket::Status::Disconnected:
-        LOG_ERROR << "Failed to listen on port '" << port
-                  << "': unexpected disconnected";
-        break;
-
-    case sf::Socket::Status::Error:
-        LOG_ERROR << "Failed to listen on port '" << port
-                  << "': unexpected error";
-        break;
+void Listener::acceptToken(asio::error_code ec, asio::ip::tcp::socket&& socket)
+{
+    if(!ec) {
+        LOG_DEBUG << "Listener (" << m_acceptor.local_endpoint()
+                  << "): accepted connection from " << socket.remote_endpoint();
+        m_connectionManager.start(std::move(socket));
+    } else {
+        LOG_ERROR << "Listener (" << m_acceptor.local_endpoint()
+                  << "): failed to accept, " << ec.message() << " ("
+                  << ec.value() << ")";
     }
 
-    return successful;
-}
-
-std::optional<std::unique_ptr<sf::TcpSocket>> Listener::accept()
-{
-    std::optional<std::unique_ptr<sf::TcpSocket>> result;
-
-    auto socket = std::make_unique<sf::TcpSocket>();
-    switch(m_listener.accept(*socket)) {
-    case sf::Socket::Status::Done:
-        LOG_INFO << "Accepted connection from '" << socket->getRemoteAddress()
-                 << "'";
-        result.emplace(std::move(socket));
-        break;
-
-    case sf::Socket::Status::NotReady:
-        // No pending connection
-        break;
-
-    case sf::Socket::Status::Partial:
-        LOG_WARN << "Failed to accept socket: unexpected partial";
-        break;
-
-    case sf::Socket::Status::Disconnected:
-        LOG_WARN << "Failed to accept socket: unexpected disconnected";
-        break;
-
-    case sf::Socket::Status::Error:
-        LOG_WARN << "An error occurred while trying to accept socket";
-        break;
-    }
-
-    return result;
-}
-
-void Listener::close()
-{
-    m_listener.close();
+    startAccept();
 }
 }

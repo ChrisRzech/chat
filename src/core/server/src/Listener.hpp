@@ -1,68 +1,44 @@
 #pragma once
 
-#include <SFML/Network/TcpListener.hpp>
-#include <SFML/Network/TcpSocket.hpp>
+#include "ConnectionManager.hpp"
 
-#include <memory>
-#include <optional>
+#include <asio/io_context.hpp>
+#include <asio/ip/tcp.hpp>
 
 namespace chat::server
 {
 /**
- * @brief A socket that accepts incoming connections.
+ * @brief Listen for incoming connections.
  */
 class Listener
 {
 public:
     /**
      * @brief Construct a listener.
-     */
-    Listener();
-
-    /**
-     * @brief Copy operations are disabled.
-     * @{
-     */
-    Listener(const Listener& other) = delete;
-    Listener& operator=(const Listener& other) = delete;
-    /** @} */
-
-    /**
-     * @brief Move operations are disabled.
-     * @{
-     */
-    Listener(Listener&& other) = delete;
-    Listener& operator=(Listener&& other) = delete;
-    /** @} */
-
-    /**
-     * @brief Destroy the listener.
-     */
-    ~Listener() = default;
-
-    /**
-     * @brief Listen for incoming connections on a port.
      *
-     * @param port The port to listen on.
+     * @param ioContext The execution context for I/O.
+     * @param endpoint The endpoint to listen for connections on.
+     * @param connectionManager The manager to create connections from.
      */
-    [[nodiscard]] bool listen(std::uint16_t port);
+    Listener(asio::io_context& ioContext, asio::ip::tcp::endpoint endpoint,
+             ConnectionManager& connectionManager);
 
     /**
-     * @brief Accept an incoming connection.
-     *
-     * @details The listener must be listening on a port in order to accept
-     * connections.
-     *
-     * @return If a connection was accepted, the socket; otherwise, no value.
+     * @brief Start listening for connections.
      */
-    [[nodiscard]] std::optional<std::unique_ptr<sf::TcpSocket>> accept();
+    void start();
 
     /**
-     * @brief Stop listening for incoming connections.
+     * @brief Stop listening for connections.
      */
-    void close();
+    void stop();
 
 private:
-    sf::TcpListener m_listener;
+    void startAccept();
+    void acceptToken(asio::error_code ec, asio::ip::tcp::socket&& socket);
+
+    asio::io_context& m_ioContext;
+    asio::ip::tcp::acceptor m_acceptor;
+    ConnectionManager& m_connectionManager;
 };
 }
