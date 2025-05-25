@@ -120,9 +120,9 @@ void Connection::handleReceiveJob(common::ByteString data)
     // https://cplusplus.com/forum/general/213452/:
     // > The program must ensure that the stream performs no other write
     // > operations (such as async_write, the stream's async_write_some
-    // > function, or any other composed operations that perform writes)
-    // until > this operation completes. Probably be on the safe side and
-    // assume that you shouldn't do this.
+    // > function, or any other composed operations that perform writes) until
+    // > this operation completes.
+    // Should be on the safe side and assume that you shouldn't do this.
     startSend();
 }
 
