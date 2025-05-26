@@ -12,7 +12,7 @@ template<typename T>
 InputByteStream& readIntegral(InputByteStream& in, T& value)
 {
     static_assert(std::is_integral_v<T>);
-    ByteArray<sizeof(T)> buffer;
+    FixedBuffer<sizeof(T)> buffer;
     if(in >> buffer) {
         value = utility::toHostByteOrder<T>(buffer);
     }

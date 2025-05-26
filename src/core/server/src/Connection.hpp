@@ -1,8 +1,8 @@
 #pragma once
 
-#include "chat/common/ByteArray.hpp"
 #include "chat/common/ByteSpan.hpp"
 #include "chat/common/ByteString.hpp"
+#include "chat/common/FixedBuffer.hpp"
 #include "chat/common/ThreadPool.hpp"
 
 #include "chat/messages/Request.hpp"
@@ -133,7 +133,7 @@ private:
     asio::ip::tcp::socket m_socket;
     ConnectionManager& m_connectionManager;
     common::ThreadPool& m_threadPool;
-    common::ByteArray<receiveBufferSize> m_receiving;
+    common::FixedBuffer<receiveBufferSize> m_receiving;
     common::ByteString m_sending;
 };
 }

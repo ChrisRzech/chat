@@ -1,8 +1,8 @@
 #pragma once
 
-#include "chat/common/ByteArray.hpp"
 #include "chat/common/ByteSpan.hpp"
 #include "chat/common/ByteString.hpp"
+#include "chat/common/FixedBuffer.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -64,19 +64,19 @@ private:
 };
 
 /**
- * @brief Insert a byte array into an output byte stream.
+ * @brief Insert a buffer into an output byte stream.
  *
- * @tparam N The size of the byte array.
+ * @tparam N The size of the buffer.
  *
  * @param out The output byte stream.
  *
- * @param buffer The byte array to use.
+ * @param buffer The buffer to use.
  *
  * @return The output byte stream.
  */
 template<std::size_t N>
 inline OutputByteStream& operator<<(OutputByteStream& out,
-                                    const ByteArray<N>& buffer)
+                                    const FixedBuffer<N>& buffer)
 {
     out.write(ByteSpan{buffer.data(), buffer.size()});
     return out;

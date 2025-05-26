@@ -12,6 +12,6 @@ namespace chat::common
  * @tparam N The number of elements in the array.
  */
 template<size_t N>
-using ByteArray = std::array<std::byte, N>;
+using FixedBuffer = std::array<std::byte, N>;
 
 }

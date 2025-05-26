@@ -1,7 +1,7 @@
 #pragma once
 
-#include "chat/common/ByteArray.hpp"
 #include "chat/common/ByteSpan.hpp"
+#include "chat/common/FixedBuffer.hpp"
 
 #include <climits>
 #include <cstddef>
@@ -11,7 +11,7 @@
 namespace chat::common::utility
 {
 /**
- * @brief Converts the bytes of an integral value into a byte array that is in
+ * @brief Converts the bytes of an integral value into a buffer that is in
  * network byte order.
  *
  * @details When sending fields that are multi-byte, such as @c std::uint32_t (4
@@ -31,16 +31,16 @@ namespace chat::common::utility
  *
  * @param value The integral value to be converted to network byte order.
  *
- * @return A byte array representing the integral value in network byte order.
+ * @return A buffer representing the integral value in network byte order.
  */
 template<typename T>
-constexpr ByteArray<sizeof(T)> toNetworkByteOrder(T value)
+constexpr FixedBuffer<sizeof(T)> toNetworkByteOrder(T value)
 {
     static_assert(std::is_integral_v<T>, "Type is not an integral type");
     static_assert(!std::is_same_v<T, bool>,
                   "'bool' is not supported since 'std::make_unsigned' does not "
                   "support 'bool'");
-    ByteArray<sizeof(T)> bytes = {};
+    FixedBuffer<sizeof(T)> bytes = {};
     const std::make_unsigned_t<T> unsignedValue = value;
     for(std::size_t i = 0; i < bytes.size(); i++) {
         const unsigned int shift = ((bytes.size() - 1 - i) * CHAR_BIT);
@@ -50,8 +50,8 @@ constexpr ByteArray<sizeof(T)> toNetworkByteOrder(T value)
 }
 
 /**
- * @brief Converts a byte array in network byte order to an integral value in
- * host byte order.
+ * @brief Converts a buffer in network byte order to an integral value in host
+ * byte order.
  *
  * @details The opposite operation of @c toNetworkByteOrder().
  *
@@ -61,20 +61,20 @@ constexpr ByteArray<sizeof(T)> toNetworkByteOrder(T value)
  * machine, therefore, this function makes sure that it is converted into the
  * native byte order.
  *
- * @note This function always assumes that the byte array is in network byte
- * order. Therefore, performing this operation on a byte array that is already
- * in host byte order might have no useful meaning.
+ * @note This function always assumes that the buffer is in network byte order.
+ * Therefore, performing this operation on a buffer that is already in host byte
+ * order might have no useful meaning.
  *
  * @tparam T The type of the integral value.
  *
- * @param bytes The byte array containing a network byte order representation of
- * an integral value.
+ * @param bytes The buffer containing a network byte order representation of an
+ * integral value.
  *
- * @return An integral value created from converting the byte array to host byte
+ * @return An integral value created from converting the buffer to host byte
  * order from network byte order.
  */
 template<typename T>
-constexpr T toHostByteOrder(const ByteArray<sizeof(T)>& bytes)
+constexpr T toHostByteOrder(const FixedBuffer<sizeof(T)>& bytes)
 {
     static_assert(std::is_integral_v<T>, "Type is not an integral type");
     static_assert(!std::is_same_v<T, bool>,

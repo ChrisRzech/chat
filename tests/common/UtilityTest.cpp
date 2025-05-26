@@ -15,7 +15,7 @@ TEMPLATE_TEST_CASE("Converting to and from network byte order", "[byte order]",
     // without such functionality is sufficient.
 
     auto getExpectedNetworkBytes = [](auto value) constexpr {
-        chat::common::ByteArray<sizeof(value)> bytes = {};
+        chat::common::FixedBuffer<sizeof(value)> bytes = {};
         for(std::size_t i = 0; i < bytes.size(); i++) {
             bytes[i] =
                 static_cast<std::byte>(i == bytes.size() - 1 ? value : 0);

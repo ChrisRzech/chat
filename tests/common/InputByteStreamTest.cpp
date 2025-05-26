@@ -1,6 +1,6 @@
-#include "chat/common/ByteArray.hpp"
 #include "chat/common/ByteSpan.hpp"
 #include "chat/common/ByteString.hpp"
+#include "chat/common/FixedBuffer.hpp"
 #include "chat/common/InputByteStream.hpp"
 #include "chat/common/utility.hpp"
 
@@ -100,7 +100,7 @@ TEST_CASE("Reading a byte array from a stream", "[InputByteStream]")
     chat::common::InputByteStream stream{
         chat::common::ByteSpan{bytes.data(), bytes.size()}};
 
-    chat::common::ByteArray<bytes.size()> array = {};
+    chat::common::FixedBuffer<bytes.size()> array = {};
     stream >> array;
     REQUIRE(stream.isGood());
     REQUIRE(stream.isEmpty());

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "chat/common/ByteArray.hpp"
 #include "chat/common/ByteSpan.hpp"
 #include "chat/common/ByteString.hpp"
+#include "chat/common/FixedBuffer.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -116,18 +116,18 @@ private:
 };
 
 /**
- * @brief Extract bytes from an input byte stream into a byte array.
+ * @brief Extract bytes from an input byte stream into a buffer.
  *
- * @tparam N The size of the byte array.
+ * @tparam N The size of the buffer.
  *
  * @param in The input byte stream.
  *
- * @param buffer The byte array to fill.
+ * @param buffer The buffer to fill.
  *
  * @return The input byte stream.
  */
 template<std::size_t N>
-inline InputByteStream& operator>>(InputByteStream& in, ByteArray<N>& buffer)
+inline InputByteStream& operator>>(InputByteStream& in, FixedBuffer<N>& buffer)
 {
     auto bytes = in.read(buffer.size());
     if(bytes.has_value()) {
