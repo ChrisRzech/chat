@@ -1,6 +1,6 @@
 #pragma once
 
-#include "chat/common/SynchronizedObject.hpp"
+#include "chat/common/Synced.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -203,7 +203,7 @@ private:
         void operator+=(const LogEntry& logEntry);
 
     private:
-        SynchronizedObject<std::ostream*> m_out;
+        Synced<std::ostream*> m_out;
         std::optional<std::filesystem::path> m_logFile;
         std::unique_ptr<std::fstream> m_fout;
     };

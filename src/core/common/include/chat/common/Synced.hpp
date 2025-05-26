@@ -16,7 +16,7 @@ namespace chat::common
  * @tparam T The type of the object to synchronize.
  */
 template<typename T>
-class SynchronizedObject
+class Synced
 {
 public:
     /**
@@ -27,7 +27,7 @@ public:
      * @param args The arguments used to construct the object.
      */
     template<typename... Args>
-    explicit SynchronizedObject(Args&&... args)
+    explicit Synced(Args&&... args)
       : m_mutex{},
         m_value{std::forward<Args>(args)...}
     {}
@@ -36,22 +36,22 @@ public:
      * @brief Copy operations are disabled.
      * @{
      */
-    SynchronizedObject(const SynchronizedObject& other) = delete;
-    SynchronizedObject& operator=(const SynchronizedObject& other) = delete;
+    Synced(const Synced& other) = delete;
+    Synced& operator=(const Synced& other) = delete;
     /** @} */
 
     /**
      * @brief Move operations are disabled.
      * @{
      */
-    SynchronizedObject(SynchronizedObject&& other) = delete;
-    SynchronizedObject& operator=(SynchronizedObject&& other) = delete;
+    Synced(Synced&& other) = delete;
+    Synced& operator=(Synced&& other) = delete;
     /** @} */
 
     /**
      * @brief Destroy the synchronized object.
      */
-    ~SynchronizedObject() = default;
+    ~Synced() = default;
 
     /**
      * @brief Provides mutually exclusive access to the object.
@@ -111,16 +111,16 @@ public:
         }
 
     private:
-        friend class SynchronizedObject;
+        friend class Synced;
 
         /**
          * @brief Construct a proxy.
          *
-         * @param synchronizedValue The synchronized value creating the proxy.
+         * @param synced The synchronized value creating the proxy.
          */
-        explicit ConstProxy(const SynchronizedObject& synchronizedValue)
-          : m_lock{synchronizedValue.m_mutex},
-            m_value{&synchronizedValue.m_value}
+        explicit ConstProxy(const Synced& synced)
+          : m_lock{synced.m_mutex},
+            m_value{&synced.m_value}
         {}
 
         std::unique_lock<std::mutex> m_lock;
@@ -185,16 +185,16 @@ public:
         }
 
     private:
-        friend class SynchronizedObject;
+        friend class Synced;
 
         /**
          * @brief Construct a proxy.
          *
-         * @param synchronizedValue The synchronized value creating the proxy.
+         * @param synced The synchronized value creating the proxy.
          */
-        explicit Proxy(SynchronizedObject& synchronizedValue)
-          : m_lock{synchronizedValue.m_mutex},
-            m_value{&synchronizedValue.m_value}
+        explicit Proxy(Synced& synced)
+          : m_lock{synced.m_mutex},
+            m_value{&synced.m_value}
         {}
 
         std::unique_lock<std::mutex> m_lock;

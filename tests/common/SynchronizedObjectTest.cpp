@@ -1,4 +1,4 @@
-#include "chat/common/SynchronizedObject.hpp"
+#include "chat/common/Synced.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -22,25 +22,24 @@ std::string getNewValue()
 }
 }
 
-TEST_CASE("Creating a synchronized object", "[SynchronizedObject]")
+TEST_CASE("Creating a synchronized object", "[Synced]")
 {
-    chat::common::SynchronizedObject<std::string> object{getInitialValue()};
+    chat::common::Synced<std::string> object{getInitialValue()};
     auto locked = object.lock();
     REQUIRE(locked.get() == getInitialValue());
 }
 
-TEST_CASE("Modifying a synchronized object", "[SynchronizedObject]")
+TEST_CASE("Modifying a synchronized object", "[Synced]")
 {
-    chat::common::SynchronizedObject<std::string> object{getInitialValue()};
+    chat::common::Synced<std::string> object{getInitialValue()};
     auto locked = object.lock();
     locked.get() = getNewValue();
     REQUIRE(locked.get() == getNewValue());
 }
 
-TEST_CASE("Synchronized object provides mutual exclusive access",
-          "[SynchronizedObject]")
+TEST_CASE("Synchronized object provides mutual exclusive access", "[Synced]")
 {
-    chat::common::SynchronizedObject<std::string> object;
+    chat::common::Synced<std::string> object;
 
     constexpr std::chrono::milliseconds minLockTime{100};
     std::mutex mutex;
