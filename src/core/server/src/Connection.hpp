@@ -73,7 +73,10 @@ public:
      * @brief Stop the connection.
      *
      * @details The socket's asynchronous operations are cancelled and the
-     * connection is removed from the manager.
+     * connection destroyed.
+     *
+     * Since this connection object is destroyed during this function, the
+     * object should not be used after calling this.
      */
     void stop();
 
