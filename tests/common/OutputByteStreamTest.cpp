@@ -100,13 +100,13 @@ TEST_CASE("Writing a byte span into a stream", "[OutputByteStream]")
                        expected.begin()));
 }
 
-TEST_CASE("Writing a byte string into a stream", "[OutputByteStream]")
+TEST_CASE("Writing a buffer into a stream", "[OutputByteStream]")
 {
     constexpr auto bytes = createBytes();
-    const chat::common::ByteString byteString{bytes.begin(), bytes.end()};
+    const chat::common::Buffer buffer{bytes.begin(), bytes.end()};
 
     chat::common::OutputByteStream stream;
-    stream << byteString;
+    stream << buffer;
 
     constexpr auto expected = createSizedBytes(bytes);
     REQUIRE(stream.getData().size() == expected.size());

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "chat/common/Buffer.hpp"
 #include "chat/common/ByteSpan.hpp"
-#include "chat/common/ByteString.hpp"
 #include "chat/common/FixedBuffer.hpp"
 
 #include <cstddef>
@@ -14,9 +14,9 @@ namespace chat::common
 /**
  * @brief An input stream of bytes.
  *
- * @details The stream does not own a byte string but instead holds a span to a
- * previously allocated byte string. It's important to ensure that the byte
- * string remains valid throughout the lifespan of this stream.
+ * @details The stream does not own a buffer but instead holds a span to a
+ * previously allocated buffer. It's important to ensure that the buffer remains
+ * valid throughout the lifespan of this stream.
  *
  * Reading bytes provides subspans into the input span rather than providing
  * copies. This is to reduce the memory usage for use cases where copies do not
@@ -179,18 +179,17 @@ InputByteStream& operator>>(InputByteStream& in, std::uint64_t& value);
 InputByteStream& operator>>(InputByteStream& in, ByteSpan& span);
 
 /**
- * @brief Extract bytes from an input byte stream into a byte string.
+ * @brief Extract bytes from an input byte stream into a buffer.
  *
  * @details This assumes that the stream contains a @c std::uint32_t, to specify
- * the size of the string, and then the bytes with the extracted size.
+ * the size of the buffer, and then the bytes with the extracted size.
  *
  * @param in The input byte stream.
  *
- * @param buffer The byte string to which the extract string will be assigned
- * to.
+ * @param buffer The buffer to which the extract buffer will be assigned to.
  *
  * @return The input byte stream.
  */
-InputByteStream& operator>>(InputByteStream& in, ByteString& buffer);
+InputByteStream& operator>>(InputByteStream& in, Buffer& buffer);
 
 }

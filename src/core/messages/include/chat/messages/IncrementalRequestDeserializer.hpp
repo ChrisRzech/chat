@@ -29,6 +29,6 @@ private:
 
     void eraseFromStartOfBuffer(std::size_t messageSize);
 
-    common::ByteString m_buffer;
+    common::Buffer m_buffer;
 };
 }

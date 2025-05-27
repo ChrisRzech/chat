@@ -59,8 +59,8 @@ void Connection::receiveToken(asio::error_code ec, std::size_t bytesReceived)
     LOG_DEBUG << m_socket.remote_endpoint() << ": received " << bytesReceived
               << " bytes";
 
-    common::ByteString receivedData{
-        m_receiving.begin(), std::next(m_receiving.begin(), bytesReceived)};
+    common::Buffer receivedData{m_receiving.begin(),
+                                std::next(m_receiving.begin(), bytesReceived)};
     m_threadPool.queue([this, data = std::move(receivedData)]() {
         handleReceiveJob(std::move(data));
     });
@@ -100,7 +100,7 @@ void Connection::sendToken(asio::error_code ec, std::size_t bytesSent)
     startSend();
 }
 
-void Connection::handleReceiveJob(common::ByteString data)
+void Connection::handleReceiveJob(common::Buffer data)
 {
     common::utility::hexdump(std::cout,
                              common::ByteSpan{data.data(), data.size()});

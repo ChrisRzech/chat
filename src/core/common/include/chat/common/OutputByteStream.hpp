@@ -1,7 +1,7 @@
 #pragma once
 
+#include "chat/common/Buffer.hpp"
 #include "chat/common/ByteSpan.hpp"
-#include "chat/common/ByteString.hpp"
 #include "chat/common/FixedBuffer.hpp"
 
 #include <cstddef>
@@ -13,8 +13,8 @@ namespace chat::common
 /**
  * @brief An output stream of bytes.
  *
- * @details The stream is used to build a byte string which usually contains
- * objects that have been serialized into bytes.
+ * @details The stream is used to build a buffer which usually contains objects
+ * that have been serialized into bytes.
  */
 class OutputByteStream
 {
@@ -57,10 +57,10 @@ public:
      *
      * @return The data the stream is building.
      */
-    [[nodiscard]] const ByteString& getData() const;
+    [[nodiscard]] const Buffer& getData() const;
 
 private:
-    ByteString m_buffer;
+    Buffer m_buffer;
 };
 
 /**
@@ -120,19 +120,19 @@ OutputByteStream& operator<<(OutputByteStream& out, std::uint64_t value);
 OutputByteStream& operator<<(OutputByteStream& out, const ByteSpan& span);
 
 /**
- * @brief Insert a byte string into an output byte stream.
+ * @brief Insert a buffer into an output byte stream.
  *
- * @details The size of the byte string is inserted into the stream first as a
- * @c std::uint32_t, and then the data of the byte string is inserted after.
+ * @details The size of the buffer is inserted into the stream first as a
+ * @c std::uint32_t, and then the data of the buffer is inserted after.
  *
  * @details The size of the
  *
  * @param out The output byte stream.
  *
- * @param span The byte string to use.
+ * @param buffer The buffer to use.
  *
  * @return The output byte stream.
  */
-OutputByteStream& operator<<(OutputByteStream& out, const ByteString& buffer);
+OutputByteStream& operator<<(OutputByteStream& out, const Buffer& buffer);
 
 }

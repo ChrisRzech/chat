@@ -1,7 +1,7 @@
 #pragma once
 
+#include "chat/common/Buffer.hpp"
 #include "chat/common/ByteSpan.hpp"
-#include "chat/common/ByteString.hpp"
 #include "chat/common/FixedBuffer.hpp"
 #include "chat/common/ThreadPool.hpp"
 
@@ -112,7 +112,7 @@ private:
      *
      * @param data The data to handle.
      */
-    void handleReceiveJob(common::ByteString data);
+    void handleReceiveJob(common::Buffer data);
 
     /**
      * @brief Add data to the back of the sending data buffer.
@@ -134,6 +134,6 @@ private:
     ConnectionManager& m_connectionManager;
     common::ThreadPool& m_threadPool;
     common::FixedBuffer<receiveBufferSize> m_receiving;
-    common::ByteString m_sending;
+    common::Buffer m_sending;
 };
 }

@@ -37,7 +37,7 @@ std::unique_ptr<Response> createResponse(Response::Type type)
 }
 
 template<typename Message>
-common::ByteString serializeMessage(const Message& message)
+common::Buffer serializeMessage(const Message& message)
 {
     common::OutputByteStream innerStream;
     message.serialize(innerStream);
@@ -55,7 +55,7 @@ std::optional<std::unique_ptr<Message>> deserializeMessage(
 {
     common::InputByteStream outerStream{bytes};
 
-    common::ByteString inner;
+    common::Buffer inner;
     if(!(outerStream >> inner)) {
         return {};
     }
@@ -85,12 +85,12 @@ std::optional<std::unique_ptr<Message>> deserializeMessage(
 }
 }
 
-common::ByteString serialize(const Request& request)
+common::Buffer serialize(const Request& request)
 {
     return serializeMessage(request);
 }
 
-common::ByteString serialize(const Response& response)
+common::Buffer serialize(const Response& response)
 {
     return serializeMessage(response);
 }

@@ -114,13 +114,13 @@ InputByteStream& operator>>(InputByteStream& in, ByteSpan& span)
     return in;
 }
 
-InputByteStream& operator>>(InputByteStream& in, ByteString& buffer)
+InputByteStream& operator>>(InputByteStream& in, Buffer& buffer)
 {
     std::uint32_t size = 0;
     if(in >> size) {
         auto bytes = in.read(static_cast<std::size_t>(size));
         if(bytes.has_value()) {
-            buffer = ByteString{bytes.value().begin(), bytes.value().end()};
+            buffer = Buffer{bytes.value().begin(), bytes.value().end()};
         }
     }
     return in;

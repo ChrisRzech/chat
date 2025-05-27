@@ -24,7 +24,7 @@ void OutputByteStream::write(const ByteSpan& bytes)
     m_buffer.insert(m_buffer.end(), bytes.begin(), bytes.end());
 }
 
-const ByteString& OutputByteStream::getData() const
+const Buffer& OutputByteStream::getData() const
 {
     return m_buffer;
 }
@@ -76,7 +76,7 @@ OutputByteStream& operator<<(OutputByteStream& out, const ByteSpan& span)
     return out;
 }
 
-OutputByteStream& operator<<(OutputByteStream& out, const ByteString& buffer)
+OutputByteStream& operator<<(OutputByteStream& out, const Buffer& buffer)
 {
     return out << ByteSpan{buffer.data(), buffer.size()};
 }

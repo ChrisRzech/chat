@@ -1,5 +1,5 @@
+#include "chat/common/Buffer.hpp"
 #include "chat/common/ByteSpan.hpp"
-#include "chat/common/ByteString.hpp"
 #include "chat/common/FixedBuffer.hpp"
 #include "chat/common/InputByteStream.hpp"
 #include "chat/common/utility.hpp"
@@ -143,7 +143,7 @@ TEST_CASE("Reading a byte span from a stream", "[InputByteStream]")
     REQUIRE(span == expected);
 }
 
-TEST_CASE("Reading a byte string from a stream", "[InputByteStream]")
+TEST_CASE("Reading a buffer from a stream", "[InputByteStream]")
 {
     constexpr auto bytes = createBytes();
     constexpr auto sizedBytes = createSizedBytes(bytes);
@@ -151,13 +151,13 @@ TEST_CASE("Reading a byte string from a stream", "[InputByteStream]")
     chat::common::InputByteStream stream{
         chat::common::ByteSpan{sizedBytes.data(), sizedBytes.size()}};
 
-    chat::common::ByteString string;
-    stream >> string;
+    chat::common::Buffer buffer;
+    stream >> buffer;
     REQUIRE(stream.isGood());
     REQUIRE(stream.isEmpty());
 
-    const chat::common::ByteString expected{bytes.begin(), bytes.end()};
-    REQUIRE(string == expected);
+    const chat::common::Buffer expected{bytes.begin(), bytes.end()};
+    REQUIRE(buffer == expected);
 }
 
 TEST_CASE("An empty InputByteStream has no readable bytes", "[InputByteStream]")

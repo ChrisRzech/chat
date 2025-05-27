@@ -9,6 +9,6 @@ namespace chat::common
 /**
  * @brief A container for a dynamic number of bytes.
  */
-using ByteString = std::vector<std::byte>;
+using Buffer = std::vector<std::byte>;
 
 }
