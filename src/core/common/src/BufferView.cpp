@@ -1,31 +1,31 @@
-#include "chat/common/ByteSpan.hpp"
+#include "chat/common/BufferView.hpp"
 
 #include <algorithm>
 
 namespace chat::common
 {
 
-ByteSpan::ByteSpan()
+BufferView::BufferView()
   : m_data{nullptr},
     m_size{0}
 {}
 
-ByteSpan::ByteSpan(const std::byte* data, std::size_t size)
+BufferView::BufferView(const std::byte* data, std::size_t size)
   : m_data{data},
     m_size{size}
 {}
 
-const std::byte* ByteSpan::getData() const
+const std::byte* BufferView::getData() const
 {
     return m_data;
 }
 
-std::size_t ByteSpan::getSize() const
+std::size_t BufferView::getSize() const
 {
     return m_size;
 }
 
-const std::byte& ByteSpan::operator[](std::size_t index) const
+const std::byte& BufferView::operator[](std::size_t index) const
 {
     // The purpose of this class is to prevent having to use pointers
     // arithmetic. However, to do so, pointer arithmetic must be used.
@@ -33,12 +33,12 @@ const std::byte& ByteSpan::operator[](std::size_t index) const
     return m_data[index];
 }
 
-const std::byte* ByteSpan::begin() const
+const std::byte* BufferView::begin() const
 {
     return m_data;
 }
 
-const std::byte* ByteSpan::end() const
+const std::byte* BufferView::end() const
 {
     // The purpose of this class is to prevent having to use pointers
     // arithmetic. However, to do so, pointer arithmetic must be used.
@@ -46,21 +46,21 @@ const std::byte* ByteSpan::end() const
     return m_data + m_size;
 }
 
-ByteSpan ByteSpan::subspan(std::size_t offset, std::size_t size) const
+BufferView BufferView::subview(std::size_t offset, std::size_t size) const
 {
     // The purpose of this class is to prevent having to use pointers
     // arithmetic. However, to do so, pointer arithmetic must be used.
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    return ByteSpan{m_data + offset, size};
+    return BufferView{m_data + offset, size};
 }
 
-bool ByteSpan::operator==(const ByteSpan& other) const
+bool BufferView::operator==(const BufferView& other) const
 {
     return m_size == other.m_size ? std::equal(begin(), end(), other.begin())
                                   : false;
 }
 
-bool ByteSpan::operator!=(const ByteSpan& other) const
+bool BufferView::operator!=(const BufferView& other) const
 {
     return !operator==(other);
 }

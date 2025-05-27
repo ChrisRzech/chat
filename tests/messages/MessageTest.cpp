@@ -22,7 +22,7 @@ TEST_CASE("Serializing and deserializing a ping request", "[Message]")
     const auto& serialized = out.getData();
 
     chat::common::InputByteStream in{
-        chat::common::ByteSpan{serialized.data(), serialized.size()}};
+        chat::common::BufferView{serialized.data(), serialized.size()}};
     chat::messages::Ping deserialized;
     REQUIRE(deserialized.deserialize(in));
 }
@@ -42,7 +42,7 @@ TEST_CASE("Serializing and deserializing a pong response", "[Message]")
     const auto& serialized = out.getData();
 
     chat::common::InputByteStream in{
-        chat::common::ByteSpan{serialized.data(), serialized.size()}};
+        chat::common::BufferView{serialized.data(), serialized.size()}};
     chat::messages::Pong deserialized;
     REQUIRE(deserialized.deserialize(in));
 }

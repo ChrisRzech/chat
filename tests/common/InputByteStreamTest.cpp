@@ -1,5 +1,5 @@
 #include "chat/common/Buffer.hpp"
-#include "chat/common/ByteSpan.hpp"
+#include "chat/common/BufferView.hpp"
 #include "chat/common/FixedBuffer.hpp"
 #include "chat/common/InputByteStream.hpp"
 #include "chat/common/utility.hpp"
@@ -46,7 +46,7 @@ constexpr auto createSizedBytes(const std::array<std::byte, size>& bytes)
 TEST_CASE("Empty stream is initially in a good state", "[InputByteStream]")
 {
     const chat::common::InputByteStream stream{
-        chat::common::ByteSpan{nullptr, 0}};
+        chat::common::BufferView{nullptr, 0}};
     REQUIRE(stream.isGood());
     REQUIRE(stream.isEmpty());
 }
@@ -55,14 +55,14 @@ TEST_CASE("Non-empty stream is initially in a good state", "[InputByteStream]")
 {
     constexpr auto bytes = createBytes();
     const chat::common::InputByteStream stream{
-        chat::common::ByteSpan{bytes.data(), bytes.size()}};
+        chat::common::BufferView{bytes.data(), bytes.size()}};
     REQUIRE(stream.isGood());
     REQUIRE(!stream.isEmpty());
 }
 
 TEST_CASE("Reading from an empty stream", "[InputByteStream]")
 {
-    chat::common::InputByteStream stream{chat::common::ByteSpan{nullptr, 0}};
+    chat::common::InputByteStream stream{chat::common::BufferView{nullptr, 0}};
     auto read = stream.read(1);
     REQUIRE(!stream.isGood());
     REQUIRE(!read.has_value());
@@ -71,22 +71,22 @@ TEST_CASE("Reading from an empty stream", "[InputByteStream]")
 TEST_CASE("Reading from a non-empty stream", "[InputByteStream]")
 {
     constexpr auto bytes = createBytes();
-    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
-    chat::common::InputByteStream stream{span};
+    const chat::common::BufferView view{bytes.data(), bytes.size()};
+    chat::common::InputByteStream stream{view};
 
     auto read = stream.read(bytes.size());
     REQUIRE(stream.isGood());
     REQUIRE(stream.isEmpty());
     REQUIRE(read.has_value());
     REQUIRE(read.value().getSize() == bytes.size());
-    REQUIRE(read.value() == span);
+    REQUIRE(read.value() == view);
 }
 
 TEST_CASE("Reading more than there is from a stream", "[InputByteStream]")
 {
     constexpr auto bytes = createBytes();
     chat::common::InputByteStream stream{
-        chat::common::ByteSpan{bytes.data(), bytes.size()}};
+        chat::common::BufferView{bytes.data(), bytes.size()}};
 
     auto read = stream.read(bytes.size() + 1);
     REQUIRE(!stream.isGood());
@@ -98,7 +98,7 @@ TEST_CASE("Reading a byte array from a stream", "[InputByteStream]")
 {
     constexpr auto bytes = createBytes();
     chat::common::InputByteStream stream{
-        chat::common::ByteSpan{bytes.data(), bytes.size()}};
+        chat::common::BufferView{bytes.data(), bytes.size()}};
 
     chat::common::FixedBuffer<bytes.size()> array = {};
     stream >> array;
@@ -117,7 +117,7 @@ TEMPLATE_TEST_CASE("Reading an integral from a stream", "[InputByteStream]",
         chat::common::utility::toNetworkByteOrder(expected);
 
     chat::common::InputByteStream stream{
-        chat::common::ByteSpan{expectedBytes.data(), expectedBytes.size()}};
+        chat::common::BufferView{expectedBytes.data(), expectedBytes.size()}};
 
     Integral value;
     stream >> value;
@@ -126,21 +126,21 @@ TEMPLATE_TEST_CASE("Reading an integral from a stream", "[InputByteStream]",
     REQUIRE(value == expected);
 }
 
-TEST_CASE("Reading a byte span from a stream", "[InputByteStream]")
+TEST_CASE("Reading a byte view from a stream", "[InputByteStream]")
 {
     constexpr auto bytes = createBytes();
     constexpr auto sizedBytes = createSizedBytes(bytes);
 
     chat::common::InputByteStream stream{
-        chat::common::ByteSpan{sizedBytes.data(), sizedBytes.size()}};
+        chat::common::BufferView{sizedBytes.data(), sizedBytes.size()}};
 
-    chat::common::ByteSpan span;
-    stream >> span;
+    chat::common::BufferView view;
+    stream >> view;
     REQUIRE(stream.isGood());
     REQUIRE(stream.isEmpty());
 
-    const chat::common::ByteSpan expected{bytes.data(), bytes.size()};
-    REQUIRE(span == expected);
+    const chat::common::BufferView expected{bytes.data(), bytes.size()};
+    REQUIRE(view == expected);
 }
 
 TEST_CASE("Reading a buffer from a stream", "[InputByteStream]")
@@ -149,7 +149,7 @@ TEST_CASE("Reading a buffer from a stream", "[InputByteStream]")
     constexpr auto sizedBytes = createSizedBytes(bytes);
 
     chat::common::InputByteStream stream{
-        chat::common::ByteSpan{sizedBytes.data(), sizedBytes.size()}};
+        chat::common::BufferView{sizedBytes.data(), sizedBytes.size()}};
 
     chat::common::Buffer buffer;
     stream >> buffer;
@@ -162,8 +162,8 @@ TEST_CASE("Reading a buffer from a stream", "[InputByteStream]")
 
 TEST_CASE("An empty InputByteStream has no readable bytes", "[InputByteStream]")
 {
-    const chat::common::ByteSpan span{nullptr, 0};
-    const chat::common::InputByteStream stream{span};
+    const chat::common::BufferView view{nullptr, 0};
+    const chat::common::InputByteStream stream{view};
     REQUIRE(stream.isEmpty());
     REQUIRE(stream.getReadableCount() == 0);
 }
@@ -171,8 +171,8 @@ TEST_CASE("An empty InputByteStream has no readable bytes", "[InputByteStream]")
 TEST_CASE("A non-empty InputByteStream has readable bytes", "[InputByteStream]")
 {
     constexpr auto bytes = createBytes();
-    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
-    const chat::common::InputByteStream stream{span};
+    const chat::common::BufferView view{bytes.data(), bytes.size()};
+    const chat::common::InputByteStream stream{view};
     REQUIRE(!stream.isEmpty());
     REQUIRE(stream.getReadableCount() == bytes.size());
 }
@@ -185,8 +185,8 @@ TEST_CASE(
     constexpr auto bytes = createBytes();
     constexpr auto readSize = bytes.size() - 1;
     constexpr auto expectedReadableCount = bytes.size() - readSize;
-    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
-    chat::common::InputByteStream stream{span};
+    const chat::common::BufferView view{bytes.data(), bytes.size()};
+    chat::common::InputByteStream stream{view};
     auto read = stream.read(readSize);
     REQUIRE(read.has_value());
     REQUIRE(stream.getReadableCount() == expectedReadableCount);
@@ -200,8 +200,8 @@ TEST_CASE(
     constexpr auto bytes = createBytes();
     constexpr auto readSize = bytes.size() + 1;
     constexpr auto expectedReadableCount = bytes.size();
-    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
-    chat::common::InputByteStream stream{span};
+    const chat::common::BufferView view{bytes.data(), bytes.size()};
+    chat::common::InputByteStream stream{view};
     auto read = stream.read(readSize);
     REQUIRE(!read.has_value());
     REQUIRE(stream.getReadableCount() == expectedReadableCount);

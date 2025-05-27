@@ -1,6 +1,6 @@
 #pragma once
 
-#include "chat/common/ByteSpan.hpp"
+#include "chat/common/BufferView.hpp"
 #include "chat/common/Result.hpp"
 
 #include "chat/messages/Request.hpp"
@@ -19,10 +19,10 @@ public:
     };
 
     common::Result<std::unique_ptr<Request>, FailureReason> tryDeserialize(
-        const common::ByteSpan& data);
+        const common::BufferView& data);
 
 private:
-    void appendToBuffer(const common::ByteSpan& data);
+    void appendToBuffer(const common::BufferView& data);
 
     std::optional<std::unique_ptr<Request>> deserialize(
         std::size_t messageSize);

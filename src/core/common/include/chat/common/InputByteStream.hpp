@@ -1,7 +1,7 @@
 #pragma once
 
 #include "chat/common/Buffer.hpp"
-#include "chat/common/ByteSpan.hpp"
+#include "chat/common/BufferView.hpp"
 #include "chat/common/FixedBuffer.hpp"
 
 #include <cstddef>
@@ -14,11 +14,11 @@ namespace chat::common
 /**
  * @brief An input stream of bytes.
  *
- * @details The stream does not own a buffer but instead holds a span to a
+ * @details The stream does not own a buffer but instead holds a view to a
  * previously allocated buffer. It's important to ensure that the buffer remains
  * valid throughout the lifespan of this stream.
  *
- * Reading bytes provides subspans into the input span rather than providing
+ * Reading bytes provides subviews into the input buffer rather than providing
  * copies. This is to reduce the memory usage for use cases where copies do not
  * need to be made. The stream will keep track if the last read operation was
  * successful using @c isGood().
@@ -31,7 +31,7 @@ public:
      *
      * @param buffer The bytes for the stream to use.
      */
-    explicit InputByteStream(ByteSpan buffer);
+    explicit InputByteStream(BufferView buffer);
 
     /**
      * @brief Copy operations are disabled.
@@ -66,7 +66,7 @@ public:
      * @return A value if there is a minimum number of readable bytes left to
      * fullfil the requested size; otherwise, no value.
      */
-    [[nodiscard]] std::optional<ByteSpan> read(std::size_t size);
+    [[nodiscard]] std::optional<BufferView> read(std::size_t size);
 
     /**
      * @brief Check if the last read was successful.
@@ -110,7 +110,7 @@ private:
      */
     [[nodiscard]] bool isEnoughBytes(std::size_t size);
 
-    ByteSpan m_buffer;
+    BufferView m_buffer;
     std::size_t m_readIndex;
     bool m_failed;
 };
@@ -165,18 +165,18 @@ InputByteStream& operator>>(InputByteStream& in, std::uint64_t& value);
 /** @} */
 
 /**
- * @brief Extract bytes from an input byte stream into a byte span.
+ * @brief Extract bytes from an input byte stream into a buffer.
  *
  * @details This assumes that the stream contains a @c std::uint32_t, to specify
- * the size of the span, and then the bytes with the extracted size.
+ * the size of the buffer, and then the bytes with the extracted size.
  *
  * @param in The input byte stream.
  *
- * @param span The byte span to which the extracted span will be assigned to.
+ * @param buffer The buffer to which the extracted buffer will be assigned to.
  *
  * @return The input byte stream.
  */
-InputByteStream& operator>>(InputByteStream& in, ByteSpan& span);
+InputByteStream& operator>>(InputByteStream& in, BufferView& buffer);
 
 /**
  * @brief Extract bytes from an input byte stream into a buffer.

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "chat/common/Buffer.hpp"
-#include "chat/common/ByteSpan.hpp"
+#include "chat/common/BufferView.hpp"
 
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
@@ -42,7 +42,7 @@ namespace chat::messages
  * process failed.
  */
 [[nodiscard]] std::optional<std::unique_ptr<Request>> deserializeRequest(
-    const common::ByteSpan& bytes);
+    const common::BufferView& bytes);
 
 /**
  * @brief Create a @c Response from a buffer containing a serialized
@@ -57,5 +57,5 @@ namespace chat::messages
  * failed.
  */
 [[nodiscard]] std::optional<std::unique_ptr<Response>> deserializeResponse(
-    const common::ByteSpan& bytes);
+    const common::BufferView& bytes);
 }

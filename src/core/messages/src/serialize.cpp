@@ -51,7 +51,7 @@ common::Buffer serializeMessage(const Message& message)
 
 template<typename Message, typename Factory>
 std::optional<std::unique_ptr<Message>> deserializeMessage(
-    const common::ByteSpan& bytes, const Factory& factory)
+    const common::BufferView& bytes, const Factory& factory)
 {
     common::InputByteStream outerStream{bytes};
 
@@ -60,8 +60,8 @@ std::optional<std::unique_ptr<Message>> deserializeMessage(
         return {};
     }
 
-    const common::ByteSpan innerSpan{inner.data(), inner.size()};
-    common::InputByteStream innerStream{innerSpan};
+    const common::BufferView innerView{inner.data(), inner.size()};
+    common::InputByteStream innerStream{innerView};
 
     if(inner.size() != innerStream.getReadableCount()) {
         return {};
@@ -96,13 +96,13 @@ common::Buffer serialize(const Response& response)
 }
 
 std::optional<std::unique_ptr<Request>> deserializeRequest(
-    const common::ByteSpan& bytes)
+    const common::BufferView& bytes)
 {
     return deserializeMessage<Request>(bytes, createRequest);
 }
 
 std::optional<std::unique_ptr<Response>> deserializeResponse(
-    const common::ByteSpan& bytes)
+    const common::BufferView& bytes)
 {
     return deserializeMessage<Response>(bytes, createResponse);
 }

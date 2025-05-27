@@ -1,7 +1,7 @@
 #pragma once
 
 #include "chat/common/Buffer.hpp"
-#include "chat/common/ByteSpan.hpp"
+#include "chat/common/BufferView.hpp"
 #include "chat/common/FixedBuffer.hpp"
 #include "chat/common/ThreadPool.hpp"
 
@@ -119,7 +119,7 @@ private:
      *
      * @param data The data to add.
      */
-    void enqueueSendingBuffer(common::ByteSpan data);
+    void enqueueSendingBuffer(common::BufferView data);
 
     /**
      * @brief Remove data from the front of the sending data buffer.

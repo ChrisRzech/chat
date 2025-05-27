@@ -19,7 +19,7 @@ OutputByteStream& writeIntegral(OutputByteStream& out, const T& value)
 
 }
 
-void OutputByteStream::write(const ByteSpan& bytes)
+void OutputByteStream::write(const BufferView& bytes)
 {
     m_buffer.insert(m_buffer.end(), bytes.begin(), bytes.end());
 }
@@ -69,16 +69,16 @@ OutputByteStream& operator<<(OutputByteStream& out, std::uint64_t value)
     return writeIntegral(out, value);
 }
 
-OutputByteStream& operator<<(OutputByteStream& out, const ByteSpan& span)
+OutputByteStream& operator<<(OutputByteStream& out, const BufferView& buffer)
 {
-    out << static_cast<std::uint32_t>(span.getSize());
-    out.write(span);
+    out << static_cast<std::uint32_t>(buffer.getSize());
+    out.write(buffer);
     return out;
 }
 
 OutputByteStream& operator<<(OutputByteStream& out, const Buffer& buffer)
 {
-    return out << ByteSpan{buffer.data(), buffer.size()};
+    return out << BufferView{buffer.data(), buffer.size()};
 }
 
 }

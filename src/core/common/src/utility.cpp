@@ -5,7 +5,7 @@
 namespace chat::common::utility
 {
 
-void hexdump(std::ostream& out, const ByteSpan& bytes)
+void hexdump(std::ostream& out, const BufferView& bytes)
 {
     constexpr std::size_t BYTES_PER_CHUNK = 2;
     constexpr std::size_t BYTES_PER_LINE = 16;

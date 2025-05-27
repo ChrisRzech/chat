@@ -50,10 +50,10 @@ TEST_CASE("Stream is initially empty", "[OutputByteStream]")
 TEST_CASE("Writing into a stream", "[OutputByteStream]")
 {
     constexpr auto bytes = createBytes();
-    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
+    const chat::common::BufferView view{bytes.data(), bytes.size()};
 
     chat::common::OutputByteStream stream;
-    stream.write(span);
+    stream.write(view);
     REQUIRE(stream.getData().size() == bytes.size());
     REQUIRE(std::equal(stream.getData().begin(), stream.getData().end(),
                        bytes.begin()));
@@ -86,13 +86,13 @@ TEMPLATE_TEST_CASE("Writing an integral into a stream", "[OutputByteStream]",
                        expected.begin()));
 }
 
-TEST_CASE("Writing a byte span into a stream", "[OutputByteStream]")
+TEST_CASE("Writing a buffer view into a stream", "[OutputByteStream]")
 {
     constexpr auto bytes = createBytes();
-    const chat::common::ByteSpan span{bytes.data(), bytes.size()};
+    const chat::common::BufferView view{bytes.data(), bytes.size()};
 
     chat::common::OutputByteStream stream;
-    stream << span;
+    stream << view;
 
     constexpr auto expected = createSizedBytes(bytes);
     REQUIRE(stream.getData().size() == expected.size());

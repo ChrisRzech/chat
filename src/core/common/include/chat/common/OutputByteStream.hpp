@@ -1,7 +1,7 @@
 #pragma once
 
 #include "chat/common/Buffer.hpp"
-#include "chat/common/ByteSpan.hpp"
+#include "chat/common/BufferView.hpp"
 #include "chat/common/FixedBuffer.hpp"
 
 #include <cstddef>
@@ -50,7 +50,7 @@ public:
      *
      * @param bytes The bytes to use.
      */
-    void write(const ByteSpan& bytes);
+    void write(const BufferView& bytes);
 
     /**
      * @brief Get the data the stream is building.
@@ -78,7 +78,7 @@ template<std::size_t N>
 inline OutputByteStream& operator<<(OutputByteStream& out,
                                     const FixedBuffer<N>& buffer)
 {
-    out.write(ByteSpan{buffer.data(), buffer.size()});
+    out.write(BufferView{buffer.data(), buffer.size()});
     return out;
 }
 
@@ -106,18 +106,18 @@ OutputByteStream& operator<<(OutputByteStream& out, std::uint64_t value);
 /** @} */
 
 /**
- * @brief Insert a byte span into an output byte stream.
+ * @brief Insert a buffer into an output byte stream.
  *
- * @details The size of the byte span is inserted into the stream first as a
- * @c std::uint32_t, and then the data of the byte span is inserted after.
+ * @details The size of the buffer is inserted into the stream first as a
+ * @c std::uint32_t, and then the data of the buffer is inserted after.
  *
  * @param out The output byte stream.
  *
- * @param span The byte span to use.
+ * @param buffer The buffer to use.
  *
  * @return The output byte stream.
  */
-OutputByteStream& operator<<(OutputByteStream& out, const ByteSpan& span);
+OutputByteStream& operator<<(OutputByteStream& out, const BufferView& buffer);
 
 /**
  * @brief Insert a buffer into an output byte stream.

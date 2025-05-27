@@ -10,7 +10,7 @@ TEST_CASE("Using the serializer on a ping request", "[serialize]")
 {
     const chat::messages::Ping request;
     auto serialized = chat::messages::serialize(request);
-    const chat::common::ByteSpan bytes{serialized.data(), serialized.size()};
+    const chat::common::BufferView bytes{serialized.data(), serialized.size()};
     auto deserialized = chat::messages::deserializeRequest(bytes);
     REQUIRE(deserialized.has_value());
     REQUIRE(deserialized.value() != nullptr);
@@ -22,7 +22,7 @@ TEST_CASE("Using the serializer on a pong response", "[serialize]")
 {
     const chat::messages::Pong response;
     auto serialized = chat::messages::serialize(response);
-    const chat::common::ByteSpan bytes{serialized.data(), serialized.size()};
+    const chat::common::BufferView bytes{serialized.data(), serialized.size()};
     auto deserialized = chat::messages::deserializeResponse(bytes);
     REQUIRE(deserialized.has_value());
     REQUIRE(deserialized.value() != nullptr);

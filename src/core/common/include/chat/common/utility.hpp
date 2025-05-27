@@ -1,6 +1,6 @@
 #pragma once
 
-#include "chat/common/ByteSpan.hpp"
+#include "chat/common/BufferView.hpp"
 #include "chat/common/FixedBuffer.hpp"
 
 #include <climits>
@@ -100,7 +100,7 @@ constexpr T toHostByteOrder(const FixedBuffer<sizeof(T)>& bytes)
  *
  * @param bytes The bytes to be printed.
  */
-void hexdump(std::ostream& out, const ByteSpan& bytes);
+void hexdump(std::ostream& out, const BufferView& bytes);
 
 /**
  * @brief Convert the value of an enum to its underlying type.

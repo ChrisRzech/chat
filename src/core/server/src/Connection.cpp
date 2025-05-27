@@ -103,13 +103,13 @@ void Connection::sendToken(asio::error_code ec, std::size_t bytesSent)
 void Connection::handleReceiveJob(common::Buffer data)
 {
     common::utility::hexdump(std::cout,
-                             common::ByteSpan{data.data(), data.size()});
+                             common::BufferView{data.data(), data.size()});
 
     // TODO: Whenever `m_sending` is modified, it needs to be done in a
     // thread-safe manner because the I/O thread will attempt to modify it as
     // well as this thread.
     const std::string response = "hello client";
-    enqueueSendingBuffer(common::ByteSpan{
+    enqueueSendingBuffer(common::BufferView{
         reinterpret_cast<const std::byte*>(response.data()), response.size()});
 
     // TODO: There could be a potential async send operation in process when
@@ -126,7 +126,7 @@ void Connection::handleReceiveJob(common::Buffer data)
     startSend();
 }
 
-void Connection::enqueueSendingBuffer(common::ByteSpan data)
+void Connection::enqueueSendingBuffer(common::BufferView data)
 {
     m_sending.insert(m_sending.end(), data.begin(), data.end());
 }

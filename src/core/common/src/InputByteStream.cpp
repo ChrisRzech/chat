@@ -20,17 +20,17 @@ InputByteStream& readIntegral(InputByteStream& in, T& value)
 }
 }
 
-InputByteStream::InputByteStream(ByteSpan buffer)
+InputByteStream::InputByteStream(BufferView buffer)
   : m_buffer{buffer},
     m_readIndex{0},
     m_failed{false}
 {}
 
-std::optional<ByteSpan> InputByteStream::read(std::size_t size)
+std::optional<BufferView> InputByteStream::read(std::size_t size)
 {
-    std::optional<ByteSpan> bytes;
+    std::optional<BufferView> bytes;
     if(isEnoughBytes(size)) {
-        bytes = std::make_optional(m_buffer.subspan(m_readIndex, size));
+        bytes = std::make_optional(m_buffer.subview(m_readIndex, size));
         m_readIndex += size;
     }
     return bytes;
@@ -102,13 +102,13 @@ InputByteStream& operator>>(InputByteStream& in, std::uint64_t& value)
     return readIntegral(in, value);
 }
 
-InputByteStream& operator>>(InputByteStream& in, ByteSpan& span)
+InputByteStream& operator>>(InputByteStream& in, BufferView& buffer)
 {
     std::uint32_t size = 0;
     if(in >> size) {
         auto bytes = in.read(size);
         if(bytes.has_value()) {
-            span = bytes.value();
+            buffer = bytes.value();
         }
     }
     return in;

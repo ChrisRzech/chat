@@ -6,27 +6,24 @@ namespace chat::common
 {
 
 /**
- * @brief An immutable reference to a contiguous sequence of bytes.
- *
- * @details The byte span does not manage the lifetime of the bytes it refers
- * to.
+ * @brief An immutable non-owning view to a contiguous sequence of bytes.
  */
-class ByteSpan
+class BufferView
 {
 public:
     /**
-     * @brief Construct a byte span that refers to nothing.
+     * @brief Construct a view that refers to nothing.
      */
-    ByteSpan();
+    BufferView();
 
     /**
-     * @brief Construct a byte span.
+     * @brief Construct a view.
      *
      * @param data The data to refer to.
      *
      * @param size The size of the data.
      */
-    ByteSpan(const std::byte* data, std::size_t size);
+    BufferView(const std::byte* data, std::size_t size);
 
     /**
      * @brief Get a pointer to the start of the data.
@@ -69,36 +66,36 @@ public:
     [[nodiscard]] const std::byte* end() const;
 
     /**
-     * @brief Create a new byte span from this byte span.
+     * @brief Create a new view from this view.
      *
-     * @param offset The starting index of this byte span for the new byte span
-     * to reference to.
+     * @param offset The starting index of this view for the new view to
+     * reference to.
      *
-     * @param size The size of the new byte span.
+     * @param size The size of the new view.
      *
-     * @return A byte span that refers to a subset of the bytes from this byte
-     * span.
+     * @return A view that refers to a subset of the bytes from this view.
      */
-    [[nodiscard]] ByteSpan subspan(std::size_t offset, std::size_t size) const;
+    [[nodiscard]] BufferView subview(std::size_t offset,
+                                     std::size_t size) const;
 
     /**
-     * @brief Check if this span and another span contains the same bytes.
+     * @brief Check if view and another view contains the same bytes.
      *
-     * @param other Another span to compare this one to.
+     * @param other Another view to compare this one to.
      *
-     * @return True if both spans contains the same bytes; otherwise, false.
+     * @return True if both views contains the same bytes; otherwise, false.
      */
-    [[nodiscard]] bool operator==(const ByteSpan& other) const;
+    [[nodiscard]] bool operator==(const BufferView& other) const;
 
     /**
-     * @brief Check if this span and another span do not contain the same
+     * @brief Check if this view and another view do not contain the same
      * bytes.
      *
-     * @param other Another span to compare this one to.
+     * @param other Another view to compare this one to.
      *
-     * @return True if both spans contains the same bytes; otherwise, false.
+     * @return True if both views contains the same bytes; otherwise, false.
      */
-    [[nodiscard]] bool operator!=(const ByteSpan& other) const;
+    [[nodiscard]] bool operator!=(const BufferView& other) const;
 
 private:
     const std::byte* m_data;
