@@ -45,9 +45,10 @@ int main(int argc, char* argv[])
     try {
         auto options = parseOptions(argc, argv);
 
+        std::optional<chat::logging::FileLogger> fileLogger;
         if(options.logFilePath.has_value()) {
-            chat::common::Logging::enableLoggingToFile(
-                options.logFilePath.value(), true);
+            chat::logging::setGlobalLogger(
+                fileLogger.emplace(options.logFilePath.value(), true));
         }
 
         chat::server::Server server(options.port, options.maxThreadCount);

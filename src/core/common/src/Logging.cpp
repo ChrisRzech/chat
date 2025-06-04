@@ -6,11 +6,15 @@
 #include <string_view>
 #include <thread>
 
-namespace chat::common
+namespace chat::logging
 {
-
 namespace
 {
+Logger*& getGlobalLoggerPointer()
+{
+    static Logger* globalLogger = nullptr;
+    return globalLogger;
+}
 
 std::tm getCalendar(const time_t& timer)
 {
@@ -20,29 +24,52 @@ std::tm getCalendar(const time_t& timer)
     auto result = ::gmtime_r(&timer, &calendar);
     return result != nullptr ? *result : std::tm{};
 }
-
 }
 
-void Logging::enableLoggingToFile(std::filesystem::path logFile, bool truncate)
+Logger::Logger()
+  : m_out{&std::cout}
+{}
+
+void Logger::operator+=(const std::stringstream& entry)
 {
-    getLogger().enableLoggingToFile(std::move(logFile), truncate);
+    auto syncedOut = m_out.lock();
+    *syncedOut.get() << entry.rdbuf() << std::endl; // Make sure to flush
 }
 
-void Logging::disableLoggingToFile()
+FileLogger::FileLogger(const std::filesystem::path& logFilePath, bool truncate)
+  : Logger{},
+    m_logFilePath{logFilePath},
+    m_fout{m_logFilePath,
+           truncate ? std::fstream::out : std::fstream::out | std::fstream::app}
 {
-    getLogger().disableLoggingToFile();
+    if(!m_fout.is_open()) {
+        throw std::runtime_error{"failed to open log file"};
+    }
+
+    auto syncedOut = m_out.lock();
+    syncedOut.get() = &m_fout;
 }
 
-Logging::Logger& Logging::getLogger()
+Logger& getGlobalLogger()
 {
-    static Logger logger;
-    return logger;
+    static Logger initialGlobalLogger;
+    if(getGlobalLoggerPointer() == nullptr) {
+        getGlobalLoggerPointer() = &initialGlobalLogger;
+    }
+
+    return *getGlobalLoggerPointer();
 }
 
-Logging::LogEntry Logging::createLogEntry(
-    Severity severity, const std::filesystem::path& sourceFile, int line)
+void setGlobalLogger(Logger& logger)
 {
-    LogEntry entry;
+    getGlobalLoggerPointer() = &logger;
+}
+
+std::stringstream prepareLogEntry(Severity severity,
+                                  const std::filesystem::path& sourceFile,
+                                  int sourceLine)
+{
+    std::stringstream entry;
 
     auto time = std::chrono::system_clock::now();
     auto cTime = std::chrono::system_clock::to_time_t(time);
@@ -93,57 +120,9 @@ Logging::LogEntry Logging::createLogEntry(
     entry << '[' << threadId << ']';
     entry << ' ';
 
-    entry << '[' << sourceFile.filename().string() << ':' << line << ']';
+    entry << '[' << sourceFile.filename().native() << ':' << sourceLine << ']';
     entry << ':' << ' ';
 
     return entry;
 }
-
-Logging::Logger::Logger()
-  : m_out{&std::cout},
-    m_logFile{},
-    m_fout{}
-{}
-
-void Logging::Logger::enableLoggingToFile(std::filesystem::path logFile,
-                                          bool truncate)
-{
-    m_logFile = std::move(logFile);
-    m_fout = std::make_unique<std::fstream>(
-        m_logFile.value(),
-        truncate ? std::fstream::out : std::fstream::out | std::fstream::app);
-
-    if(!m_fout->is_open()) {
-        m_logFile.reset();
-        m_fout.reset();
-        throw std::invalid_argument{"Could not open log file"};
-    }
-
-    auto lockedOut = m_out.lock();
-    lockedOut.get() = m_fout.get();
-}
-
-void Logging::Logger::disableLoggingToFile()
-{
-    m_logFile.reset();
-    m_fout.reset();
-
-    auto lockedOut = m_out.lock();
-    lockedOut.get() = &std::cout;
-}
-
-void Logging::Logger::operator+=(const LogEntry& logEntry)
-{
-    // No need to hold the lock while converting to a string
-    auto logEntryString = logEntry.toString();
-
-    auto lockedOut = m_out.lock();
-    *lockedOut.get() << logEntryString << std::endl; // Make sure to flush
-}
-
-std::string Logging::LogEntry::toString() const
-{
-    return m_builder.str();
-}
-
 }

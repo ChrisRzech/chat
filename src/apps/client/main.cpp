@@ -6,7 +6,8 @@ int main()
 {
     try {
         const auto logFilepath = "client.log";
-        chat::common::Logging::enableLoggingToFile(logFilepath, true);
+        chat::logging::FileLogger logger{logFilepath, true};
+        chat::logging::setGlobalLogger(logger);
 
         constexpr chat::common::Port PORT{25565};
         chat::client::Client client{"localhost", PORT};
