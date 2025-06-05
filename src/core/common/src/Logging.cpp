@@ -1,5 +1,6 @@
 #include "chat/common/Logging.hpp"
 
+#include <array>
 #include <ctime>
 #include <iostream>
 #include <stdexcept>
@@ -16,13 +17,46 @@ Logger*& getGlobalLoggerPointer()
     return globalLogger;
 }
 
-std::tm getCalendar(const time_t& timer)
+void insertDatetime(std::ostream& out)
 {
-    // `std::gmtime()` is not thread safe while `::gmtime_r()` should be. The
-    // only concern is that `::gmtime_r()` might not be portable.
-    std::tm calendar{};
-    auto result = ::gmtime_r(&timer, &calendar);
-    return result != nullptr ? *result : std::tm{};
+    // `std::gmtime()` is not thread-safe. The `gmtime_r()` variant is
+    // thread-safe, but it is not part of the standard and thus is not
+    // portable. There doesn't seem to be a way to get a simple (keyword)
+    // reliable thread-safe and portable solution to this. For now, assume that
+    // the function exists and acknowledge that it might cause porting issues in
+    // the future.
+
+    auto now = std::chrono::system_clock::now();
+    auto time = std::chrono::system_clock::to_time_t(now);
+    std::tm tm{};
+    gmtime_r(&time, &tm);
+    out << std::put_time(&tm, "%FT%TZ");
+}
+
+void insertSeverity(std::ostream& out, Severity severity)
+{
+    std::string_view severityString;
+    switch(severity) {
+    case Severity::Fatal:
+        severityString = "FATAL";
+        break;
+    case Severity::Error:
+        severityString = "ERROR";
+        break;
+    case Severity::Warn:
+        severityString = "WARN";
+        break;
+    case Severity::Info:
+        severityString = "INFO";
+        break;
+    case Severity::Debug:
+        severityString = "DEBUG";
+        break;
+    }
+
+    constexpr int maxStringSize = 5;
+    out << std::left << std::setw(maxStringSize) << severityString
+        << std::right;
 }
 }
 
@@ -71,55 +105,11 @@ std::stringstream prepareLogEntry(Severity severity,
 {
     std::stringstream entry;
 
-    auto time = std::chrono::system_clock::now();
-    auto cTime = std::chrono::system_clock::to_time_t(time);
-    auto calendar = getCalendar(cTime);
-    constexpr int MILLISECONDS_IN_SECOND = 1000;
-    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
-                            time.time_since_epoch()) %
-                        MILLISECONDS_IN_SECOND;
-
-    // Format `yyyy-mm-dd hh:mm:ss.ms` and GMT timezone
-    constexpr int START_YEAR = 1900;
-    entry << std::setfill('0');
-    entry << calendar.tm_year + START_YEAR << '-';
-    entry << std::setw(2) << calendar.tm_mon + 1 << '-';
-    entry << std::setw(2) << calendar.tm_mday << ' ';
-    entry << std::setw(2) << calendar.tm_hour << ':';
-    entry << std::setw(2) << calendar.tm_min << ':';
-    entry << std::setw(2) << calendar.tm_sec << '.';
-    entry << std::setw(3) << milliseconds.count();
-    entry << std::setfill(' ');
+    insertDatetime(entry);
     entry << ' ';
-
-    std::string_view severityString;
-    switch(severity) {
-    case Severity::Fatal:
-        severityString = "FATAL";
-        break;
-    case Severity::Error:
-        severityString = "ERROR";
-        break;
-    case Severity::Warn:
-        severityString = "WARN";
-        break;
-    case Severity::Info:
-        severityString = "INFO";
-        break;
-    case Severity::Debug:
-        severityString = "DEBUG";
-        break;
-    }
-    constexpr int SEVERITY_WIDTH = 5;
-    entry << std::left;
-    entry << std::setw(SEVERITY_WIDTH) << severityString;
-    entry << std::right;
+    insertSeverity(entry, severity);
     entry << ' ';
-
-    auto threadId = std::this_thread::get_id();
-    entry << '[' << threadId << ']';
-    entry << ' ';
-
+    entry << '[' << std::this_thread::get_id() << "] ";
     entry << '[' << sourceFile.filename().native() << ':' << sourceLine << ']';
     entry << ':' << ' ';
 
