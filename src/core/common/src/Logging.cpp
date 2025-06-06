@@ -1,6 +1,5 @@
 #include "chat/common/Logging.hpp"
 
-#include <array>
 #include <ctime>
 #include <iostream>
 #include <stdexcept>
