@@ -34,13 +34,13 @@ Server::Impl::Impl(common::Port port, std::size_t maxThreadCount)
 void Server::Impl::run()
 {
     if(initialize()) {
-        LOG_INFO << "Server online";
+        LOG_INFO("Server online");
         m_running = true;
         m_ioContext.run();
     }
 
     shutdown();
-    LOG_INFO << "Server offline";
+    LOG_INFO("Server offline");
 }
 
 void Server::Impl::stop()
@@ -53,14 +53,14 @@ void Server::Impl::stop()
 
 bool Server::Impl::initialize()
 {
-    LOG_INFO << "Server initializing";
+    LOG_INFO("Server initializing");
     m_listener.start();
     return true;
 }
 
 void Server::Impl::shutdown()
 {
-    LOG_INFO << "Server shutting down";
+    LOG_INFO("Server shutting down");
     m_listener.stop();
     m_connectionManager.stopAll();
 }

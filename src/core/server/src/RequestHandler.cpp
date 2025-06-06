@@ -14,7 +14,7 @@ namespace chat::server
 std::unique_ptr<messages::Response> RequestHandler::handle(
     const messages::Request& request)
 {
-    LOG_DEBUG << "Handling request...";
+    LOG_DEBUG("Handling request...");
 
     // TODO Do not let exceptions escape this function. If an exception is
     // caught here, an internal error response should be returned.
@@ -36,7 +36,7 @@ std::unique_ptr<messages::Response> RequestHandler::handle(
         break;
     }
 
-    LOG_DEBUG << "Finished handling request";
+    LOG_DEBUG("Finished handling request");
     return response;
 }
 

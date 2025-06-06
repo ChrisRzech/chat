@@ -54,10 +54,10 @@ int main(int argc, char* argv[])
         chat::server::Server server(options.port, options.maxThreadCount);
         server.run();
     } catch(const std::exception& exception) {
-        LOG_FATAL << "Exception caught: " << exception.what();
+        LOG_FATAL("Exception caught: {}", exception.what());
         return 1;
     } catch(...) {
-        LOG_FATAL << "Unknown exception!";
+        LOG_FATAL("Unknown exception!");
         return 1;
     }
 

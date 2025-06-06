@@ -13,15 +13,15 @@ int main()
         chat::client::Client client{"localhost", PORT};
         auto ping = client.ping();
         if(ping.has_value()) {
-            LOG_DEBUG << "Ping: " << ping.value().count() << "ms";
+            LOG_DEBUG("Ping: {}ms", ping.value().count());
         } else {
-            LOG_DEBUG << "Ping failed";
+            LOG_DEBUG("Ping failed");
         }
     } catch(const std::exception& exception) {
-        LOG_FATAL << "Exception caught: " << exception.what();
+        LOG_FATAL("Exception caught: {}", exception.what());
         return 1;
     } catch(...) {
-        LOG_FATAL << "Unknown exception!";
+        LOG_FATAL("Unknown exception!");
         return 1;
     }
 

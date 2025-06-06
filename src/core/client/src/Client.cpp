@@ -30,7 +30,7 @@ public:
 
     [[nodiscard]] std::optional<std::chrono::milliseconds> ping()
     {
-        LOG_DEBUG << "Sending ping...";
+        LOG_DEBUG("Sending ping...");
 
         //`sendAndReceive()` is not used here so that establishing a connection
         // is not included in the elapsed time measurement
@@ -51,14 +51,14 @@ public:
             }
         }
 
-        LOG_DEBUG << "Finished ping";
+        LOG_DEBUG("Finished ping");
         return result;
     }
 
 private:
     [[nodiscard]] bool connect()
     {
-        LOG_DEBUG << "Connecting to host...";
+        LOG_DEBUG("Connecting to host...");
 
         bool success = false;
 
@@ -68,120 +68,129 @@ private:
         switch(
             m_socket.connect(m_host, common::utility::toUnderlying(m_port))) {
         case sf::Socket::Status::Done:
-            LOG_DEBUG << "Connected to host";
+            LOG_DEBUG("Connected to host");
             m_connected = true;
             success = true;
             break;
 
         case sf::Socket::Status::NotReady:
-            LOG_WARN << "Could not connect to host, unexpected "
-                        "`sf::Socket::Status::NotReady`";
+            LOG_WARN(
+                "Could not connect to host, unexpected "
+                "`sf::Socket::Status::NotReady`");
             break;
 
         case sf::Socket::Status::Partial:
-            LOG_WARN << "Could not connect to host, unexpected "
-                        "`sf::Socket::Status::Partial`";
+            LOG_WARN(
+                "Could not connect to host, unexpected "
+                "`sf::Socket::Status::Partial`");
             break;
 
         case sf::Socket::Status::Disconnected:
-            LOG_WARN << "Could not connect to host, unexpected "
-                        "`sf::Socket::Status::Disconnected`";
+            LOG_WARN(
+                "Could not connect to host, unexpected "
+                "`sf::Socket::Status::Disconnected`");
             break;
 
         case sf::Socket::Status::Error:
-            LOG_WARN << "An error occured while trying to connect to host";
+            LOG_WARN("An error occured while trying to connect to host");
             break;
         }
 
-        LOG_DEBUG << "Finished connecting to host";
+        LOG_DEBUG("Finished connecting to host");
         return success;
     }
 
     [[nodiscard]] bool sendPacket(sf::Packet& packet)
     {
-        LOG_DEBUG << "Sending packet...";
+        LOG_DEBUG("Sending packet...");
 
         bool success = false;
         switch(m_socket.send(packet)) {
         case sf::Socket::Status::Done:
-            LOG_DEBUG << "Packet sent";
+            LOG_DEBUG("Packet sent");
             success = true;
             break;
 
         case sf::Socket::Status::NotReady:
-            LOG_WARN << "Could not send request, unexpected "
-                        "`sf::Socket::Status::NotReady`";
+            LOG_WARN(
+                "Could not send request, unexpected "
+                "`sf::Socket::Status::NotReady`");
             break;
 
         case sf::Socket::Status::Partial:
-            LOG_WARN << "Could not send request, unexpected "
-                        "`sf::Socket::Status::Partial`";
+            LOG_WARN(
+                "Could not send request, unexpected "
+                "`sf::Socket::Status::Partial`");
             break;
 
         case sf::Socket::Status::Disconnected:
             // This should not happen:
             // https://stackoverflow.com/a/14782354/21445636
-            LOG_WARN << "Could not send request, unexpected "
-                        "`sf::Socket::Status::Disconnect`";
+            LOG_WARN(
+                "Could not send request, unexpected "
+                "`sf::Socket::Status::Disconnect`");
             m_connected = false;
             break;
 
         case sf::Socket::Status::Error:
-            LOG_WARN << "An error occured while trying to send request";
+            LOG_WARN("An error occured while trying to send request");
             break;
         }
 
-        LOG_DEBUG << "Finished sending packet";
+        LOG_DEBUG("Finished sending packet");
         return success;
     }
 
     [[nodiscard]] std::optional<sf::Packet> receivePacket()
     {
-        LOG_DEBUG << "Receiving packet...";
+        LOG_DEBUG("Receiving packet...");
 
         bool success = false;
         sf::Packet packet;
         switch(m_socket.receive(packet)) {
         case sf::Socket::Status::Done:
-            LOG_DEBUG << "Packet received";
+            LOG_DEBUG("Packet received");
             success = true;
             break;
 
         case sf::Socket::Status::NotReady:
-            LOG_WARN << "Could not receive request, unexpected "
-                        "`sf::Socket::Status::NotReady`";
+            LOG_WARN(
+                "Could not receive request, unexpected "
+                "`sf::Socket::Status::NotReady`");
             break;
 
         case sf::Socket::Status::Partial:
-            LOG_WARN << "Could not receive request, unexpected "
-                        "`sf::Socket::Status::Partial`";
+            LOG_WARN(
+                "Could not receive request, unexpected "
+                "`sf::Socket::Status::Partial`");
             break;
 
         case sf::Socket::Status::Disconnected:
-            LOG_WARN << "Could not receive request since the socket is "
-                        "disconnected";
+            LOG_WARN(
+                "Could not receive request since the socket is "
+                "disconnected");
             m_connected = false;
             break;
 
         case sf::Socket::Status::Error:
-            LOG_WARN << "An error occured while trying to receive request";
+            LOG_WARN("An error occured while trying to receive request");
             break;
         }
 
-        LOG_DEBUG << "Finished receiving packet";
+        LOG_DEBUG("Finished receiving packet");
         return success ? std::make_optional(packet) : std::nullopt;
     }
 
     [[nodiscard]] bool sendRequest(const messages::Request& request)
     {
-        LOG_DEBUG << "Sending request...";
+        LOG_DEBUG("Sending request...");
 
         auto serialized = messages::serialize(request);
         sf::Packet packet;
         packet.append(serialized.data(), serialized.size());
         const bool success = sendPacket(packet);
 
-        LOG_DEBUG << "Finished sending request";
+        LOG_DEBUG("Finished sending request");
         return success;
     }
 
@@ -192,7 +201,7 @@ private:
         static_assert(std::is_base_of_v<messages::Response, ResponseType>,
                       "Response is not a base of ResponseType");
 
-        LOG_DEBUG << "Receiving response...";
+        LOG_DEBUG("Receiving response...");
 
         std::optional<std::unique_ptr<ResponseType>> response;
         if(auto packet = receivePacket(); packet.has_value()) {
@@ -210,12 +219,12 @@ private:
                         dynamic_cast<ResponseType*>(
                             message.value().release())));
                 } else {
-                    LOG_ERROR << "Received unexpected response type";
+                    LOG_ERROR("Received unexpected response type");
                 }
             }
         }
 
-        LOG_DEBUG << "Finished receiving response";
+        LOG_DEBUG("Finished receiving response");
         return response;
     }
 

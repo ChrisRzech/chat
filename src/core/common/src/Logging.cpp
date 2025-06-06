@@ -60,15 +60,26 @@ void insertSeverity(std::ostream& out, Severity severity)
 }
 }
 
+std::stringstream prepareLogEntry(Severity severity,
+                                  const std::filesystem::path& sourceFile,
+                                  int sourceLine)
+{
+    std::stringstream entry;
+
+    insertDatetime(entry);
+    entry << ' ';
+    insertSeverity(entry, severity);
+    entry << ' ';
+    entry << '[' << std::this_thread::get_id() << "] ";
+    entry << '[' << sourceFile.filename().native() << ':' << sourceLine << ']';
+    entry << ':' << ' ';
+
+    return entry;
+}
+
 Logger::Logger()
   : m_out{&std::cout}
 {}
-
-void Logger::operator+=(const std::stringstream& entry)
-{
-    auto syncedOut = m_out.lock();
-    *syncedOut.get() << entry.rdbuf() << std::endl; // Make sure to flush
-}
 
 FileLogger::FileLogger(const std::filesystem::path& logFilePath, bool truncate)
   : Logger{},
@@ -97,22 +108,5 @@ Logger& getGlobalLogger()
 void setGlobalLogger(Logger& logger)
 {
     getGlobalLoggerPointer() = &logger;
-}
-
-std::stringstream prepareLogEntry(Severity severity,
-                                  const std::filesystem::path& sourceFile,
-                                  int sourceLine)
-{
-    std::stringstream entry;
-
-    insertDatetime(entry);
-    entry << ' ';
-    insertSeverity(entry, severity);
-    entry << ' ';
-    entry << '[' << std::this_thread::get_id() << "] ";
-    entry << '[' << sourceFile.filename().native() << ':' << sourceLine << ']';
-    entry << ':' << ' ';
-
-    return entry;
 }
 }

@@ -1,5 +1,7 @@
 #include "Listener.hpp"
 
+#include "Formatter.hpp"
+
 #include "chat/common/Logging.hpp"
 
 namespace chat::server
@@ -14,15 +16,13 @@ Listener::Listener(asio::io_context& ioContext,
 
 void Listener::start()
 {
-    LOG_INFO << "Listener (" << m_acceptor.local_endpoint()
-             << "): started listening";
+    LOG_INFO("Listener ({}): started listening", m_acceptor.local_endpoint());
     startAccept();
 }
 
 void Listener::stop()
 {
-    LOG_INFO << "Listener (" << m_acceptor.local_endpoint()
-             << "): stopped listening";
+    LOG_INFO("Listener ({}): stopped listening", m_acceptor.local_endpoint());
     m_acceptor.close();
 }
 
@@ -38,13 +38,12 @@ void Listener::startAccept()
 void Listener::acceptToken(asio::error_code ec, asio::ip::tcp::socket&& socket)
 {
     if(!ec) {
-        LOG_DEBUG << "Listener (" << m_acceptor.local_endpoint()
-                  << "): accepted connection from " << socket.remote_endpoint();
+        LOG_DEBUG("Listener ({}): accepted connection from {}",
+                  m_acceptor.local_endpoint(), socket.remote_endpoint());
         m_connectionManager.start(std::move(socket));
     } else {
-        LOG_ERROR << "Listener (" << m_acceptor.local_endpoint()
-                  << "): failed to accept, " << ec.message() << " ("
-                  << ec.value() << ")";
+        LOG_ERROR("Listener ({}): failed to accept, {} ({})",
+                  m_acceptor.local_endpoint(), ec.message(), ec.value());
     }
 
     startAccept();

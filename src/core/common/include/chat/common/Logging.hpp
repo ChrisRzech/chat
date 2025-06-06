@@ -3,6 +3,7 @@
 #include "chat/common/Synced.hpp"
 
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <ostream>
 #include <string>
@@ -27,6 +28,22 @@ enum class Severity
     Info,
     Debug
 };
+
+/**
+ * @brief Create a log entry that is prepared with initial information.
+ *
+ * @param severity The severity of the entry.
+ *
+ * @param sourceFile The source file that the log entry is being created in.
+ * Usually, the value is `__FILE__`.
+
+ * @param sourceLine The line number of the source file that the log entry was
+ * created at. Usually, the value is `__LINE__`.
+ *
+ * @return The log entry.
+ */
+[[nodiscard]] std::stringstream prepareLogEntry(
+    Severity severity, const std::filesystem::path& sourceFile, int sourceLine);
 
 /**
  * @brief A type to log entries into a stream.
@@ -64,16 +81,31 @@ public:
     /**
      * @brief Log an entry.
      *
-     * @details The reasoning behind using `operator+=` is to allow this
-     * function to be called after the log entry has been fully built. Any
-     * operator could work as long as it is overloadable and does not take
-     * precedence over `operator<<`, which is used for building the @c LogEntry.
+     * @details This function is thread-safe.
      *
-     * This function is thread-safe.
+     * @tparam Args The types of the format arguments.
      *
-     * @param entry The stream representing an entry.
+     * @param severity The severity of the entry.
+     *
+     * @param sourceFile The source file that the log entry is being created in.
+     * Usually, the value is `__FILE__`.
+     *
+     * @param sourceLine The line number of the source file that the log entry
+     * was created at. Usually, the value is `__LINE__`.
+     *
+     * @param format The format string.
+     *
+     * @param args The arguments for the format.
      */
-    void operator+=(const std::stringstream& entry);
+    template<typename... Args>
+    void log(Severity severity, const std::filesystem::path& sourceFile,
+             int sourceLine, std::format_string<Args...> format, Args&&... args)
+    {
+        auto entry = prepareLogEntry(severity, sourceFile, sourceLine);
+        entry << std::format(format, std::forward<Args>(args)...);
+        auto syncedOut = m_out.lock();
+        *syncedOut.get() << entry.rdbuf() << std::endl; // Make sure to flush
+    }
 
 protected:
     common::Synced<std::ostream*> m_out;
@@ -133,22 +165,6 @@ static constexpr bool enableDebugLogging = true;
 void setGlobalLogger(Logger& logger);
 
 /**
- * @brief Create a log entry that is prepared with initial information.
- *
- * @param severity The severity of the entry.
- *
- * @param sourceFile The source file that the log entry is being created in.
- * Usually, the value is `__FILE__`.
-
- * @param sourceLine The line number of the source file that the log entry was
- * created at. Usually, the value is `__LINE__`.
- *
- * @return The log entry.
- */
-[[nodiscard]] std::stringstream prepareLogEntry(
-    Severity severity, const std::filesystem::path& sourceFile, int sourceLine);
-
-/**
  * @brief Determine if the severity should be logged.
  *
  * @param severity The severity of the log entry.
@@ -162,21 +178,21 @@ void setGlobalLogger(Logger& logger);
 
 /**
  * @brief A macro for performing logging.
- *
- * @details After calling this macro, objects can be added to the log entry
- * by using the insertion operator (`operator<<`) for each object to log. The
- * object being logged must have an overload for `operator<<` with an
- * `std::ostream`.
  */
-#define LOG(severity)                                   \
-    if constexpr(!chat::logging::shouldLog(severity)) { \
-    } else                                              \
-        chat::logging::getGlobalLogger() +=             \
-            chat::logging::prepareLogEntry(severity, __FILE__, __LINE__)
+#define LOG(severity, format, ...)                                           \
+    if constexpr(chat::logging::shouldLog(severity)) {                       \
+        chat::logging::getGlobalLogger().log(                                \
+            severity, __FILE__, __LINE__, format __VA_OPT__(, __VA_ARGS__)); \
+    }
 
-#define LOG_FATAL LOG(chat::logging::Severity::Fatal)
-#define LOG_ERROR LOG(chat::logging::Severity::Error)
-#define LOG_WARN LOG(chat::logging::Severity::Warn)
-#define LOG_INFO LOG(chat::logging::Severity::Info)
-#define LOG_DEBUG LOG(chat::logging::Severity::Debug)
+#define LOG_FATAL(format, ...) \
+    LOG(chat::logging::Severity::Fatal, format __VA_OPT__(, __VA_ARGS__))
+#define LOG_ERROR(format, ...) \
+    LOG(chat::logging::Severity::Error, format __VA_OPT__(, __VA_ARGS__))
+#define LOG_WARN(format, ...) \
+    LOG(chat::logging::Severity::Warn, format __VA_OPT__(, __VA_ARGS__))
+#define LOG_INFO(format, ...) \
+    LOG(chat::logging::Severity::Info, format __VA_OPT__(, __VA_ARGS__))
+#define LOG_DEBUG(format, ...) \
+    LOG(chat::logging::Severity::Debug, format __VA_OPT__(, __VA_ARGS__))
 }

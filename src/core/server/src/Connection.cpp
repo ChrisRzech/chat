@@ -1,6 +1,7 @@
 #include "Connection.hpp"
 
 #include "ConnectionManager.hpp"
+#include "Formatter.hpp"
 
 #include "chat/common/Logging.hpp"
 
@@ -26,20 +27,20 @@ Connection::Connection(asio::ip::tcp::socket&& socket,
 
 void Connection::start()
 {
-    LOG_DEBUG << m_socket.remote_endpoint() << ": started connection";
+    LOG_DEBUG("{}: started connection", m_socket.remote_endpoint());
     startReceive();
 }
 
 void Connection::stop()
 {
-    LOG_DEBUG << m_socket.remote_endpoint() << ": stopped connection";
+    LOG_DEBUG("{}: stopped connection", m_socket.remote_endpoint());
     m_socket.close();
     m_connectionManager.remove(*this);
 }
 
 void Connection::startReceive()
 {
-    LOG_DEBUG << m_socket.remote_endpoint() << ": started receive";
+    LOG_DEBUG("{}: started receive", m_socket.remote_endpoint());
     m_socket.async_receive(
         asio::buffer(m_receiving),
         [this](asio::error_code ec, std::size_t bytesReceived) {
@@ -50,14 +51,14 @@ void Connection::startReceive()
 void Connection::receiveToken(asio::error_code ec, std::size_t bytesReceived)
 {
     if(ec) {
-        LOG_ERROR << m_socket.remote_endpoint() << ": failed to receive, "
-                  << ec.message() << " (" << ec.value() << ")";
+        LOG_ERROR("{}: failed to receive, {} ({})", m_socket.remote_endpoint(),
+                  ec.message(), ec.value());
         stop();
         return;
     }
 
-    LOG_DEBUG << m_socket.remote_endpoint() << ": received " << bytesReceived
-              << " bytes";
+    LOG_DEBUG("{}: received {} bytes", m_socket.remote_endpoint(),
+              bytesReceived);
 
     common::Buffer receivedData{m_receiving.begin(),
                                 std::next(m_receiving.begin(), bytesReceived)};
@@ -75,7 +76,7 @@ void Connection::startSend()
         return;
     }
 
-    LOG_DEBUG << m_socket.remote_endpoint() << ": started send";
+    LOG_DEBUG("{}: started send", m_socket.remote_endpoint());
     m_socket.async_send(asio::buffer(m_sending),
                         [this](asio::error_code ec, std::size_t bytesSent) {
                             sendToken(ec, bytesSent);
@@ -85,15 +86,13 @@ void Connection::startSend()
 void Connection::sendToken(asio::error_code ec, std::size_t bytesSent)
 {
     if(ec) {
-        LOG_ERROR << m_socket.remote_endpoint()
-                  << ": failed to send: " << ec.message() << " (" << ec.value()
-                  << ")";
+        LOG_ERROR("{}: failed to send, {} ({})", m_socket.remote_endpoint(),
+                  ec.message(), ec.value());
         stop();
         return;
     }
 
-    LOG_DEBUG << m_socket.remote_endpoint() << ": sent " << bytesSent
-              << " bytes";
+    LOG_DEBUG("{}: sent {} bytes", m_socket.remote_endpoint(), bytesSent);
 
     dequeueSendingBuffer(bytesSent);
 
