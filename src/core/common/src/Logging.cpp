@@ -61,8 +61,7 @@ void insertSeverity(std::ostream& out, Severity severity)
 }
 
 std::stringstream prepareLogEntry(Severity severity,
-                                  const std::filesystem::path& sourceFile,
-                                  int sourceLine)
+                                  const std::source_location& location)
 {
     std::stringstream entry;
 
@@ -71,7 +70,9 @@ std::stringstream prepareLogEntry(Severity severity,
     insertSeverity(entry, severity);
     entry << ' ';
     entry << '[' << std::this_thread::get_id() << "] ";
-    entry << '[' << sourceFile.filename().native() << ':' << sourceLine << ']';
+    const std::filesystem::path filepath{location.file_name()};
+    entry << '[' << filepath.filename().native() << ':' << location.line()
+          << ']';
     entry << ':' << ' ';
 
     return entry;

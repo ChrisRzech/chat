@@ -6,6 +6,7 @@
 #include <format>
 #include <fstream>
 #include <ostream>
+#include <source_location>
 #include <string>
 
 namespace chat::logging
@@ -34,16 +35,12 @@ enum class Severity
  *
  * @param severity The severity of the entry.
  *
- * @param sourceFile The source file that the log entry is being created in.
- * Usually, the value is `__FILE__`.
-
- * @param sourceLine The line number of the source file that the log entry was
- * created at. Usually, the value is `__LINE__`.
+ * @param location The location in the source code of where the log occurs.
  *
  * @return The log entry.
  */
 [[nodiscard]] std::stringstream prepareLogEntry(
-    Severity severity, const std::filesystem::path& sourceFile, int sourceLine);
+    Severity severity, const std::source_location& location);
 
 /**
  * @brief A type to log entries into a stream.
@@ -87,21 +84,17 @@ public:
      *
      * @param severity The severity of the entry.
      *
-     * @param sourceFile The source file that the log entry is being created in.
-     * Usually, the value is `__FILE__`.
-     *
-     * @param sourceLine The line number of the source file that the log entry
-     * was created at. Usually, the value is `__LINE__`.
+     * @param location The location in the source code of where the log occurs.
      *
      * @param format The format string.
      *
      * @param args The arguments for the format.
      */
     template<typename... Args>
-    void log(Severity severity, const std::filesystem::path& sourceFile,
-             int sourceLine, std::format_string<Args...> format, Args&&... args)
+    void log(Severity severity, const std::source_location& location,
+             std::format_string<Args...> format, Args&&... args)
     {
-        auto entry = prepareLogEntry(severity, sourceFile, sourceLine);
+        auto entry = prepareLogEntry(severity, location);
         entry << std::format(format, std::forward<Args>(args)...);
         auto syncedOut = m_out.lock();
         *syncedOut.get() << entry.rdbuf() << std::endl; // Make sure to flush
@@ -179,10 +172,11 @@ void setGlobalLogger(Logger& logger);
 /**
  * @brief A macro for performing logging.
  */
-#define LOG(severity, format, ...)                                           \
-    if constexpr(chat::logging::shouldLog(severity)) {                       \
-        chat::logging::getGlobalLogger().log(                                \
-            severity, __FILE__, __LINE__, format __VA_OPT__(, __VA_ARGS__)); \
+#define LOG(severity, format, ...)                     \
+    if constexpr(chat::logging::shouldLog(severity)) { \
+        chat::logging::getGlobalLogger().log(          \
+            severity, std::source_location::current(), \
+            format __VA_OPT__(, __VA_ARGS__));         \
     }
 
 #define LOG_FATAL(format, ...) \
