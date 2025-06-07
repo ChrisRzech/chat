@@ -6,7 +6,6 @@ chat_add_library(${LIBRARY_NAME})
 
 target_sources(${LIBRARY_NAME}
     PRIVATE
-        ${SOURCE_PATH}/BufferView.cpp
         ${SOURCE_PATH}/InputByteStream.cpp
         ${SOURCE_PATH}/Logging.cpp
         ${SOURCE_PATH}/OutputByteStream.cpp

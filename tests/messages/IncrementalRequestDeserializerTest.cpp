@@ -33,42 +33,42 @@ TEST_CASE("Incrementally deserializing a serialized request in chunks",
 
     std::size_t chunkOffset = 0;
     std::size_t chunkSize = 0;
-    auto chunk = serializedView.subview(chunkOffset, chunkSize);
+    auto chunk = serializedView.subspan(chunkOffset, chunkSize);
     auto result = deserializer.tryDeserialize(chunk);
     REQUIRE(!result.hasValue());
     REQUIRE(result.getError() == FailureReason::Partial);
 
     chunkOffset += chunkSize;
     chunkSize = 1;
-    chunk = serializedView.subview(chunkOffset, chunkSize);
+    chunk = serializedView.subspan(chunkOffset, chunkSize);
     result = deserializer.tryDeserialize(chunk);
     REQUIRE(!result.hasValue());
     REQUIRE(result.getError() == FailureReason::Partial);
 
     chunkOffset += chunkSize;
     chunkSize = 1;
-    chunk = serializedView.subview(chunkOffset, chunkSize);
+    chunk = serializedView.subspan(chunkOffset, chunkSize);
     result = deserializer.tryDeserialize(chunk);
     REQUIRE(!result.hasValue());
     REQUIRE(result.getError() == FailureReason::Partial);
 
     chunkOffset += chunkSize;
     chunkSize = 2;
-    chunk = serializedView.subview(chunkOffset, chunkSize);
+    chunk = serializedView.subspan(chunkOffset, chunkSize);
     result = deserializer.tryDeserialize(chunk);
     REQUIRE(!result.hasValue());
     REQUIRE(result.getError() == FailureReason::Partial);
 
     chunkOffset += chunkSize;
     chunkSize = 2;
-    chunk = serializedView.subview(chunkOffset, chunkSize);
+    chunk = serializedView.subspan(chunkOffset, chunkSize);
     result = deserializer.tryDeserialize(chunk);
     REQUIRE(!result.hasValue());
     REQUIRE(result.getError() == FailureReason::Partial);
 
     chunkOffset += chunkSize;
     chunkSize = 2;
-    chunk = serializedView.subview(chunkOffset, chunkSize);
+    chunk = serializedView.subspan(chunkOffset, chunkSize);
     result = deserializer.tryDeserialize(chunk);
     REQUIRE(result.hasValue());
     REQUIRE(result.getValue()->getType() ==

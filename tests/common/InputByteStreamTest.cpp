@@ -45,8 +45,7 @@ constexpr auto createSizedBytes(const std::array<std::byte, size>& bytes)
 
 TEST_CASE("Empty stream is initially in a good state", "[InputByteStream]")
 {
-    const chat::common::InputByteStream stream{
-        chat::common::BufferView{nullptr, 0}};
+    const chat::common::InputByteStream stream{chat::common::BufferView{}};
     REQUIRE(stream.isGood());
     REQUIRE(stream.isEmpty());
 }
@@ -62,7 +61,7 @@ TEST_CASE("Non-empty stream is initially in a good state", "[InputByteStream]")
 
 TEST_CASE("Reading from an empty stream", "[InputByteStream]")
 {
-    chat::common::InputByteStream stream{chat::common::BufferView{nullptr, 0}};
+    chat::common::InputByteStream stream{chat::common::BufferView{}};
     auto read = stream.read(1);
     REQUIRE(!stream.isGood());
     REQUIRE(!read.has_value());
@@ -78,8 +77,8 @@ TEST_CASE("Reading from a non-empty stream", "[InputByteStream]")
     REQUIRE(stream.isGood());
     REQUIRE(stream.isEmpty());
     REQUIRE(read.has_value());
-    REQUIRE(read.value().getSize() == bytes.size());
-    REQUIRE(read.value() == view);
+    REQUIRE(read.value().size() == bytes.size());
+    REQUIRE(std::equal(read.value().begin(), read.value().end(), view.begin()));
 }
 
 TEST_CASE("Reading more than there is from a stream", "[InputByteStream]")
@@ -140,7 +139,8 @@ TEST_CASE("Reading a byte view from a stream", "[InputByteStream]")
     REQUIRE(stream.isEmpty());
 
     const chat::common::BufferView expected{bytes.data(), bytes.size()};
-    REQUIRE(view == expected);
+    REQUIRE(view.size() == expected.size());
+    REQUIRE(std::equal(view.begin(), view.end(), expected.begin()));
 }
 
 TEST_CASE("Reading a buffer from a stream", "[InputByteStream]")
@@ -162,8 +162,7 @@ TEST_CASE("Reading a buffer from a stream", "[InputByteStream]")
 
 TEST_CASE("An empty InputByteStream has no readable bytes", "[InputByteStream]")
 {
-    const chat::common::BufferView view{nullptr, 0};
-    const chat::common::InputByteStream stream{view};
+    const chat::common::InputByteStream stream{chat::common::BufferView{}};
     REQUIRE(stream.isEmpty());
     REQUIRE(stream.getReadableCount() == 0);
 }

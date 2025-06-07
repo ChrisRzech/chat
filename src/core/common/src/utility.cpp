@@ -12,16 +12,16 @@ void hexdump(std::ostream& out, const BufferView& bytes)
     // Make sure to have null-terminator
     std::array<char, BYTES_PER_LINE + 1> chars = {'\0'};
     const std::size_t linePaddingCount =
-        BYTES_PER_LINE - (bytes.getSize() % BYTES_PER_LINE);
+        BYTES_PER_LINE - (bytes.size() % BYTES_PER_LINE);
 
-    for(std::size_t i = 0; i < bytes.getSize() + linePaddingCount; i++) {
+    for(std::size_t i = 0; i < bytes.size() + linePaddingCount; i++) {
         if(i % BYTES_PER_LINE == 0) {
             constexpr int ADDRESS_DIGIT_COUNT = 8;
             out << std::setw(ADDRESS_DIGIT_COUNT) << std::setfill('0')
                 << std::hex << i << std::dec << std::setfill(' ') << "  ";
         }
 
-        if(i < bytes.getSize()) {
+        if(i < bytes.size()) {
             out << std::setw(2) << std::setfill('0') << std::hex
                 << static_cast<int>(bytes[i]) << std::dec << std::setfill(' ');
             chars.at(i % BYTES_PER_LINE) =

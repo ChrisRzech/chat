@@ -30,7 +30,7 @@ std::optional<BufferView> InputByteStream::read(std::size_t size)
 {
     std::optional<BufferView> bytes;
     if(isEnoughBytes(size)) {
-        bytes = std::make_optional(m_buffer.subview(m_readIndex, size));
+        bytes = std::make_optional(m_buffer.subspan(m_readIndex, size));
         m_readIndex += size;
     }
     return bytes;
@@ -43,12 +43,12 @@ bool InputByteStream::isGood() const
 
 bool InputByteStream::isEmpty() const
 {
-    return m_readIndex == m_buffer.getSize();
+    return m_readIndex == m_buffer.size();
 }
 
 std::size_t InputByteStream::getReadableCount() const
 {
-    return m_buffer.getSize() - m_readIndex;
+    return m_buffer.size() - m_readIndex;
 }
 
 InputByteStream::operator bool() const
@@ -58,7 +58,7 @@ InputByteStream::operator bool() const
 
 bool InputByteStream::isEnoughBytes(std::size_t size)
 {
-    m_failed = size > m_buffer.getSize() - m_readIndex;
+    m_failed = size > m_buffer.size() - m_readIndex;
     return !m_failed;
 }
 

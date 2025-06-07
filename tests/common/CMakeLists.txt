@@ -5,7 +5,6 @@ chat_add_test(${TEST_NAME})
 
 target_sources(${TEST_NAME}
     PRIVATE
-        ${SOURCE_PATH}/BufferViewTest.cpp
         ${SOURCE_PATH}/EnumMetaTest.cpp
         ${SOURCE_PATH}/InputByteStreamTest.cpp
         ${SOURCE_PATH}/OutputByteStreamTest.cpp
