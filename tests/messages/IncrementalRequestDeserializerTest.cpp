@@ -1,9 +1,12 @@
+#include "chat/common/BufferView.hpp"
 #include "chat/messages/IncrementalRequestDeserializer.hpp"
+#include "chat/messages/request/Ping.hpp"
 #include "chat/messages/serialize.hpp"
 
-#include "chat/messages/request/Ping.hpp"
-
 #include <catch2/catch_test_macros.hpp>
+
+#include <array>
+#include <cstddef>
 
 TEST_CASE("Incrementally deserializing a serialized request as a whole",
           "[IncrementalRequestDeserializer]")

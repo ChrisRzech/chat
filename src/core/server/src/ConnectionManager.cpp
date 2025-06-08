@@ -1,6 +1,12 @@
 #include "ConnectionManager.hpp"
 
-#include "chat/common/Logging.hpp"
+#include "Connection.hpp"
+
+#include "chat/common/ThreadPool.hpp"
+
+#include <asio/ip/tcp.hpp>
+
+#include <utility>
 
 namespace chat::server
 {

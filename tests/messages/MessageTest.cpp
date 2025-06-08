@@ -1,8 +1,8 @@
 #include "chat/common/InputByteStream.hpp"
 #include "chat/common/OutputByteStream.hpp"
-
+#include "chat/messages/Request.hpp"
+#include "chat/messages/Response.hpp"
 #include "chat/messages/request/Ping.hpp"
-
 #include "chat/messages/response/Pong.hpp"
 
 #include <catch2/catch_test_macros.hpp>

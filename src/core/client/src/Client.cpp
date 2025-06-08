@@ -1,17 +1,24 @@
 #include "chat/client/Client.hpp"
-
+#include "chat/common/BufferView.hpp"
 #include "chat/common/Logging.hpp"
+#include "chat/common/Port.hpp"
 #include "chat/common/utility.hpp"
-
-#include "chat/messages/serialize.hpp"
-
+#include "chat/messages/Request.hpp"
+#include "chat/messages/Response.hpp"
 #include "chat/messages/request/Ping.hpp"
-
 #include "chat/messages/response/Pong.hpp"
+#include "chat/messages/serialize.hpp"
 
 #include <SFML/Network/IpAddress.hpp>
 #include <SFML/Network/Packet.hpp>
+#include <SFML/Network/Socket.hpp>
 #include <SFML/Network/TcpSocket.hpp>
+
+#include <chrono>
+#include <cstddef>
+#include <memory>
+#include <optional>
+#include <string>
 
 namespace chat::client
 {

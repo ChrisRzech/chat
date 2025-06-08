@@ -1,3 +1,4 @@
+#include "chat/common/BufferView.hpp"
 #include "chat/common/OutputByteStream.hpp"
 #include "chat/common/utility.hpp"
 
@@ -7,6 +8,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <cstdint>
 
 namespace
 {

@@ -5,7 +5,6 @@
 
 #include "chat/common/Port.hpp"
 #include "chat/common/ThreadPool.hpp"
-
 #include "chat/server/Server.hpp"
 
 #include <asio/io_context.hpp>

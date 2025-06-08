@@ -1,7 +1,12 @@
 #include "chat/common/Logging.hpp"
 
+#include <chrono>
 #include <ctime>
+#include <filesystem>
+#include <iomanip>
 #include <iostream>
+#include <source_location>
+#include <sstream>
 #include <stdexcept>
 #include <string_view>
 #include <thread>

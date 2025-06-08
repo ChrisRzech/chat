@@ -2,7 +2,6 @@
 
 #include "chat/common/BufferView.hpp"
 #include "chat/common/Result.hpp"
-
 #include "chat/messages/Request.hpp"
 
 #include <memory>

@@ -2,7 +2,6 @@
 
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
-
 #include "chat/messages/request/Ping.hpp"
 
 #include <memory>

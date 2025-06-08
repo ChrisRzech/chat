@@ -1,5 +1,9 @@
 #include "chat/messages/response/Pong.hpp"
 
+#include "chat/common/InputByteStream.hpp"
+#include "chat/common/OutputByteStream.hpp"
+#include "chat/messages/Response.hpp"
+
 namespace chat::messages
 {
 

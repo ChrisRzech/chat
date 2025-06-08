@@ -1,7 +1,9 @@
 #include "chat/common/OutputByteStream.hpp"
 
+#include "chat/common/BufferView.hpp"
 #include "chat/common/utility.hpp"
 
+#include <cstdint>
 #include <type_traits>
 
 namespace chat::common

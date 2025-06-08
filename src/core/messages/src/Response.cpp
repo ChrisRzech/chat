@@ -1,5 +1,9 @@
 #include "chat/messages/Response.hpp"
 
+#include "chat/common/OutputByteStream.hpp"
+
+#include <type_traits>
+
 namespace chat::messages
 {
 Response::Type Response::getType() const

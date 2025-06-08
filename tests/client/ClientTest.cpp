@@ -1,6 +1,9 @@
 #include "chat/client/Client.hpp"
+#include "chat/common/Port.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+
+#include <string>
 
 TEST_CASE("A client pings a server", "[Client]")
 {

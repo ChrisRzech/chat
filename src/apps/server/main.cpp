@@ -1,10 +1,14 @@
 #include "chat/common/Logging.hpp"
-
+#include "chat/common/Port.hpp"
 #include "chat/server/Server.hpp"
 
+#include <cstddef>
+#include <exception>
 #include <filesystem>
+#include <iterator>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 struct Options

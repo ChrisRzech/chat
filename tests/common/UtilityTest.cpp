@@ -1,7 +1,11 @@
+#include "chat/common/FixedBuffer.hpp"
 #include "chat/common/utility.hpp"
 
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
+
+#include <cstddef>
+#include <cstdint>
 
 TEMPLATE_TEST_CASE("Converting to and from network byte order", "[byte order]",
                    std::int8_t, std::uint8_t, std::int16_t, std::uint16_t,

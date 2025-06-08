@@ -1,13 +1,12 @@
 #include "RequestHandler.hpp"
 
 #include "chat/common/Logging.hpp"
-
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
-
 #include "chat/messages/request/Ping.hpp"
-
 #include "chat/messages/response/Pong.hpp"
+
+#include <memory>
 
 namespace chat::server
 {

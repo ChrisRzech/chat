@@ -1,7 +1,13 @@
 #include "chat/common/InputByteStream.hpp"
 
+#include "chat/common/Buffer.hpp"
+#include "chat/common/BufferView.hpp"
+#include "chat/common/FixedBuffer.hpp"
 #include "chat/common/utility.hpp"
 
+#include <cstddef>
+#include <cstdint>
+#include <optional>
 #include <type_traits>
 
 namespace chat::common

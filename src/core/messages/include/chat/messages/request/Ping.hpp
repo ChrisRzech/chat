@@ -2,7 +2,6 @@
 
 #include "chat/common/InputByteStream.hpp"
 #include "chat/common/OutputByteStream.hpp"
-
 #include "chat/messages/Request.hpp"
 
 namespace chat::messages

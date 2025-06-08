@@ -1,6 +1,13 @@
 #include "chat/common/utility.hpp"
 
+#include "chat/common/BufferView.hpp"
+
+#include <array>
+#include <cctype>
+#include <cstddef>
 #include <iomanip>
+#include <ios>
+#include <ostream>
 
 namespace chat::common::utility
 {

@@ -2,7 +2,11 @@
 
 #include "chat/common/Logging.hpp"
 
+#include <cstddef>
 #include <exception>
+#include <functional>
+#include <mutex>
+#include <utility>
 
 namespace chat::common
 {

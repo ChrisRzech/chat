@@ -1,6 +1,17 @@
 #include "chat/messages/IncrementalRequestDeserializer.hpp"
 
+#include "chat/common/BufferView.hpp"
+#include "chat/common/InputByteStream.hpp"
+#include "chat/common/Result.hpp"
+#include "chat/messages/Request.hpp"
 #include "chat/messages/serialize.hpp"
+
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+#include <memory>
+#include <optional>
+#include <utility>
 
 namespace chat::messages
 {

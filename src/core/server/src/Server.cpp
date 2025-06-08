@@ -2,6 +2,11 @@
 
 #include "ServerImpl.hpp"
 
+#include "chat/common/Port.hpp"
+
+#include <cstddef>
+#include <memory>
+
 namespace chat::server
 {
 

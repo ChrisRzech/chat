@@ -4,7 +4,6 @@
 #include "chat/common/BufferView.hpp"
 #include "chat/common/FixedBuffer.hpp"
 #include "chat/common/ThreadPool.hpp"
-
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
 

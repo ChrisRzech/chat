@@ -1,14 +1,17 @@
 #include "chat/messages/serialize.hpp"
 
+#include "chat/common/Buffer.hpp"
+#include "chat/common/BufferView.hpp"
 #include "chat/common/InputByteStream.hpp"
 #include "chat/common/OutputByteStream.hpp"
-
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
-
 #include "chat/messages/request/Ping.hpp"
-
 #include "chat/messages/response/Pong.hpp"
+
+#include <memory>
+#include <optional>
+#include <type_traits>
 
 namespace chat::messages
 {

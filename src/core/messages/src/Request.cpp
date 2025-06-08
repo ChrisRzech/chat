@@ -1,5 +1,9 @@
 #include "chat/messages/Request.hpp"
 
+#include "chat/common/OutputByteStream.hpp"
+
+#include <type_traits>
+
 namespace chat::messages
 {
 Request::Type Request::getType() const

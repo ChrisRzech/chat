@@ -1,6 +1,8 @@
 #include "chat/client/Client.hpp"
-
 #include "chat/common/Logging.hpp"
+#include "chat/common/Port.hpp"
+
+#include <exception>
 
 int main()
 {

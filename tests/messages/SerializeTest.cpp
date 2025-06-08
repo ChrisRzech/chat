@@ -1,8 +1,7 @@
-#include "chat/messages/serialize.hpp"
-
+#include "chat/common/BufferView.hpp"
 #include "chat/messages/request/Ping.hpp"
-
 #include "chat/messages/response/Pong.hpp"
+#include "chat/messages/serialize.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
