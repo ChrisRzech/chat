@@ -38,7 +38,6 @@ private:
     void startAccept();
     void acceptToken(asio::error_code ec, asio::ip::tcp::socket&& socket);
 
-    asio::io_context& m_ioContext;
     asio::ip::tcp::acceptor m_acceptor;
     ConnectionManager& m_connectionManager;
 };
