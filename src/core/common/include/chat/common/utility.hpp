@@ -44,7 +44,7 @@ constexpr FixedBuffer<sizeof(T)> toNetworkByteOrder(T value)
     const std::make_unsigned_t<T> unsignedValue = value;
     for(std::size_t i = 0; i < bytes.size(); i++) {
         const unsigned int shift = ((bytes.size() - 1 - i) * CHAR_BIT);
-        bytes[i] = static_cast<std::byte>(unsignedValue >> shift);
+        bytes.at(i) = static_cast<std::byte>(unsignedValue >> shift);
     }
     return bytes;
 }
@@ -84,7 +84,7 @@ constexpr T toHostByteOrder(const FixedBuffer<sizeof(T)>& bytes)
     for(std::size_t i = 0; i < bytes.size(); i++) {
         const unsigned int shift = (bytes.size() - 1 - i) * CHAR_BIT;
         unsignedValue |= static_cast<std::make_unsigned_t<T>>(
-            static_cast<std::make_unsigned_t<T>>(bytes[i]) << shift);
+            static_cast<std::make_unsigned_t<T>>(bytes.at(i)) << shift);
     }
     return static_cast<T>(unsignedValue);
 }
