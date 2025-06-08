@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <thread>
+#include <utility>
 
 namespace chat::logging
 {
@@ -94,9 +95,9 @@ void Logger::setOutputStream(std::ostream& out)
     syncedOut.get() = &out;
 }
 
-FileLogger::FileLogger(const std::filesystem::path& logFilePath, bool truncate)
+FileLogger::FileLogger(std::filesystem::path logFilePath, bool truncate)
   : Logger{},
-    m_logFilePath{logFilePath},
+    m_logFilePath{std::move(logFilePath)},
     m_fout{m_logFilePath,
            truncate ? std::fstream::out : std::fstream::out | std::fstream::app}
 {

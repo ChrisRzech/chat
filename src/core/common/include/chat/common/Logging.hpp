@@ -129,7 +129,7 @@ public:
      * @param truncate True if the log file should be truncated when opened;
      * otherwise, the file is not truncated when opened.
      */
-    FileLogger(const std::filesystem::path& logFilePath, bool truncate);
+    FileLogger(std::filesystem::path logFilePath, bool truncate);
 
 private:
     std::filesystem::path m_logFilePath;
