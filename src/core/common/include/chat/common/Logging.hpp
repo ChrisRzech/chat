@@ -97,7 +97,10 @@ public:
         auto entry = prepareLogEntry(severity, location);
         entry << std::format(format, std::forward<Args>(args)...);
         auto syncedOut = m_out.lock();
-        *syncedOut.get() << entry.rdbuf() << std::endl; // Make sure to flush
+        *syncedOut.get() << entry.rdbuf() << '\n';
+        // Flush as soon as possible to prevent losing the log entry due to
+        // something like the application crashing
+        syncedOut.get()->flush();
     }
 
 protected:
