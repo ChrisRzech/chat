@@ -11,6 +11,8 @@
 #include <type_traits>
 #include <vector>
 
+namespace
+{
 struct Options
 {
     std::optional<std::filesystem::path> logFilePath;
@@ -42,6 +44,7 @@ Options parseOptions(int argc, char* argv[])
     }
 
     return options;
+}
 }
 
 int main(int argc, char* argv[])
