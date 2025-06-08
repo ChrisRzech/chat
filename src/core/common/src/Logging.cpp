@@ -88,6 +88,12 @@ Logger::Logger()
   : m_out{&std::cout}
 {}
 
+void Logger::setOutputStream(std::ostream& out)
+{
+    auto syncedOut = m_out.lock();
+    syncedOut.get() = &out;
+}
+
 FileLogger::FileLogger(const std::filesystem::path& logFilePath, bool truncate)
   : Logger{},
     m_logFilePath{logFilePath},
@@ -98,8 +104,7 @@ FileLogger::FileLogger(const std::filesystem::path& logFilePath, bool truncate)
         throw std::runtime_error{"failed to open log file"};
     }
 
-    auto syncedOut = m_out.lock();
-    syncedOut.get() = &m_fout;
+    setOutputStream(m_fout);
 }
 
 Logger& getGlobalLogger()

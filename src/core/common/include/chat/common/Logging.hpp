@@ -104,6 +104,14 @@ public:
     }
 
 protected:
+    /**
+     * @brief Set the output stream used for logging.
+     *
+     * @param out The output stream.
+     */
+    void setOutputStream(std::ostream& out);
+
+private:
     common::Synced<std::ostream*> m_out;
 };
 
