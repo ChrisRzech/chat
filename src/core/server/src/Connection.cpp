@@ -68,7 +68,7 @@ void Connection::receiveToken(asio::error_code ec, std::size_t bytesReceived)
 
     common::Buffer receivedData{m_receiving.begin(),
                                 std::next(m_receiving.begin(), bytesReceived)};
-    m_threadPool.queue([this, data = std::move(receivedData)]() {
+    m_threadPool.queue([this, data = std::move(receivedData)]() mutable {
         handleReceiveJob(std::move(data));
     });
 
