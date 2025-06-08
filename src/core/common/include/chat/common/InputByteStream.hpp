@@ -132,7 +132,7 @@ inline InputByteStream& operator>>(InputByteStream& in, FixedBuffer<N>& buffer)
     auto bytes = in.read(buffer.size());
     if(bytes.has_value()) {
         for(std::size_t i = 0; i < buffer.size(); i++) {
-            buffer[i] = bytes.value()[i];
+            buffer.at(i) = bytes.value()[i];
         }
     }
     return in;
