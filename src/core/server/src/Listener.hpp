@@ -20,7 +20,8 @@ public:
      * @param endpoint The endpoint to listen for connections on.
      * @param connectionManager The manager to create connections from.
      */
-    Listener(asio::io_context& ioContext, asio::ip::tcp::endpoint endpoint,
+    Listener(asio::io_context& ioContext,
+             const asio::ip::tcp::endpoint& endpoint,
              ConnectionManager& connectionManager);
 
     /**

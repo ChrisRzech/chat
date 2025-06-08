@@ -14,7 +14,7 @@
 namespace chat::server
 {
 Listener::Listener(asio::io_context& ioContext,
-                   asio::ip::tcp::endpoint endpoint,
+                   const asio::ip::tcp::endpoint& endpoint,
                    ConnectionManager& connectionManager)
   : m_ioContext{ioContext},
     m_acceptor{ioContext, endpoint},
