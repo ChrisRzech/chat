@@ -65,10 +65,10 @@ public:
      */
     Logger();
 
-    Logger(const Logger&) = default;
-    Logger& operator=(const Logger&) = default;
-    Logger(Logger&&) = default;
-    Logger& operator=(Logger&&) = default;
+    Logger(const Logger&) = delete;
+    Logger& operator=(const Logger&) = delete;
+    Logger(Logger&&) = delete;
+    Logger& operator=(Logger&&) = delete;
 
     /**
      * @brief Destroy the logger.
