@@ -9,6 +9,7 @@ Checks: "
     -bugprone-unchecked-optional-access,
     -cppcoreguidelines-avoid-const-or-ref-data-members,
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+    -cppcoreguidelines-use-default-member-init,
     -fuchsia-*,
     -google-*,
     -hicpp-no-array-decay,
@@ -58,6 +59,9 @@ Checks: "
 # It is common to decay arrays to pointers. The only problem in doing so is that
 # the extent is lost. Although, there are types that keeps track of the extent
 # along with the pointer such as `std::string_view` and `std::span`.
+#
+# cppcoreguidelines-use-default-member-init:
+# Same as modernize-use-default-member-init.
 #
 # fuchsia-*:
 # Specific to the Fuchsia codebase.
