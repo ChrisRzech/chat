@@ -7,6 +7,7 @@ Checks: "
     -boost-*,
     -bugprone-easily-swappable-parameters,
     -bugprone-unchecked-optional-access,
+    -cppcoreguidelines-avoid-const-or-ref-data-members,
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
     -fuchsia-*,
     -google-*,
@@ -46,6 +47,12 @@ Checks: "
 # `std::optional::operator->()` should not be used as they can invoke undefined
 # behavior if there is no value. Instead, `std::optional::value()` (or an
 # equivalent) should be used as it will throw if there is no value.
+#
+# cppcoreguidelines-avoid-const-or-ref-data-members:
+# The alternative to using a refrence for a member would be to use a pointer.
+# The main difference between a reference and pointer would be that a reference
+# can't point to a nullptr. This is useful in some cases such as always needing
+# to point to a valid object.
 #
 # cppcoreguidelines-pro-bounds-array-to-pointer-decay:
 # It is common to decay arrays to pointers. The only problem in doing so is that
