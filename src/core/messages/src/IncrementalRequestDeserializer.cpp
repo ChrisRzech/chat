@@ -3,6 +3,7 @@
 #include "chat/common/BufferView.hpp"
 #include "chat/common/InputByteStream.hpp"
 #include "chat/common/Result.hpp"
+#include "chat/common/utility.hpp"
 #include "chat/messages/Request.hpp"
 #include "chat/messages/serialize.hpp"
 
@@ -69,7 +70,8 @@ IncrementalRequestDeserializer::deserialize(std::size_t messageSize)
 void IncrementalRequestDeserializer::eraseFromStartOfBuffer(
     std::size_t messageSize)
 {
-    const auto endIt = std::next(m_buffer.begin(), messageSize);
+    const auto endIt =
+        std::next(m_buffer.begin(), common::utility::makeSigned(messageSize));
     m_buffer.erase(m_buffer.begin(), endIt);
 }
 }

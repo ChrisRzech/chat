@@ -119,4 +119,19 @@ std::underlying_type_t<Enum> toUnderlying(Enum value)
 {
     return static_cast<std::underlying_type_t<Enum>>(value);
 }
+
+/**
+ * @brief Cast an integer into its signed version.
+ *
+ * @tparam T The integer type.
+ *
+ * @param value The integer value.
+ *
+ * @return The signed value of the integer value.
+ */
+template<typename T>
+constexpr auto makeSigned(T value)
+{
+    return static_cast<std::make_signed_t<T>>(value);
+}
 }
