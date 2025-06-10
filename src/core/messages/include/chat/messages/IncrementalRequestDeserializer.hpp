@@ -4,6 +4,7 @@
 #include "chat/common/Result.hpp"
 #include "chat/messages/Request.hpp"
 
+#include <cstdint>
 #include <memory>
 
 namespace chat::messages
@@ -11,7 +12,7 @@ namespace chat::messages
 class IncrementalRequestDeserializer
 {
 public:
-    enum class FailureReason
+    enum class FailureReason : std::uint8_t
     {
         Partial,
         Error,

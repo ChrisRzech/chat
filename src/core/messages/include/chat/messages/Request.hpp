@@ -34,7 +34,7 @@ public:
      *
      * @details Each value corresponds to a derived type of @c Request.
      */
-    enum class Type : std::uint32_t
+    enum class Type : std::uint8_t
     {
         Ping
     };

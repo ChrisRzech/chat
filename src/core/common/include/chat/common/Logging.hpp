@@ -2,6 +2,7 @@
 
 #include "chat/common/Synced.hpp"
 
+#include <cstdint>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -21,7 +22,7 @@ namespace chat::logging
  * enabled (see @c enableDebugLogging). Otherwise, the log entry is elided at
  * compile-time.
  */
-enum class Severity
+enum class Severity : std::uint8_t
 {
     Fatal,
     Error,

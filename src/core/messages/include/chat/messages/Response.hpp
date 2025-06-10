@@ -33,7 +33,7 @@ public:
      *
      * @details Each value corresponds to a derived type of @c Response.
      */
-    enum class Type : std::uint32_t
+    enum class Type : std::uint8_t
     {
         Pong
     };
