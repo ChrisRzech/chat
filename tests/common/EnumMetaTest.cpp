@@ -122,6 +122,8 @@ TEMPLATE_TEST_CASE("Get the enum value of the underlying value", "[EnumMeta]",
                  .has_value());
 }
 
+namespace
+{
 enum class EnumRangeTest // NOLINT(performance-enum-size)
 {
     BelowMin,
@@ -134,6 +136,7 @@ enum class EnumRangeTest // NOLINT(performance-enum-size)
 constexpr std::underlying_type_t<EnumRangeTest> toUnder(EnumRangeTest value)
 {
     return static_cast<std::underlying_type_t<EnumRangeTest>>(value);
+}
 }
 
 template<>
