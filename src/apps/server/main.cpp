@@ -20,11 +20,10 @@ struct Options
     std::size_t maxThreadCount = 2;
 };
 
-Options parseOptions(int argc, char* argv[])
+Options parseOptions(const std::vector<std::string>& args)
 {
     Options options;
 
-    const std::vector<std::string> args{argv, std::next(argv, argc)};
     for(std::size_t i = 1; i < args.size(); i++) {
         const auto& arg = args.at(i);
         if(arg == "--log-file") {
@@ -50,7 +49,8 @@ Options parseOptions(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
     try {
-        auto options = parseOptions(argc, argv);
+        const std::vector<std::string> args{argv, std::next(argv, argc)};
+        auto options = parseOptions(args);
 
         std::optional<chat::logging::FileLogger> fileLogger;
         if(options.logFilePath.has_value()) {
