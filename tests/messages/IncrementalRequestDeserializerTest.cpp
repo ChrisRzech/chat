@@ -63,14 +63,7 @@ TEST_CASE("Incrementally deserializing a serialized request in chunks",
     REQUIRE(result.getError() == FailureReason::Partial);
 
     chunkOffset += chunkSize;
-    chunkSize = 2;
-    chunk = serializedView.subspan(chunkOffset, chunkSize);
-    result = deserializer.tryDeserialize(chunk);
-    REQUIRE(!result.hasValue());
-    REQUIRE(result.getError() == FailureReason::Partial);
-
-    chunkOffset += chunkSize;
-    chunkSize = 2;
+    chunkSize = 1;
     chunk = serializedView.subspan(chunkOffset, chunkSize);
     result = deserializer.tryDeserialize(chunk);
     REQUIRE(result.hasValue());
@@ -84,9 +77,10 @@ TEST_CASE("Incrementally deserializing an invalid serialized request",
     using FailureReason =
         chat::messages::IncrementalRequestDeserializer::FailureReason;
 
+    // This should fail to serialize because 0xFF is not a valid request type ID
     constexpr auto data = std::array{
-        std::byte{0x0}, std::byte{0x0}, std::byte{0x0},
-        std::byte{0x1}, std::byte{0x0},
+        std::byte{0x0}, std::byte{0x0},  std::byte{0x0},
+        std::byte{0x1}, std::byte{0xFF},
     };
     const chat::common::BufferView view{data.data(), data.size()};
 
