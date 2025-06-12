@@ -56,6 +56,7 @@ TEMPLATE_TEST_CASE("Get the name of the enum value", "[EnumMeta]", std::int8_t,
     REQUIRE(chat::common::enummeta::toName(Enum::One).value() == "One");
     REQUIRE(chat::common::enummeta::toName(Enum::Two).value() == "Two");
     REQUIRE(chat::common::enummeta::toName(Enum::Three).value() == "Three");
+    // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
     REQUIRE(!chat::common::enummeta::toName(static_cast<Enum>(10)).has_value());
 }
 
