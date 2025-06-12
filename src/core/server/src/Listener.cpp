@@ -1,7 +1,7 @@
 #include "Listener.hpp"
 
 #include "ConnectionManager.hpp"
-#include "Formatter.hpp"
+#include "Formatter.hpp" // NOLINT(misc-include-cleaner)
 
 #include "chat/common/Logging.hpp"
 
