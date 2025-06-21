@@ -37,7 +37,7 @@ void insertDatetime(std::ostream& out)
     if(gmtime_r(&time, &tm) == nullptr) {
         tm = std::tm{};
     }
-    out << std::put_time(&tm, "%FT%TZ");
+    out << std::put_time(&tm, "[%FT%TZ]");
 }
 
 void insertSeverity(std::ostream& out, Severity severity)
@@ -61,9 +61,9 @@ void insertSeverity(std::ostream& out, Severity severity)
         break;
     }
 
-    constexpr int maxStringSize = 5;
-    out << std::left << std::setw(maxStringSize) << severityString
-        << std::right;
+    constexpr int width = 5;
+    out << '[' << std::left << std::setw(width) << severityString << std::right
+        << ']';
 }
 }
 
@@ -75,12 +75,10 @@ std::stringstream prepareLogEntry(Severity severity,
     insertDatetime(entry);
     entry << ' ';
     insertSeverity(entry, severity);
-    entry << ' ';
-    entry << '[' << std::this_thread::get_id() << "] ";
+    entry << " [" << std::this_thread::get_id() << "] ";
     const std::filesystem::path filepath{location.file_name()};
-    entry << '[' << filepath.filename().native() << ':' << location.line()
-          << ']';
-    entry << ':' << ' ';
+    entry << "[" << filepath.filename().native() << ':' << location.line()
+          << "]: ";
 
     return entry;
 }
