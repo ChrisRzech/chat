@@ -28,11 +28,8 @@ Server::Impl::Impl(common::Port port, std::size_t maxThreadCount)
     m_ioContext{},
     m_listener{m_ioContext, createListenerEndpoint(port), m_connectionManager}
 {
-    // There needs to be at least 2 threads. A thread is dedicated for socket
-    // I/O. The rest are for handling connections.
-    if(maxThreadCount < 2) {
-        throw std::invalid_argument{
-            "unexpected max thread count, expected at least 2"};
+    if(maxThreadCount < 1) {
+        throw std::invalid_argument{"max thread count must greater than 0"};
     }
 }
 
