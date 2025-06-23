@@ -35,6 +35,7 @@ public:
     void stop();
 
 private:
+    asio::ip::tcp::endpoint getEndpoint() const;
     void startAccept();
     void acceptToken(asio::error_code ec, asio::ip::tcp::socket&& socket);
 

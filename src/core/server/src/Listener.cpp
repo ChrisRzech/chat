@@ -22,19 +22,34 @@ Listener::Listener(asio::io_context& ioContext,
 
 void Listener::start()
 {
-    LOG_INFO("Listener: started listening on {}", m_acceptor.local_endpoint());
+    LOG_INFO("Listener: started listening on {}", getEndpoint());
     startAccept();
 }
 
 void Listener::stop()
 {
-    LOG_INFO("Listener: stopped listening on {}", m_acceptor.local_endpoint());
+    if(!m_acceptor.is_open()) {
+        return;
+    }
+
+    LOG_INFO("Listener: stopped listening on {}", getEndpoint());
     m_acceptor.close();
+}
+
+asio::ip::tcp::endpoint Listener::getEndpoint() const
+{
+    asio::error_code ec;
+    auto endpoint = m_acceptor.local_endpoint(ec);
+    if(ec) {
+        LOG_WARN("Listener: failed to get local endpoint, {} ({})",
+                 ec.message(), ec.value());
+    }
+
+    return endpoint;
 }
 
 void Listener::startAccept()
 {
-    m_acceptor.listen();
     m_acceptor.async_accept(
         [this](asio::error_code ec, asio::ip::tcp::socket socket) {
             acceptToken(ec, std::move(socket));
@@ -44,11 +59,19 @@ void Listener::startAccept()
 void Listener::acceptToken(asio::error_code ec, asio::ip::tcp::socket&& socket)
 {
     if(ec) {
-        LOG_ERROR("Listener: failed to accept, {} ({})",
-                  m_acceptor.local_endpoint(), ec.message(), ec.value());
+        LOG_WARN("Listener: failed to accept, {} ({})", getEndpoint(),
+                 ec.message(), ec.value());
     } else {
-        LOG_DEBUG("Listener: accepted connection from {}",
-                  socket.remote_endpoint());
+        asio::error_code ec;
+        auto remoteEndpoint = socket.remote_endpoint(ec);
+        if(ec) {
+            LOG_WARN(
+                "Listener: failed to get remote endpoint of connection, {} "
+                "({})",
+                ec.message(), ec.value());
+        }
+
+        LOG_DEBUG("Listener: accepted connection from {}", remoteEndpoint);
         m_connectionManager.start(std::move(socket));
     }
 
