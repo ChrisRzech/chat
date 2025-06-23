@@ -48,7 +48,7 @@ void Listener::acceptToken(asio::error_code ec, asio::ip::tcp::socket&& socket)
                   m_acceptor.local_endpoint(), ec.message(), ec.value());
     } else {
         LOG_DEBUG("Listener: accepted connection from {}",
-                  m_acceptor.local_endpoint(), socket.remote_endpoint());
+                  socket.remote_endpoint());
         m_connectionManager.start(std::move(socket));
     }
 
