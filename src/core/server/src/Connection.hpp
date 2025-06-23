@@ -3,11 +3,14 @@
 #include "chat/common/Buffer.hpp"
 #include "chat/common/BufferView.hpp"
 #include "chat/common/FixedBuffer.hpp"
+#include "chat/common/Synced.hpp"
 #include "chat/common/ThreadPool.hpp"
 #include "chat/messages/Request.hpp"
 #include "chat/messages/Response.hpp"
 
 #include <asio/ip/tcp.hpp>
+
+#include <memory>
 
 namespace chat::server
 {
@@ -18,35 +21,40 @@ class ConnectionManager;
 /**
  * @brief A communication channel to the client.
  *
- * @details A connection is essentially the middleman between the business logic
- * of the server and the client. It manages the I/O operations to receive data
- * from and send data to the client.
+ * @details A connection is the middleman between the client and server. It
+ * manages the I/O operations to receive data from the client and send data to
+ * the client. The received data is passed to a handler, which processes the
+ * data and sends data back to the client through the connection.
  *
- * When data is received, @c handleReceiveJob() is queued with the data into the
- * thread pool.
+ * The connection utilizes a 2-stage buffer system for receiving, handling, and
+ * sending data. The following is a diagram to visualize the flow of data:
+ *            +---------+      +---------+
+ *            | stage 1 |      | stage 2 |
+ *      +---> | receive | ---> | receive | -----+
+ *      |     | buffer  |      | buffer  |      |
+ *      |     +---------+      +---------+      v
+ * +--------+                              +---------+
+ * | socket |                              | handler |
+ * +--------+                              +---------+
+ *      ^     +---------+      +---------+      |
+ *      |     | stage 2 |      | stage 1 |      |
+ *      +---- | send    | <--- | send    | <----+
+ *            | buffer  |      | buffer  |
+ *            +---------+      +---------+
  *
- * TODO: Need to document how is data sent back to the client? `m_sending` needs
- * to be populated and `startSend()` needs to be called, but who is doing both
- * of these? It might be safe to assume that `handleReceiveJob()` will
- * essentially end up being a request handler that can generate a response. The
- * response would then be serialized and fill up `m_sending` and then call
- * `startSend()`. Up until this point, everything has been single-threaded. With
- * `handleReceiveJob()` being done in a thread, modifying `m_sending` should be
- * done in a thread-safe manner.
+ * Transferring data between stage 1 and stage 2 buffers is done in a
+ * thread-safe manner since the socket and handler could be running at the same
+ * time.
  *
- * In Asio, I/O objects (e.g. `asio::ip::tcp::sockets`) must outlive their
- * asynchronous operations (e.g. `async_receive()`). Typically, to meet this
- * requirement, some implementations use `shared_from_this()` to provide each
- * asynchronous operation completion token an `std::shared_ptr<Connection>`.
- *
- * However, it is assumed that the server's design uses a single thread for
- * managing I/O operations. The controller manager controls the lifetime of a
- * connection. So before a connection is destroyed, `close()` is called on its
- * socket, which stops all outstanding asynchronous operations and their
- * completion token is called. Therefore, there is no need to use
- * `std::shared_ptr` here.
+ * The lifetime of a connection is managed through `std::shared_ptr`s and
+ * `std::enable_shared_from_this`. To use `shared_from_this()`, an
+ * `std::shared_ptr` must already exist before it can be called, which is done
+ * by the connection manager upon creating the connection object when accepted
+ * by the listener. The result of `shared_from_this()` is passed to thread pool
+ * jobs and the completion tokens to prevent destroying the connection while
+ * one of them is outstanding.
  */
-class Connection
+class Connection : public std::enable_shared_from_this<Connection>
 {
 public:
     /**
@@ -73,20 +81,33 @@ public:
      *
      * @details The socket's asynchronous operations are cancelled and the
      * connection destroyed.
-     *
-     * Since this connection object is destroyed during this function, the
-     * object should not be used after calling this.
      */
     void stop();
 
 private:
     /**
+     * @brief Set the remote endpoint.
+     */
+    void setRemoteEndpoint();
+
+    /**
      * @brief Start the asynchronous receive operation.
+     *
+     * @details The received data is placed into the stage 1 receive buffer.
      */
     void startReceive();
 
     /**
      * @brief The completion token for the asynchronous receive operation.
+     *
+     * @details If an error is indicated, the connection is stopped.
+     *
+     * The data in the stage 1 receive buffer is transferred into the stage 2
+     * receive buffer. If a job isn't currently running or the current job is
+     * about to stop running, a new job is queued to handle the data in the
+     * stage 2 receive buffer.
+     *
+     * The asynchronous operation is started again.
      *
      * @param ec The error code from the asynchronous operation.
      * @param bytesReceived The number of bytes received.
@@ -94,12 +115,51 @@ private:
     void receiveToken(asio::error_code ec, std::size_t bytesReceived);
 
     /**
+     * @brief Handle received data until there is no more.
+     *
+     * @details The data in the stage 2 receive buffer is extracted from the
+     * buffer and is handled. This repeats until there is no more data to
+     * handle.
+     */
+    void handleReceivedDataLoop();
+
+    /**
+     * @brief Handle received data.
+     *
+     * @details The received data is consumed. Depending on the logic, data may
+     * be added to the stage 1 send buffer to be sent to the client.
+     *
+     * @param data The received data.
+     */
+    void handleReceivedData(common::Buffer data);
+
+    /**
+     * @brief Send data to the client.
+     *
+     * @details The data is inserted into the stage 1 send buffer. If an
+     * asynchronous send operation isn't currently running, it is started.
+     *
+     * @param data The data to send.
+     */
+    void send(common::BufferView data);
+
+    /**
      * @brief Start the asynchronous send operation.
+     *
+     * @details The data from the stage 1 send buffer is transferred into the
+     * stage 2 send buffer. If there is data in the stage 2 send buffer, the
+     * asynchronous send operation is started using the stage 2 send buffer.
      */
     void startSend();
 
     /**
      * @brief The completion token for the asynchronous send operation.
+     *
+     * @details If an error is indicated, the connection is stopped.
+     *
+     * The bytes sent in the stage 2 send buffer are deleted from the buffer.
+     *
+     * The asynchronous operation is started again.
      *
      * @param ec The error code from the asynchronous operation.
      * @param bytesSent The number of bytes sent.
@@ -107,32 +167,52 @@ private:
     void sendToken(asio::error_code ec, std::size_t bytesSent);
 
     /**
-     * @brief The handler for data received from the client.
+     * @brief Transfer the data in the receive buffers from stage 1 to stage 2.
      *
-     * @param data The data to handle.
+     * @details The receive data job stops executing once there is no more data
+     * in the stage 2 receive buffer. The return value of this function is used
+     * to determine if a new job should be queued.
+     *
+     * @param bytesReceived The number of bytes in the stage 1 receive buffer,
+     * starting from the start of the buffer, to transfer into the stage 2
+     * receive buffer.
+     *
+     * @return True if the stage 2 receive buffer was empty before the transfer;
+     * false otherwise.
      */
-    void handleReceiveJob(common::Buffer data);
+    bool transferReceiveBuffers(std::size_t bytesReceived);
 
     /**
-     * @brief Add data to the back of the sending data buffer.
+     * @brief Extract all the data from the stage 2 receive buffer.
      *
-     * @param data The data to add.
+     * @return The data from the stage 2 receive buffer.
      */
-    void enqueueSendingBuffer(common::BufferView data);
+    common::Buffer extractReceiveBufferStage2();
 
     /**
-     * @brief Remove data from the front of the sending data buffer.
+     * @brief Insert data into the stage 1 send buffer.
      *
-     * @param bytesSent The number of bytes sent.
+     * @param data The data to insert into the stage 1 send buffer.
+     *
+     * @return True if the stage 1 send buffer was empty before the insertion;
+     * false otherwise.
      */
-    void dequeueSendingBuffer(std::size_t bytesSent);
+    bool insertSendBufferStage1(common::BufferView data);
 
-    static constexpr std::size_t receiveBufferSize = 256;
+    /**
+     * @brief Transfer the data in the send buffers from stage 1 to stage 2.
+     */
+    void transferSendBuffers();
+
+    static constexpr std::size_t receiveBufferStage1Size = 256;
 
     asio::ip::tcp::socket m_socket;
     ConnectionManager& m_connectionManager;
     common::ThreadPool& m_threadPool;
-    common::FixedBuffer<receiveBufferSize> m_receiving;
-    common::Buffer m_sending;
+    asio::ip::tcp::endpoint m_remoteEndpoint;
+    common::FixedBuffer<receiveBufferStage1Size> m_receiveBufferStage1;
+    common::Synced<common::Buffer> m_receiveBufferStage2;
+    common::Synced<common::Buffer> m_sendBufferStage1;
+    common::Buffer m_sendBufferStage2;
 };
 }

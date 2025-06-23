@@ -8,6 +8,7 @@
 #include <asio/ip/tcp.hpp>
 
 #include <list>
+#include <memory>
 
 namespace chat::server
 {
@@ -40,7 +41,7 @@ public:
      *
      * @param connection The connection to remove.
      */
-    void remove(Connection& connection);
+    void remove(const Connection& connection);
 
     /**
      * @brief Stop and remove all connections.
@@ -50,6 +51,6 @@ public:
 private:
     common::ThreadPool& m_threadPool;
     RequestHandler m_requestHandler;
-    std::list<Connection> m_connections;
+    std::list<std::shared_ptr<Connection>> m_connections;
 };
 }

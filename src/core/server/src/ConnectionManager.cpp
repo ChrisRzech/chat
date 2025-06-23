@@ -6,6 +6,7 @@
 
 #include <asio/ip/tcp.hpp>
 
+#include <memory>
 #include <utility>
 
 namespace chat::server
@@ -18,19 +19,22 @@ ConnectionManager::ConnectionManager(common::ThreadPool& threadPool)
 
 void ConnectionManager::start(asio::ip::tcp::socket&& socket)
 {
-    m_connections.emplace_back(std::move(socket), *this, m_threadPool).start();
+    auto connection =
+        std::make_shared<Connection>(std::move(socket), *this, m_threadPool);
+    connection->start();
+    m_connections.emplace_back(std::move(connection));
 }
 
-void ConnectionManager::remove(Connection& connection)
+void ConnectionManager::remove(const Connection& connection)
 {
     m_connections.remove_if(
-        [&connection](auto& elem) { return &elem == &connection; });
+        [&connection](const auto& elem) { return elem.get() == &connection; });
 }
 
 void ConnectionManager::stopAll()
 {
     for(auto& connection : m_connections) {
-        connection.stop();
+        connection->stop();
     }
 }
 }
