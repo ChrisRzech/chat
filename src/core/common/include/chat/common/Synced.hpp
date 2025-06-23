@@ -98,6 +98,34 @@ public:
         }
 
         /**
+         * @brief Get the object being synchronized.
+         *
+         * @details This can only be called when the proxy is an lvalue to
+         * prevent obtaining a reference to the object while the mutex is
+         * unlocked.
+         *
+         * @return The object being synchronized.
+         */
+        [[nodiscard]] const T* operator->() &
+        {
+            return m_value;
+        }
+
+        /**
+         * @brief Get the object being synchronized.
+         *
+         * @details This can only be called when the proxy is an lvalue to
+         * prevent obtaining a reference to the object while the mutex is
+         * unlocked.
+         *
+         * @return The object being synchronized.
+         */
+        [[nodiscard]] const T& operator*() &
+        {
+            return *m_value;
+        }
+
+        /**
          * @brief Get the lock used on the mutex.
          *
          * @details This allows this type to be used with mechanisms like
@@ -167,6 +195,34 @@ public:
          * @return The object being synchronized.
          */
         [[nodiscard]] T& get() &
+        {
+            return *m_value;
+        }
+
+        /**
+         * @brief Get the object being synchronized.
+         *
+         * @details This can only be called when the proxy is an lvalue to
+         * prevent obtaining a reference to the object while the mutex is
+         * unlocked.
+         *
+         * @return The object being synchronized.
+         */
+        [[nodiscard]] T* operator->() &
+        {
+            return m_value;
+        }
+
+        /**
+         * @brief Get the object being synchronized.
+         *
+         * @details This can only be called when the proxy is an lvalue to
+         * prevent obtaining a reference to the object while the mutex is
+         * unlocked.
+         *
+         * @return The object being synchronized.
+         */
+        [[nodiscard]] T& operator*() &
         {
             return *m_value;
         }
