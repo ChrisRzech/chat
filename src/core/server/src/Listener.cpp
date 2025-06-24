@@ -41,8 +41,7 @@ asio::ip::tcp::endpoint Listener::getEndpoint() const
     asio::error_code ec;
     auto endpoint = m_acceptor.local_endpoint(ec);
     if(ec) {
-        LOG_WARN("Listener: failed to get local endpoint, {} ({})",
-                 ec.message(), ec.value());
+        LOG_WARN("Listener: failed to get local endpoint, {}", ec);
     }
 
     return endpoint;
@@ -59,16 +58,14 @@ void Listener::startAccept()
 void Listener::acceptToken(asio::error_code ec, asio::ip::tcp::socket&& socket)
 {
     if(ec) {
-        LOG_WARN("Listener: failed to accept, {} ({})", getEndpoint(),
-                 ec.message(), ec.value());
+        LOG_WARN("Listener: failed to accept, {}", getEndpoint(), ec);
     } else {
         asio::error_code ec;
         auto remoteEndpoint = socket.remote_endpoint(ec);
         if(ec) {
             LOG_WARN(
-                "Listener: failed to get remote endpoint of connection, {} "
-                "({})",
-                ec.message(), ec.value());
+                "Listener: failed to get remote endpoint of connection, {}",
+                ec);
         }
 
         LOG_DEBUG("Listener: accepted connection from {}", remoteEndpoint);

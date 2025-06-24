@@ -52,14 +52,12 @@ void Connection::stop()
     asio::error_code ec;
     m_socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
     if(ec) {
-        LOG_WARN("{}: failed to shutdown socket, {} ({})", m_remoteEndpoint,
-                 ec.message(), ec.value());
+        LOG_WARN("{}: failed to shutdown socket, {}", m_remoteEndpoint, ec);
     }
 
     m_socket.close();
     if(ec) {
-        LOG_WARN("{}: failed to close socket, {} ({})", m_remoteEndpoint,
-                 ec.message(), ec.value());
+        LOG_WARN("{}: failed to close socket, {}", m_remoteEndpoint, ec);
     }
 
     m_connectionManager.remove(*this);
@@ -90,8 +88,7 @@ void Connection::setRemoteEndpoint()
     asio::error_code ec;
     m_remoteEndpoint = m_socket.remote_endpoint(ec);
     if(ec) {
-        LOG_WARN("{}: failed to get remote endpoint, {} ({})", m_remoteEndpoint,
-                 ec.message(), ec.value());
+        LOG_WARN("{}: failed to get remote endpoint, {}", m_remoteEndpoint, ec);
     }
 }
 
@@ -108,8 +105,7 @@ void Connection::startReceive()
 void Connection::receiveToken(asio::error_code ec, std::size_t bytesReceived)
 {
     if(ec) {
-        LOG_WARN("{}: failed to receive, {} ({})", m_remoteEndpoint,
-                 ec.message(), ec.value());
+        LOG_WARN("{}: failed to receive, {}", m_remoteEndpoint, ec);
         stop();
         return;
     }
@@ -174,8 +170,7 @@ void Connection::startSend()
 void Connection::sendToken(asio::error_code ec, std::size_t bytesSent)
 {
     if(ec) {
-        LOG_WARN("{}: failed to send, {} ({})", m_remoteEndpoint, ec.message(),
-                 ec.value());
+        LOG_WARN("{}: failed to send, {}", m_remoteEndpoint, ec);
         stop();
         return;
     }
